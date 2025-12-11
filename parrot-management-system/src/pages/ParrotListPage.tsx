@@ -337,14 +337,15 @@ const ParrotListPage = () => {
       title: '操作',
       key: 'action',
       fixed: 'right' as const,
-      width: 280,
+      width: 320,
       render: (_: any, record: Parrot) => (
-        <Space size="small">
+        <Space size={4}>
           <Button
             type="link"
             size="small"
             icon={<EyeOutlined />}
             onClick={() => handleViewDetail(record)}
+            style={{ padding: '0 4px' }}
           >
             查看
           </Button>
@@ -353,6 +354,7 @@ const ParrotListPage = () => {
             size="small"
             icon={<EditOutlined />}
             onClick={() => handleEditParrot(record)}
+            style={{ padding: '0 4px' }}
           >
             编辑
           </Button>
@@ -365,17 +367,17 @@ const ParrotListPage = () => {
                 okText="确认"
                 cancelText="取消"
               >
-                <Button type="link" size="small" icon={<ShoppingCartOutlined />}>
+                <Button type="link" size="small" icon={<ShoppingCartOutlined />} style={{ padding: '0 4px' }}>
                   售出
                 </Button>
               </Popconfirm>
-              <Button type="link" size="small" icon={<HeartOutlined />} onClick={() => handleSetAsBreeding(record)}>
+              <Button type="link" size="small" icon={<HeartOutlined />} onClick={() => handleSetAsBreeding(record)} style={{ padding: '0 4px' }}>
                 种鸟
               </Button>
             </>
           )}
           {record.status === 'breeding' && (
-            <Button type="link" size="small" disabled title="种鸟不能售卖">
+            <Button type="link" size="small" disabled title="种鸟不能售卖" style={{ padding: '0 4px' }}>
               种鸟
             </Button>
           )}
@@ -386,7 +388,7 @@ const ParrotListPage = () => {
             okText="确认"
             cancelText="取消"
           >
-            <Button type="link" size="small" danger icon={<DeleteOutlined />}>
+            <Button type="link" size="small" danger icon={<DeleteOutlined />} style={{ padding: '0 4px' }}>
               删除
             </Button>
           </Popconfirm>

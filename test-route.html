@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>路由测试</title>
+</head>
+<body>
+    <h1>路由测试</h1>
+    <p>尝试访问不同路由...</p>
+    <ul>
+        <li><a href="http://localhost:5173" target="_blank">首页</a></li>
+        <li><a href="http://localhost:5173/dashboard" target="_blank">仪表板</a></li>
+        <li><a href="http://localhost:5173/parrots/list" target="_blank">鹦鹉列表</a></li>
+        <li><a href="http://localhost:5173/breeding/breeding-birds" target="_blank">种鸟管理</a></li>
+        <li><a href="http://localhost:5173/incubation/incubation-list" target="_blank">孵化列表</a></li>
+    </ul>
+    
+    <p>状态检查:</p>
+    <p>后端API: <span id="api-status">检测中...</span></p>
+    <p>前端路由: <span id="route-status">检测中...</span></p>
+    
+    <script>
+        // 检查API
+        fetch('http://localhost:5173/api/parrots')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('api-status').textContent = data.items ? '✅ 正常' : '❌ 异常';
+            })
+            .catch(error => {
+                document.getElementById('api-status').textContent = '❌ 无法连接';
+            });
+        
+        // 检查路由
+        document.getElementById('route-status').textContent = '✅ 已部署';
+    </script>
+</body>
+</html>

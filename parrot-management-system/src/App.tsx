@@ -1,29 +1,41 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Layout } from 'antd';
+import { Suspense } from 'react';
+import { Spin } from 'antd';
 import { ParrotProvider } from './context/ParrotContext';
-import ParrotListPage from './pages/ParrotListPage';
-import Dashboard from './pages/Dashboard';
-import BreedingManagementPage from './pages/BreedingManagementPage';
+import MainLayout from './layouts/MainLayout';
+import { routes } from './configs/routes';
 import './index.css';
 
-const { Content } = Layout;
+// 加载中组件
+const Loading = () => (
+  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+    <Spin size="large" tip="加载中..." />
+  </div>
+);
 
 function App() {
   return (
     <ParrotProvider>
       <Router>
-        <Layout style={{ minHeight: '100vh' }}>
-          <Layout>
-            <Content style={{ padding: '24px', background: '#f0f2f5' }}>
-              <Routes>
-                <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/parrots" element={<ParrotListPage />} />
-                <Route path="/breeding" element={<BreedingManagementPage />} />
-              </Routes>
-            </Content>
-          </Layout>
-        </Layout>
+        <MainLayout>
+          <Suspense fallback={<Loading />}>
+            <Routes>
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              {routes.map((route) => {
+                if (route.children) {
+                  return (
+                    <Route key={route.path} path={route.path}>
+                      {route.children.map((child) => (
+                        <Route key={child.path || 'index'} {...child} />
+                      ))}
+                    </Route>
+                  );
+                }
+                return <Route key={route.path} path={route.path} element={route.element} />;
+              })}
+            </Routes>
+          </Suspense>
+        </MainLayout>
       </Router>
     </ParrotProvider>
   );

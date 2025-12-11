@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>系统访问测试</title>
+    <meta charset="utf-8">
+</head>
+<body>
+    <h1>鹦鹉管理系统访问测试</h1>
+    <p>当前时间：<span id="time"></span></p>
+    <p>系统状态：<span id="status">检测中...</span></p>
+    <hr>
+    <h2>测试链接：</h2>
+    <ul>
+        <li><a href="http://localhost:5173/" target="_blank">前端首页 (http://localhost:5173/)</a></li>
+        <li><a href="http://localhost:8000/docs" target="_blank">API文档 (http://localhost:8000/docs)</a></li>
+        <li><a href="http://localhost:8000/health" target="_blank">后端健康检查</a></li>
+    </ul>
+    <hr>
+    <h2>自动检测结果：</h2>
+    <div id="results"></div>
+
+    <script>
+        document.getElementById('time').textContent = new Date().toLocaleString();
+
+        async function checkService(name, url) {
+            try {
+                const response = await fetch(url);
+                if (response.ok) {
+                    return `✅ ${name}: 正常`;
+                } else {
+                    return `❌ ${name}: HTTP ${response.status}`;
+                }
+            } catch (error) {
+                return `❌ ${name}: ${error.message}`;
+            }
+        }
+
+        async function runChecks() {
+            const results = document.getElementById('results');
+            results.innerHTML = '检测中...';
+
+            const checks = [
+                checkService('前端页面', 'http://localhost:5173/'),
+                checkService('后端API', 'http://localhost:8000/health'),
+                checkService('API文档', 'http://localhost:8000/docs')
+            ];
+
+            const resultsArray = await Promise.all(checks);
+            results.innerHTML = resultsArray.map(r => `<p>${r}</p>`).join('');
+
+            const allOk = resultsArray.every(r => r.includes('✅'));
+            document.getElementById('status').textContent = allOk ? '所有服务正常运行' : '部分服务异常';
+            document.getElementById('status').style.color = allOk ? 'green' : 'red';
+        }
+
+        runChecks();
+    </script>
+</body>
+</html>

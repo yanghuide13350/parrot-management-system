@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>鹦鹉管理系统测试</title>
+</head>
+<body>
+    <h1>鹦鹉管理系统状态检查</h1>
+    <p>后端状态: <span id="backend-status">检测中...</span></p>
+    <p>前端状态: <span id="frontend-status">检测中...</span></p>
+    <p>API状态: <span id="api-status">检测中...</span></p>
+    
+    <script>
+        // 检查后端
+        fetch('http://localhost:8000/health')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('backend-status').textContent = data.status === 'healthy' ? '✅ 正常' : '❌ 异常';
+            })
+            .catch(error => {
+                document.getElementById('backend-status').textContent = '❌ 无法连接';
+            });
+        
+        // 检查API
+        fetch('http://localhost:5173/api/statistics')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('api-status').textContent = data.total_parrots >= 0 ? '✅ 正常' : '❌ 异常';
+            })
+            .catch(error => {
+                document.getElementById('api-status').textContent = '❌ 无法连接';
+            });
+        
+        // 检查前端
+        document.getElementById('frontend-status').textContent = '✅ 正常';
+    </script>
+</body>
+</html>

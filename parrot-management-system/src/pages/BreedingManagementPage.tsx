@@ -178,12 +178,13 @@ const BreedingManagementPage = () => {
       fixed: 'right' as const,
       width: 280,
       render: (_: any, record: Parrot) => (
-        <Space size="small">
+        <Space size={4}>
           <Button
             type="link"
             size="small"
             icon={<EyeOutlined />}
             onClick={() => handleViewDetail(record)}
+            style={{ padding: '0 4px' }}
           >
             查看
           </Button>
@@ -193,6 +194,7 @@ const BreedingManagementPage = () => {
               size="small"
               icon={<HeartOutlined />}
               onClick={() => handleViewCompatibleFemales(record)}
+              style={{ padding: '0 4px' }}
             >
               配对
             </Button>
@@ -203,6 +205,7 @@ const BreedingManagementPage = () => {
             icon={<DeleteOutlined />}
             danger
             onClick={() => handleRemoveFromBreeding(record)}
+            style={{ padding: '0 4px' }}
           >
             删除
           </Button>
@@ -237,8 +240,9 @@ const BreedingManagementPage = () => {
     {
       title: '操作',
       key: 'action',
+      width: 240,
       render: (_: any, record: Parrot) => (
-        <Space size="small">
+        <Space size={4}>
           <Button
             type="link"
             size="small"
@@ -247,6 +251,7 @@ const BreedingManagementPage = () => {
               setShowFemalesModal(false);
               handleViewDetail(record);
             }}
+            style={{ padding: '0 4px' }}
           >
             查看详情
           </Button>
@@ -255,6 +260,7 @@ const BreedingManagementPage = () => {
             size="small"
             icon={<HeartOutlined />}
             onClick={() => handleConfirmPairing(record)}
+            style={{ padding: '0 4px' }}
           >
             确认配对
           </Button>

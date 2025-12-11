@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>浏览器测试</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .loading { background: #d1ecf1; color: #0c5460; }
+        .iframe-container { margin-top: 20px; }
+        iframe { width: 100%; height: 600px; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <h1>鹦鹉管理系统 - 浏览器测试</h1>
+    
+    <div id="status" class="status loading">正在检查系统状态...</div>
+    
+    <button onclick="testSystem()">重新检测系统</button>
+    
+    <div class="iframe-container">
+        <h3>系统界面预览:</h3>
+        <iframe id="system-frame" src="http://localhost:5173" frameborder="0"></iframe>
+    </div>
+    
+    <script>
+        async function testSystem() {
+            const statusEl = document.getElementById('status');
+            statusEl.className = 'status loading';
+            statusEl.textContent = '正在检测系统状态...';
+            
+            try {
+                // 检查后端
+                const backendResponse = await fetch('http://localhost:8000/health');
+                const backendData = await backendResponse.json();
+                
+                // 检查API
+                const apiResponse = await fetch('http://localhost:5173/api/parrots');
+                const apiData = await apiResponse.json();
+                
+                // 检查前端
+                const frontendResponse = await fetch('http://localhost:5173');
+                const frontendText = await frontendResponse.text();
+                
+                if (backendData.status === 'healthy' && apiData.items && frontendText.includes('app')) {
+                    statusEl.className = 'status success';
+                    statusEl.textContent = '✅ 系统运行正常！';
+                } else {
+                    statusEl.className = 'status error';
+                    statusEl.textContent = '❌ 系统部分功能异常';
+                }
+            } catch (error) {
+                statusEl.className = 'status error';
+                statusEl.textContent = '❌ 系统连接失败: ' + error.message;
+            }
+        }
+        
+        // 页面加载时自动检测
+        testSystem();
+    </script>
+</body>
+</html>
