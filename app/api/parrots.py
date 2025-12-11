@@ -1,12 +1,12 @@
 from typing import List, Optional
 from decimal import Decimal
-from datetime import date
+from datetime import date, datetime
 
 from fastapi import APIRouter, Depends, Query, HTTPException, status, File, UploadFile
 from sqlalchemy import func, or_
 from sqlalchemy.orm import Session
 
-from app.models import Parrot, Photo
+from app.models import Parrot, Photo, FollowUp
 from app.schemas import (
     ParrotCreate,
     ParrotUpdate,
@@ -14,6 +14,12 @@ from app.schemas import (
     ParrotList,
     ParrotStatusUpdate,
     ParrotPairRequest,
+    ParrotSaleUpdate,
+    SaleInfoResponse,
+    FollowUpCreate,
+    FollowUpResponse,
+    FollowUpList,
+    ParrotReturnUpdate,
 )
 from app.core import get_db, NotFoundException, BadRequestException
 
@@ -505,4 +511,258 @@ def unpair_parrot(parrot_id: int, db: Session = Depends(get_db)):
     return {
         "success": True,
         "message": "取消配对成功",
+    }
+
+
+@router.put("/{parrot_id}/sale-info", response_model=SaleInfoResponse, summary="更新鹦鹉销售信息")
+def update_parrot_sale_info(
+    parrot_id: int,
+    sale_data: ParrotSaleUpdate,
+    db: Session = Depends(get_db)
+):
+    """更新鹦鹉的销售信息"""
+    parrot = db.query(Parrot).filter(Parrot.id == parrot_id).first()
+
+    if not parrot:
+        raise NotFoundException(f"未找到ID为 {parrot_id} 的鹦鹉")
+
+    # 更新销售信息
+    parrot.seller = sale_data.seller
+    parrot.buyer_name = sale_data.buyer_name
+    parrot.sale_price = sale_data.sale_price
+    parrot.contact = sale_data.contact
+    parrot.follow_up_status = sale_data.follow_up_status
+    parrot.sale_notes = sale_data.notes
+    parrot.status = "sold"
+    parrot.sold_at = datetime.utcnow()
+
+    db.commit()
+    db.refresh(parrot)
+
+    return SaleInfoResponse(
+        seller=parrot.seller,
+        buyer_name=parrot.buyer_name,
+        sale_price=float(parrot.sale_price) if parrot.sale_price else 0,
+        contact=parrot.contact,
+        follow_up_status=parrot.follow_up_status,
+        notes=parrot.sale_notes
+    )
+
+
+@router.get("/{parrot_id}/sale-info", response_model=SaleInfoResponse, summary="获取鹦鹉销售信息")
+def get_parrot_sale_info(parrot_id: int, db: Session = Depends(get_db)):
+    """获取鹦鹉的销售信息"""
+    parrot = db.query(Parrot).filter(Parrot.id == parrot_id).first()
+
+    if not parrot:
+        raise NotFoundException(f"未找到ID为 {parrot_id} 的鹦鹉")
+
+    if parrot.status != "sold" or not parrot.seller:
+        # 如果没有销售信息，返回默认值
+        return SaleInfoResponse(
+            seller="-",
+            buyer_name="-",
+            sale_price=float(parrot.price) if parrot.price else 0,
+            contact="-",
+            follow_up_status="pending",
+            notes=None
+        )
+
+    return SaleInfoResponse(
+        seller=parrot.seller,
+        buyer_name=parrot.buyer_name,
+        sale_price=float(parrot.sale_price) if parrot.sale_price else 0,
+        contact=parrot.contact,
+        follow_up_status=parrot.follow_up_status,
+        notes=parrot.sale_notes
+    )
+
+
+@router.post("/{parrot_id}/follow-ups", response_model=FollowUpResponse, status_code=status.HTTP_201_CREATED, summary="创建回访记录")
+def create_follow_up(parrot_id: int, follow_up_data: FollowUpCreate, db: Session = Depends(get_db)):
+    """为鹦鹉创建回访记录"""
+    parrot = db.query(Parrot).filter(Parrot.id == parrot_id).first()
+
+    if not parrot:
+        raise NotFoundException(f"未找到ID为 {parrot_id} 的鹦鹉")
+
+    # 创建回访记录
+    follow_up = FollowUp(
+        parrot_id=parrot_id,
+        follow_up_status=follow_up_data.follow_up_status,
+        notes=follow_up_data.notes
+    )
+
+    db.add(follow_up)
+    db.commit()
+    db.refresh(follow_up)
+
+    # 更新鹦鹉的回访状态
+    parrot.follow_up_status = follow_up_data.follow_up_status
+    db.commit()
+
+    return FollowUpResponse(
+        id=follow_up.id,
+        parrot_id=follow_up.parrot_id,
+        follow_up_date=follow_up.follow_up_date.isoformat() if follow_up.follow_up_date else None,
+        follow_up_status=follow_up.follow_up_status,
+        notes=follow_up.notes,
+        created_at=follow_up.created_at.isoformat() if follow_up.created_at else None,
+        updated_at=follow_up.updated_at.isoformat() if follow_up.updated_at else None,
+    )
+
+
+@router.get("/{parrot_id}/follow-ups", response_model=FollowUpList, summary="获取鹦鹉的回访记录")
+def get_parrot_follow_ups(
+    parrot_id: int,
+    db: Session = Depends(get_db),
+    page: int = Query(1, ge=1, description="页码"),
+    size: int = Query(20, ge=1, le=100, description="每页数量"),
+):
+    """获取鹦鹉的所有回访记录"""
+    parrot = db.query(Parrot).filter(Parrot.id == parrot_id).first()
+
+    if not parrot:
+        raise NotFoundException(f"未找到ID为 {parrot_id} 的鹦鹉")
+
+    # 查询回访记录
+    query = db.query(FollowUp).filter(FollowUp.parrot_id == parrot_id)
+
+    total = query.count()
+
+    offset = (page - 1) * size
+    follow_ups = query.order_by(FollowUp.follow_up_date.desc()).offset(offset).limit(size).all()
+
+    items = []
+    for follow_up in follow_ups:
+        items.append(
+            FollowUpResponse(
+                id=follow_up.id,
+                parrot_id=follow_up.parrot_id,
+                follow_up_date=follow_up.follow_up_date.isoformat() if follow_up.follow_up_date else None,
+                follow_up_status=follow_up.follow_up_status,
+                notes=follow_up.notes,
+                created_at=follow_up.created_at.isoformat() if follow_up.created_at else None,
+                updated_at=follow_up.updated_at.isoformat() if follow_up.updated_at else None,
+            )
+        )
+
+    return FollowUpList(total=total, items=items, page=page, size=size)
+
+
+@router.put("/{parrot_id}/return", response_model=ParrotResponse, summary="处理退货")
+def return_parrot(parrot_id: int, return_data: ParrotReturnUpdate, db: Session = Depends(get_db)):
+    """处理鹦鹉退货"""
+    parrot = db.query(Parrot).filter(Parrot.id == parrot_id).first()
+
+    if not parrot:
+        raise NotFoundException(f"未找到ID为 {parrot_id} 的鹦鹉")
+
+    if parrot.status != "sold":
+        raise BadRequestException("只能退货已售出的鹦鹉")
+
+    # 更新鹦鹉状态为退货
+    parrot.status = "returned"
+    parrot.returned_at = datetime.utcnow()
+    parrot.return_reason = return_data.return_reason
+
+    db.commit()
+    db.refresh(parrot)
+
+    photo_count = db.query(Photo).filter(Photo.parrot_id == parrot.id).count()
+
+    # 转换datetime为字符串
+    created_at_str = parrot.created_at.isoformat() if parrot.created_at else None
+    updated_at_str = parrot.updated_at.isoformat() if parrot.updated_at else None
+
+    return ParrotResponse(
+        id=parrot.id,
+        breed=parrot.breed,
+        price=parrot.price,
+        gender=parrot.gender,
+        birth_date=parrot.birth_date,
+        ring_number=parrot.ring_number,
+        status=parrot.status,
+        health_notes=parrot.health_notes,
+        created_at=created_at_str,
+        updated_at=updated_at_str,
+        photo_count=photo_count,
+    )
+
+
+@router.get("/{parrot_id}/sales-timeline", summary="获取销售流程时间线")
+def get_sales_timeline(parrot_id: int, db: Session = Depends(get_db)):
+    """获取鹦鹉的销售流程时间线"""
+    parrot = db.query(Parrot).filter(Parrot.id == parrot_id).first()
+
+    if not parrot:
+        raise NotFoundException(f"未找到ID为 {parrot_id} 的鹦鹉")
+
+    timeline = []
+
+    # 出生信息
+    if parrot.birth_date:
+        timeline.append({
+            "event": "出生",
+            "date": parrot.birth_date.isoformat(),
+            "description": f"鹦鹉出生",
+            "type": "birth"
+        })
+
+    # 创建时间
+    if parrot.created_at:
+        timeline.append({
+            "event": "录入系统",
+            "date": parrot.created_at.isoformat(),
+            "description": f"鹦鹉信息录入系统",
+            "type": "system"
+        })
+
+    # 销售信息
+    if parrot.status == "sold" and parrot.sold_at:
+        sale_info = {
+            "event": "销售",
+            "date": parrot.sold_at.isoformat(),
+            "description": f"售卖人: {parrot.seller}, 购买者: {parrot.buyer_name}, 价格: ¥{float(parrot.sale_price) if parrot.sale_price else 0:.2f}",
+            "type": "sale",
+            "details": {
+                "seller": parrot.seller,
+                "buyer_name": parrot.buyer_name,
+                "sale_price": float(parrot.sale_price) if parrot.sale_price else 0,
+                "contact": parrot.contact,
+                "follow_up_status": parrot.follow_up_status,
+                "notes": parrot.sale_notes
+            }
+        }
+        timeline.append(sale_info)
+
+    # 退货信息
+    if parrot.status == "returned" and parrot.returned_at:
+        timeline.append({
+            "event": "退货",
+            "date": parrot.returned_at.isoformat(),
+            "description": f"退货原因: {parrot.return_reason}",
+            "type": "return"
+        })
+
+    # 回访记录
+    follow_ups = db.query(FollowUp).filter(FollowUp.parrot_id == parrot_id).order_by(FollowUp.follow_up_date).all()
+    for follow_up in follow_ups:
+        timeline.append({
+            "event": "回访",
+            "date": follow_up.follow_up_date.isoformat() if follow_up.follow_up_date else follow_up.created_at.isoformat(),
+            "description": f"回访状态: {follow_up.follow_up_status}, 备注: {follow_up.notes or '无'}",
+            "type": "follow_up",
+            "details": {
+                "follow_up_status": follow_up.follow_up_status,
+                "notes": follow_up.notes
+            }
+        })
+
+    # 按时间排序
+    timeline.sort(key=lambda x: x["date"])
+
+    return {
+        "parrot_id": parrot_id,
+        "timeline": timeline
     }

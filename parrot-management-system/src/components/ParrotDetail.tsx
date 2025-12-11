@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Descriptions, Tag, Image, Empty, Upload, Button, message } from 'antd';
+import { Descriptions, Tag, Image, Empty, Upload, Button, message, Timeline } from 'antd';
 import { UploadOutlined, CopyOutlined, DownloadOutlined, Html5Outlined, HeartOutlined } from '@ant-design/icons';
 import type { Parrot, Photo } from '../types/parrot';
 import { useParrot } from '../context/ParrotContext';
@@ -17,6 +17,9 @@ const ParrotDetail = ({ parrot }: ParrotDetailProps) => {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loadingPhotos, setLoadingPhotos] = useState(false);
   const [mateInfo, setMateInfo] = useState<any>(null);
+  const [saleInfo, setSaleInfo] = useState<any>(null);
+  const [salesTimeline, setSalesTimeline] = useState<any[]>([]);
+  const [loadingTimeline, setLoadingTimeline] = useState(false);
 
   const statusMap: Record<string, string> = {
     'available': '待售',
@@ -35,6 +38,10 @@ const ParrotDetail = ({ parrot }: ParrotDetailProps) => {
   useEffect(() => {
     fetchPhotos();
     fetchMateInfo();
+    if (parrot.status === 'sold') {
+      fetchSaleInfo();
+    }
+    fetchSalesTimeline();
   }, [parrot.id]);
 
   const fetchMateInfo = async () => {
@@ -43,6 +50,37 @@ const ParrotDetail = ({ parrot }: ParrotDetailProps) => {
       setMateInfo(response);
     } catch (error) {
       console.error('获取配偶信息失败:', error);
+    }
+  };
+
+  const fetchSaleInfo = async () => {
+    try {
+      const response = await api.get(`/parrots/${parrot.id}/sale-info`);
+      setSaleInfo(response);
+    } catch (error) {
+      console.error('获取销售信息失败:', error);
+      // 如果没有销售信息，设置默认值
+      setSaleInfo({
+        seller: '-',
+        buyer_name: '-',
+        sale_price: parrot.price,
+        contact: '-',
+        follow_up_status: 'pending',
+        notes: '-'
+      });
+    }
+  };
+
+  const fetchSalesTimeline = async () => {
+    setLoadingTimeline(true);
+    try {
+      const response: any = await api.get(`/parrots/${parrot.id}/sales-timeline`);
+      setSalesTimeline(response.timeline || []);
+    } catch (error) {
+      console.error('获取销售流程时间线失败:', error);
+      setSalesTimeline([]);
+    } finally {
+      setLoadingTimeline(false);
     }
   };
 
@@ -532,10 +570,90 @@ const ParrotDetail = ({ parrot }: ParrotDetailProps) => {
           </>
         )}
 
+        {/* 销售信息 */}
+        {parrot.status === 'sold' && saleInfo && (
+          <>
+            <Descriptions.Item label="售卖人" span={2}>
+              {saleInfo.seller || '-'}
+            </Descriptions.Item>
+            <Descriptions.Item label="购买者" span={2}>
+              {saleInfo.buyer_name || '-'}
+            </Descriptions.Item>
+            <Descriptions.Item label="出售价格">
+              ¥{Number(saleInfo.sale_price || 0).toFixed(2)}
+            </Descriptions.Item>
+            <Descriptions.Item label="联系方式">
+              {saleInfo.contact || '-'}
+            </Descriptions.Item>
+            <Descriptions.Item label="回访状态" span={2}>
+              <Tag color={
+                saleInfo.follow_up_status === 'completed' ? 'green' :
+                saleInfo.follow_up_status === 'no_contact' ? 'red' : 'blue'
+              }>
+                {saleInfo.follow_up_status === 'completed' ? '已回访' :
+                 saleInfo.follow_up_status === 'no_contact' ? '无法联系' : '待回访'}
+              </Tag>
+            </Descriptions.Item>
+            {saleInfo.notes && saleInfo.notes !== '-' && (
+              <Descriptions.Item label="备注" span={2}>
+                {saleInfo.notes}
+              </Descriptions.Item>
+            )}
+          </>
+        )}
+
         <Descriptions.Item label="健康备注" span={2}>
           {parrot.health_notes || '-'}
         </Descriptions.Item>
       </Descriptions>
+
+      {/* 销售流程时间线 */}
+      {salesTimeline.length > 0 && (
+        <div style={{ marginTop: '24px' }}>
+          <h3 style={{ margin: '0 0 16px 0' }}>销售流程</h3>
+          <Timeline
+            mode="left"
+            items={salesTimeline.map((item: any) => {
+              let color = 'blue';
+              let dot = undefined;
+
+              switch (item.type) {
+                case 'birth':
+                  color = 'cyan';
+                  break;
+                case 'system':
+                  color = 'gray';
+                  break;
+                case 'sale':
+                  color = 'green';
+                  dot = <HeartOutlined style={{ fontSize: 16 }} />;
+                  break;
+                case 'return':
+                  color = 'red';
+                  break;
+                case 'follow_up':
+                  color = 'blue';
+                  break;
+              }
+
+              return {
+                color,
+                dot,
+                children: (
+                  <div>
+                    <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
+                      {item.event} - {new Date(item.date).toLocaleString('zh-CN')}
+                    </div>
+                    <div style={{ color: '#666', fontSize: '14px' }}>
+                      {item.description}
+                    </div>
+                  </div>
+                ),
+              };
+            })}
+          />
+        </div>
+      )}
 
       <div style={{ marginTop: '24px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>

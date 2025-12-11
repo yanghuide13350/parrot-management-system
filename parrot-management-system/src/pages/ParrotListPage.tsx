@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Table, Button, Space, Card, Input, Select, Modal, message, Tag, Popconfirm, InputNumber } from 'antd';
+import { Table, Button, Space, Card, Input, Select, Modal, message, Tag, Popconfirm, InputNumber, Form } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, ShoppingCartOutlined, ArrowLeftOutlined, HeartOutlined, SearchOutlined } from '@ant-design/icons';
 import { useParrot } from '../context/ParrotContext';
 import type { Parrot } from '../types/parrot';
 import ParrotForm from '../components/ParrotForm';
 import ParrotDetail from '../components/ParrotDetail';
 import { calculateAge, calculateAgeDays } from '../utils/dateUtils';
+import { api } from '../services/api';
 
 const { Search } = Input;
 const { Option } = Select;
@@ -37,6 +38,15 @@ const ParrotListPage = () => {
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [isDetailVisible, setIsDetailVisible] = useState(false);
   const [editingParrot, setEditingParrot] = useState<Parrot | null>(null);
+  const [isSaleModalVisible, setIsSaleModalVisible] = useState(false);
+  const [saleParrot, setSaleParrot] = useState<Parrot | null>(null);
+  const [saleForm] = Form.useForm();
+  const [isFollowUpModalVisible, setIsFollowUpModalVisible] = useState(false);
+  const [isReturnModalVisible, setIsReturnModalVisible] = useState(false);
+  const [followUpParrot, setFollowUpParrot] = useState<Parrot | null>(null);
+  const [returnParrot, setReturnParrot] = useState<Parrot | null>(null);
+  const [followUpForm] = Form.useForm();
+  const [returnForm] = Form.useForm();
 
   // 价格区间筛选状态
   const [priceRange, setPriceRange] = useState<{ min?: number; max?: number }>({});
@@ -102,10 +112,72 @@ const ParrotListPage = () => {
     }
   };
 
-  const handleSellParrot = async (id: number) => {
+  const handleSellParrot = (parrot: Parrot) => {
+    setSaleParrot(parrot);
+    setIsSaleModalVisible(true);
+  };
+
+  const handleSaleSubmit = async (values: any) => {
     try {
-      await updateStatus(id, 'sold');
-      message.success('标记售出成功');
+      if (saleParrot) {
+        // 调用API保存销售信息
+        await api.put(`/parrots/${saleParrot.id}/sale-info`, {
+          seller: values.seller,
+          buyer_name: values.buyerName,
+          sale_price: values.salePrice,
+          contact: values.contact,
+          follow_up_status: values.followUpStatus || 'pending',
+          notes: values.notes
+        });
+        message.success('销售信息保存成功');
+        setIsSaleModalVisible(false);
+        saleForm.resetFields();
+        fetchParrots(); // 重新加载数据
+      }
+    } catch (error) {
+      message.error('操作失败');
+    }
+  };
+
+  const handleFollowUp = (parrot: Parrot) => {
+    setFollowUpParrot(parrot);
+    setIsFollowUpModalVisible(true);
+  };
+
+  const handleFollowUpSubmit = async (values: any) => {
+    try {
+      if (followUpParrot) {
+        await api.post(`/parrots/${followUpParrot.id}/follow-ups`, {
+          parrot_id: followUpParrot.id,
+          follow_up_status: values.followUpStatus,
+          notes: values.notes
+        });
+        message.success('回访信息保存成功');
+        setIsFollowUpModalVisible(false);
+        followUpForm.resetFields();
+        fetchParrots();
+      }
+    } catch (error) {
+      message.error('操作失败');
+    }
+  };
+
+  const handleReturnParrot = (parrot: Parrot) => {
+    setReturnParrot(parrot);
+    setIsReturnModalVisible(true);
+  };
+
+  const handleReturnSubmit = async (values: any) => {
+    try {
+      if (returnParrot) {
+        await api.put(`/parrots/${returnParrot.id}/return`, {
+          return_reason: values.returnReason
+        });
+        message.success('退货处理成功');
+        setIsReturnModalVisible(false);
+        returnForm.resetFields();
+        fetchParrots();
+      }
     } catch (error) {
       message.error('操作失败');
     }
@@ -349,49 +421,83 @@ const ParrotListPage = () => {
           >
             查看
           </Button>
-          <Button
-            type="link"
-            size="small"
-            icon={<EditOutlined />}
-            onClick={() => handleEditParrot(record)}
-            style={{ padding: '0 4px' }}
-          >
-            编辑
-          </Button>
           {record.status === 'available' && (
             <>
-              <Popconfirm
-                title="确认售出"
-                description="确定要将此鹦鹉标记为已售吗？"
-                onConfirm={() => handleSellParrot(record.id)}
-                okText="确认"
-                cancelText="取消"
+              <Button
+                type="link"
+                size="small"
+                icon={<EditOutlined />}
+                onClick={() => handleEditParrot(record)}
+                style={{ padding: '0 4px' }}
               >
-                <Button type="link" size="small" icon={<ShoppingCartOutlined />} style={{ padding: '0 4px' }}>
-                  售出
-                </Button>
-              </Popconfirm>
+                编辑
+              </Button>
+              <Button type="link" size="small" icon={<ShoppingCartOutlined />} onClick={() => handleSellParrot(record)} style={{ padding: '0 4px' }}>
+                售出
+              </Button>
               <Button type="link" size="small" icon={<HeartOutlined />} onClick={() => handleSetAsBreeding(record)} style={{ padding: '0 4px' }}>
                 种鸟
               </Button>
+              <Popconfirm
+                title="确认删除"
+                description="确定要删除这只鹦鹉吗？此操作不可恢复。"
+                onConfirm={() => handleDeleteParrot(record.id)}
+                okText="确认"
+                cancelText="取消"
+              >
+                <Button type="link" size="small" danger icon={<DeleteOutlined />} style={{ padding: '0 4px' }}>
+                  删除
+                </Button>
+              </Popconfirm>
             </>
           )}
           {record.status === 'breeding' && (
-            <Button type="link" size="small" disabled title="种鸟不能售卖" style={{ padding: '0 4px' }}>
-              种鸟
-            </Button>
+            <>
+              <Button
+                type="link"
+                size="small"
+                icon={<EditOutlined />}
+                onClick={() => handleEditParrot(record)}
+                style={{ padding: '0 4px' }}
+              >
+                编辑
+              </Button>
+              <Button type="link" size="small" disabled title="种鸟不能售卖" style={{ padding: '0 4px' }}>
+                售出
+              </Button>
+              <Popconfirm
+                title="确认删除"
+                description="确定要删除这只鹦鹉吗？此操作不可恢复。"
+                onConfirm={() => handleDeleteParrot(record.id)}
+                okText="确认"
+                cancelText="取消"
+              >
+                <Button type="link" size="small" danger icon={<DeleteOutlined />} style={{ padding: '0 4px' }}>
+                  删除
+                </Button>
+              </Popconfirm>
+            </>
           )}
-          <Popconfirm
-            title="确认删除"
-            description="确定要删除这只鹦鹉吗？此操作不可恢复。"
-            onConfirm={() => handleDeleteParrot(record.id)}
-            okText="确认"
-            cancelText="取消"
-          >
-            <Button type="link" size="small" danger icon={<DeleteOutlined />} style={{ padding: '0 4px' }}>
-              删除
-            </Button>
-          </Popconfirm>
+          {record.status === 'sold' && (
+            <>
+              <Button type="link" size="small" onClick={() => handleFollowUp(record)} style={{ padding: '0 4px' }}>
+                回访
+              </Button>
+              <Button type="link" size="small" danger onClick={() => handleReturnParrot(record)} style={{ padding: '0 4px' }}>
+                退回
+              </Button>
+            </>
+          )}
+          {record.status === 'returned' && (
+            <>
+              <Button type="link" size="small" icon={<EditOutlined />} onClick={() => handleEditParrot(record)} style={{ padding: '0 4px' }}>
+                编辑
+              </Button>
+              <Button type="link" size="small" icon={<ShoppingCartOutlined />} onClick={() => handleSellParrot(record)} style={{ padding: '0 4px' }}>
+                重新售出
+              </Button>
+            </>
+          )}
         </Space>
       ),
     },
@@ -544,6 +650,145 @@ const ParrotListPage = () => {
         destroyOnClose
       >
         {selectedParrot && <ParrotDetail parrot={selectedParrot} />}
+      </Modal>
+
+      <Modal
+        title="销售信息"
+        open={isSaleModalVisible}
+        onCancel={() => {
+          setIsSaleModalVisible(false);
+          saleForm.resetFields();
+        }}
+        onOk={() => saleForm.submit()}
+        okText="确认销售"
+        cancelText="取消"
+      >
+        <Form
+          form={saleForm}
+          layout="vertical"
+          onFinish={handleSaleSubmit}
+        >
+          <Form.Item
+            label="售卖人"
+            name="seller"
+            rules={[{ required: true, message: '请选择售卖人' }]}
+          >
+            <Select placeholder="请选择售卖人">
+              <Option value="杨慧德">杨慧德</Option>
+              <Option value="杨慧艳">杨慧艳</Option>
+              <Option value="贾号号">贾号号</Option>
+            </Select>
+          </Form.Item>
+          <Form.Item
+            label="购买者姓名"
+            name="buyerName"
+            rules={[{ required: true, message: '请输入购买者姓名' }]}
+          >
+            <Input placeholder="请输入购买者姓名" />
+          </Form.Item>
+          <Form.Item
+            label="出售价格"
+            name="salePrice"
+            rules={[{ required: true, message: '请输入出售价格' }]}
+          >
+            <InputNumber
+              style={{ width: '100%' }}
+              placeholder="请输入出售价格"
+              min={0}
+              precision={2}
+              addonBefore="¥"
+            />
+          </Form.Item>
+          <Form.Item
+            label="联系方式"
+            name="contact"
+            rules={[
+              { required: true, message: '请输入联系方式' },
+              { min: 6, message: '联系方式至少6位' }
+            ]}
+          >
+            <Input placeholder="请输入微信号或电话号码" />
+          </Form.Item>
+          <Form.Item
+            label="回访状态"
+            name="followUpStatus"
+            initialValue="pending"
+          >
+            <Select placeholder="请选择回访状态">
+              <Option value="pending">待回访</Option>
+              <Option value="completed">已回访</Option>
+              <Option value="no_contact">无法联系</Option>
+            </Select>
+          </Form.Item>
+          <Form.Item
+            label="备注"
+            name="notes"
+          >
+            <Input.TextArea rows={3} placeholder="请输入备注信息" />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      <Modal
+        title="回访信息"
+        open={isFollowUpModalVisible}
+        onCancel={() => {
+          setIsFollowUpModalVisible(false);
+          followUpForm.resetFields();
+        }}
+        onOk={() => followUpForm.submit()}
+        okText="保存"
+        cancelText="取消"
+      >
+        <Form
+          form={followUpForm}
+          layout="vertical"
+          onFinish={handleFollowUpSubmit}
+        >
+          <Form.Item
+            label="回访状态"
+            name="followUpStatus"
+            rules={[{ required: true, message: '请选择回访状态' }]}
+          >
+            <Select placeholder="请选择回访状态">
+              <Option value="pending">待回访</Option>
+              <Option value="completed">已回访</Option>
+              <Option value="no_contact">无法联系</Option>
+            </Select>
+          </Form.Item>
+          <Form.Item
+            label="回访备注"
+            name="notes"
+          >
+            <Input.TextArea rows={4} placeholder="请输入回访情况备注" />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      <Modal
+        title="退货处理"
+        open={isReturnModalVisible}
+        onCancel={() => {
+          setIsReturnModalVisible(false);
+          returnForm.resetFields();
+        }}
+        onOk={() => returnForm.submit()}
+        okText="确认退货"
+        cancelText="取消"
+      >
+        <Form
+          form={returnForm}
+          layout="vertical"
+          onFinish={handleReturnSubmit}
+        >
+          <Form.Item
+            label="退货原因"
+            name="returnReason"
+            rules={[{ required: true, message: '请输入退货原因' }]}
+          >
+            <Input.TextArea rows={4} placeholder="请输入退货原因（客户不满意、健康问题等）" />
+          </Form.Item>
+        </Form>
       </Modal>
     </div>
   );

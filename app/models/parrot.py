@@ -27,8 +27,18 @@ class Parrot(Base):
     mate_id = Column(Integer, ForeignKey("parrots.id"), nullable=True, comment="配偶ID")
     paired_at = Column(DateTime, nullable=True, comment="配对时间")
 
+    # 销售信息字段
+    seller = Column(String(100), nullable=True, comment="售卖人")
+    buyer_name = Column(String(100), nullable=True, comment="购买者姓名")
+    sale_price = Column(Numeric(precision=10, scale=2), nullable=True, comment="实际销售价格")
+    contact = Column(String(100), nullable=True, comment="联系方式（微信号或电话）")
+    follow_up_status = Column(String(20), default="pending", comment="回访状态: pending/completed/no_contact")
+    sale_notes = Column(Text, nullable=True, comment="销售备注")
+
     # 关联照片
     photos = relationship("Photo", back_populates="parrot", cascade="all, delete-orphan")
     # 自引用关系，用于配对
     mate = relationship("Parrot", foreign_keys=[mate_id], remote_side=[id], back_populates="paired_parrots")
     paired_parrots = relationship("Parrot", foreign_keys=[mate_id], back_populates="mate")
+    # 关联回访记录
+    follow_ups = relationship("FollowUp", back_populates="parrot", cascade="all, delete-orphan")

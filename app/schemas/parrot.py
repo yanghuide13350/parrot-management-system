@@ -46,6 +46,29 @@ class ParrotStatusUpdate(BaseModel):
     status: str = Field(..., pattern="^(available|sold|returned|breeding)$", description="状态: available/sold/returned/breeding")
 
 
+class ParrotSaleUpdate(BaseModel):
+    """鹦鹉销售信息更新请求"""
+    seller: str = Field(..., min_length=1, max_length=100, description="售卖人")
+    buyer_name: str = Field(..., min_length=1, max_length=100, description="购买者姓名")
+    sale_price: Decimal = Field(..., ge=0, description="销售价格")
+    contact: str = Field(..., min_length=6, max_length=100, description="联系方式（微信号或电话）")
+    follow_up_status: str = Field(default="pending", pattern="^(pending|completed|no_contact)$", description="回访状态")
+    notes: Optional[str] = Field(None, description="备注")
+
+
+class SaleInfoResponse(BaseModel):
+    """销售信息响应"""
+    seller: str
+    buyer_name: str
+    sale_price: float
+    contact: str
+    follow_up_status: str
+    notes: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
 class ParrotPairRequest(BaseModel):
     """配对请求"""
     male_id: int = Field(..., description="公鹦鹉ID")
@@ -88,3 +111,37 @@ class ParrotList(BaseModel):
     items: List[ParrotResponse]
     page: int
     size: int
+
+
+class FollowUpCreate(BaseModel):
+    """创建回访记录请求"""
+    parrot_id: int = Field(..., description="鹦鹉ID")
+    follow_up_status: str = Field(..., pattern="^(pending|completed|no_contact)$", description="回访状态")
+    notes: Optional[str] = Field(None, description="回访备注")
+
+
+class FollowUpResponse(BaseModel):
+    """回访记录响应"""
+    id: int
+    parrot_id: int
+    follow_up_date: str
+    follow_up_status: str
+    notes: Optional[str] = None
+    created_at: str
+    updated_at: str
+
+    class Config:
+        from_attributes = True
+
+
+class FollowUpList(BaseModel):
+    """回访记录列表响应"""
+    total: int
+    items: List[FollowUpResponse]
+    page: int
+    size: int
+
+
+class ParrotReturnUpdate(BaseModel):
+    """鹦鹉退货请求"""
+    return_reason: str = Field(..., min_length=1, max_length=500, description="退货原因")
