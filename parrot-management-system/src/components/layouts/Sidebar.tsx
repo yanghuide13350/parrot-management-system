@@ -42,12 +42,6 @@ const menuItems: MenuItem[] = [
         icon: <StarOutlined />,
         path: '/parrots/list',
       },
-      {
-        key: 'parrot-add',
-        label: '添加鹦鹉',
-        icon: <StarOutlined />,
-        path: '/parrots/add',
-      },
     ],
   },
   {
@@ -137,7 +131,6 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
     const path = location.pathname;
     if (path === '/dashboard') return ['dashboard'];
     if (path.startsWith('/parrots')) {
-      if (path === '/parrots/add') return ['parrot-add'];
       return ['parrot-list'];
     }
     if (path.startsWith('/breeding')) return ['breeding'];

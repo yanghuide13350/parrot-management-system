@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Table, Button, Space, Card, Input, Select, Modal, message, Tag, Popconfirm, InputNumber, Form } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, ShoppingCartOutlined, ArrowLeftOutlined, HeartOutlined, SearchOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, EyeOutlined, ShoppingCartOutlined, ArrowLeftOutlined, HeartOutlined, SearchOutlined } from '@ant-design/icons';
 import { useParrot } from '../context/ParrotContext';
 import type { Parrot } from '../types/parrot';
 import ParrotForm from '../components/ParrotForm';
@@ -95,11 +95,6 @@ const ParrotListPage = () => {
     fetchParrots();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, pageSize, filters]);
-
-  const handleAddParrot = () => {
-    setEditingParrot(null);
-    setIsFormVisible(true);
-  };
 
   const handleEditParrot = (parrot: Parrot) => {
     setEditingParrot(parrot);
@@ -583,9 +578,6 @@ const ParrotListPage = () => {
               </Button>
               <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 600 }}>鹦鹉列表</h2>
             </Space>
-            <Button type="primary" icon={<PlusOutlined />} onClick={handleAddParrot} size="large">
-              添加鹦鹉
-            </Button>
           </div>
 
           <Space size="middle" wrap>

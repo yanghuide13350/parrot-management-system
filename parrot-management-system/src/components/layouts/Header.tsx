@@ -12,10 +12,9 @@ const { Header: AntHeader } = Layout;
 interface HeaderProps {
   collapsed: boolean;
   onCollapse: () => void;
-  currentPath: string;
 }
 
-const Header: React.FC<HeaderProps> = ({ collapsed, onCollapse, currentPath }) => {
+const Header: React.FC<HeaderProps> = ({ collapsed, onCollapse }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -25,7 +24,6 @@ const Header: React.FC<HeaderProps> = ({ collapsed, onCollapse, currentPath }) =
       dashboard: '仪表板',
       parrots: '鹦鹉管理',
       list: '鹦鹉列表',
-      add: '添加鹦鹉',
       breeding: '繁殖管理',
       'breeding-birds': '种鸟管理',
       incubation: '孵化管理',
