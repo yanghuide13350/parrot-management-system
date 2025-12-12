@@ -17,6 +17,7 @@
     "vite": "^7.2.2"
   },
   "dependencies": {
+    "@ant-design/charts": "^2.6.6",
     "@tailwindcss/postcss": "^4.1.17",
     "@types/react": "^19.2.6",
     "@types/react-dom": "^19.2.3",

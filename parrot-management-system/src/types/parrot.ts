@@ -89,3 +89,16 @@ export interface Statistics {
   breed_counts: Record<string, number>;
   total_revenue: number;
 }
+
+// 月度销售数据
+export interface MonthlySalesData {
+  month: string;      // 格式: YYYY-MM
+  month_name: string; // 格式: 1月
+  count: number;      // 销售数量
+  revenue: number;    // 销售额
+}
+
+// 月度销售统计响应
+export interface MonthlySales {
+  monthly_sales: MonthlySalesData[];
+}

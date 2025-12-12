@@ -74,13 +74,22 @@ const ParrotListPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // 组件挂载时执行一次
 
-  // 监听路由变化，当进入鹦鹉列表页面时重置筛选条件
+  // 监听路由变化，当进入鹦鹉列表页面时检查是否有从Dashboard传来的筛选条件
   useEffect(() => {
     if (location.pathname === '/parrots') {
-      clearFilters();
+      // 检查是否有从Dashboard传来的筛选条件
+      const stateFilters = (location.state as any)?.filters;
+      // 检查是否有实际的筛选条件（非空对象）
+      if (stateFilters && Object.keys(stateFilters).length > 0) {
+        // 应用从Dashboard传来的筛选条件
+        updateFilters(stateFilters);
+      } else {
+        // 没有传入筛选条件或空对象时清除所有筛选
+        clearFilters();
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.pathname]); // 路由变化时执行
+  }, [location.pathname, location.state]); // 路由变化时执行
 
   useEffect(() => {
     fetchParrots();
@@ -541,6 +550,7 @@ const ParrotListPage = () => {
               style={{ width: 150 }}
               onChange={handleBreedFilter}
               allowClear
+              value={filters.breed || undefined}
             >
               {breeds.map((breed) => (
                 <Option key={breed.name} value={breed.name}>
@@ -553,6 +563,7 @@ const ParrotListPage = () => {
               style={{ width: 120 }}
               onChange={handleGenderFilter}
               allowClear
+              value={filters.gender || undefined}
             >
               <Option value="公">公</Option>
               <Option value="母">母</Option>
@@ -563,6 +574,7 @@ const ParrotListPage = () => {
               style={{ width: 120 }}
               onChange={handleStatusFilter}
               allowClear
+              value={filters.status || undefined}
             >
               <Option value="available">待售</Option>
               <Option value="sold">已售</Option>
