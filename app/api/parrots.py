@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, Query, HTTPException, status, File, Uplo
 from sqlalchemy import func, or_
 from sqlalchemy.orm import Session
 
-from app.models import Parrot, Photo, FollowUp
+from app.models import Parrot, Photo, FollowUp, SalesHistory
 from app.schemas import (
     ParrotCreate,
     ParrotUpdate,
@@ -557,8 +557,9 @@ def get_parrot_sale_info(parrot_id: int, db: Session = Depends(get_db)):
     if not parrot:
         raise NotFoundException(f"未找到ID为 {parrot_id} 的鹦鹉")
 
-    if parrot.status != "sold" or not parrot.seller:
-        # 如果没有销售信息，返回默认值
+    # 检查是否有销售记录（sold状态或returned状态但有sold_at记录）
+    if not parrot.sold_at:
+        # 如果没有销售记录，返回默认值
         return SaleInfoResponse(
             seller="-",
             buyer_name="-",
@@ -569,10 +570,10 @@ def get_parrot_sale_info(parrot_id: int, db: Session = Depends(get_db)):
         )
 
     return SaleInfoResponse(
-        seller=parrot.seller,
-        buyer_name=parrot.buyer_name,
+        seller=parrot.seller or "未知",
+        buyer_name=parrot.buyer_name or "未知",
         sale_price=float(parrot.sale_price) if parrot.sale_price else 0,
-        contact=parrot.contact,
+        contact=parrot.contact or "未知",
         follow_up_status=parrot.follow_up_status,
         notes=parrot.sale_notes
     )
@@ -661,18 +662,36 @@ def return_parrot(parrot_id: int, return_data: ParrotReturnUpdate, db: Session =
     if parrot.status != "sold":
         raise BadRequestException("只能退货已售出的鹦鹉")
 
+    # 如果有销售记录，将其保存到历史表
+    if parrot.sold_at and parrot.seller:
+        sales_history = SalesHistory(
+            parrot_id=parrot_id,
+            seller=parrot.seller,
+            buyer_name=parrot.buyer_name,
+            sale_price=parrot.sale_price,
+            contact=parrot.contact,
+            follow_up_status=parrot.follow_up_status,
+            sale_notes=parrot.sale_notes,
+            sale_date=parrot.sold_at,
+            return_date=datetime.utcnow(),
+            return_reason=return_data.return_reason
+        )
+        db.add(sales_history)
+
     # 记录退货信息
     parrot.returned_at = datetime.utcnow()
     parrot.return_reason = return_data.return_reason
 
-    # 清除当前销售相关信息（但保留sold_at用于时间线显示）
+    # 清除当前销售信息（因为已保存到历史表）
     parrot.seller = None
     parrot.buyer_name = None
     parrot.sale_price = None
     parrot.contact = None
-    parrot.follow_up_status = "pending"
     parrot.sale_notes = None
-    # 保留sold_at字段用于时间线显示销售记录
+    parrot.sold_at = None
+
+    # 只重置回访状态
+    parrot.follow_up_status = "pending"
 
     # 退货后状态变为待售（重新上架）
     parrot.status = "available"
@@ -738,32 +757,60 @@ def get_sales_timeline(parrot_id: int, db: Session = Depends(get_db)):
             "type": "system"
         })
 
-    # 3. 销售信息（检查是否有销售记录，即使当前状态不是sold）
-    if parrot.sold_at:
-        # 如果当前字段被清除（退货后），尝试从回访记录中推断销售信息
-        seller = parrot.seller or "未知"
-        buyer_name = parrot.buyer_name or "未知"
-        sale_price = float(parrot.sale_price) if parrot.sale_price else 0
-        contact = parrot.contact or "未知"
+    # 3. 销售历史记录
+    sales_history = db.query(SalesHistory).filter(SalesHistory.parrot_id == parrot_id).order_by(SalesHistory.sale_date).all()
+    for history in sales_history:
+        sale_price = float(history.sale_price) if history.sale_price else 0
 
-        sale_info = {
-            "event": "销售",
-            "date": parrot.sold_at.isoformat(),
-            "description": f"售卖人: {seller}, 购买者: {buyer_name}, 价格: ¥{sale_price:.2f}",
+        timeline.append({
+            "event": f"第{len([h for h in sales_history if h.sale_date <= history.sale_date])}次销售",
+            "date": history.sale_date.isoformat(),
+            "description": f"售卖人: {history.seller}, 购买者: {history.buyer_name}, 价格: ¥{sale_price:.2f}",
             "type": "sale",
             "details": {
-                "seller": seller,
-                "buyer_name": buyer_name,
+                "seller": history.seller,
+                "buyer_name": history.buyer_name,
                 "sale_price": sale_price,
-                "contact": contact,
+                "contact": history.contact,
+                "follow_up_status": history.follow_up_status,
+                "notes": history.sale_notes
+            }
+        })
+
+        # 如果该次销售有退货，添加退货记录
+        if history.return_date:
+            timeline.append({
+                "event": "退货",
+                "date": history.return_date.isoformat(),
+                "description": f"退货原因: {history.return_reason}",
+                "type": "return"
+            })
+
+    # 4. 当前销售信息（如果还在销售中）
+    if parrot.sold_at:
+        sale_price = float(parrot.sale_price) if parrot.sale_price else 0
+
+        # 计算这是第几次销售
+        sales_count = len(sales_history) + 1
+
+        timeline.append({
+            "event": f"第{sales_count}次销售",
+            "date": parrot.sold_at.isoformat(),
+            "description": f"售卖人: {parrot.seller}, 购买者: {parrot.buyer_name}, 价格: ¥{sale_price:.2f}",
+            "type": "sale",
+            "details": {
+                "seller": parrot.seller,
+                "buyer_name": parrot.buyer_name,
+                "sale_price": sale_price,
+                "contact": parrot.contact,
                 "follow_up_status": parrot.follow_up_status,
                 "notes": parrot.sale_notes
             }
-        }
-        timeline.append(sale_info)
+        })
 
-    # 4. 退货信息（检查是否有退货记录）
-    if parrot.returned_at:
+    # 5. 当前退货信息（如果刚退货但还没重新销售，且没有历史记录）
+    # 注意：如果有销售历史记录，退货信息已经在历史记录中显示了
+    if parrot.returned_at and not parrot.sold_at and not sales_history:
         timeline.append({
             "event": "退货",
             "date": parrot.returned_at.isoformat(),
@@ -771,16 +818,24 @@ def get_sales_timeline(parrot_id: int, db: Session = Depends(get_db)):
             "type": "return"
         })
 
-    # 5. 回访记录（按时间顺序）
+    # 6. 回访记录（按时间顺序）
     follow_ups = db.query(FollowUp).filter(FollowUp.parrot_id == parrot_id).order_by(FollowUp.follow_up_date).all()
     for follow_up in follow_ups:
+        # 将回访状态转换为中文
+        status_map = {
+            "pending": "待回访",
+            "completed": "已回访",
+            "no_contact": "无法联系"
+        }
+        status_text = status_map.get(follow_up.follow_up_status, follow_up.follow_up_status)
+
         timeline.append({
             "event": "回访",
             "date": follow_up.follow_up_date.isoformat() if follow_up.follow_up_date else follow_up.created_at.isoformat(),
-            "description": f"回访状态: {follow_up.follow_up_status}, 备注: {follow_up.notes or '无'}",
+            "description": f"回访状态: {status_text}, 备注: {follow_up.notes or '无'}",
             "type": "follow_up",
             "details": {
-                "follow_up_status": follow_up.follow_up_status,
+                "follow_up_status": status_text,  # 存储中文状态
                 "notes": follow_up.notes
             }
         })

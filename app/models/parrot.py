@@ -42,3 +42,5 @@ class Parrot(Base):
     paired_parrots = relationship("Parrot", foreign_keys=[mate_id], back_populates="mate")
     # 关联回访记录
     follow_ups = relationship("FollowUp", back_populates="parrot", cascade="all, delete-orphan")
+    # 关联销售历史记录
+    sales_history = relationship("SalesHistory", back_populates="parrot", cascade="all, delete-orphan")

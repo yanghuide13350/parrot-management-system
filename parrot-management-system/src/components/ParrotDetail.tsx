@@ -38,7 +38,7 @@ const ParrotDetail = ({ parrot }: ParrotDetailProps) => {
   useEffect(() => {
     fetchPhotos();
     fetchMateInfo();
-    if (parrot.status === 'sold') {
+    if (parrot.status === 'sold' || parrot.status === 'returned') {
       fetchSaleInfo();
     }
     fetchSalesTimeline();
@@ -571,7 +571,7 @@ const ParrotDetail = ({ parrot }: ParrotDetailProps) => {
         )}
 
         {/* 销售信息 */}
-        {parrot.status === 'sold' && saleInfo && (
+        {(parrot.status === 'sold' || parrot.status === 'returned') && saleInfo && (
           <>
             <Descriptions.Item label="售卖人" span={2}>
               {saleInfo.seller || '-'}
@@ -652,6 +652,31 @@ const ParrotDetail = ({ parrot }: ParrotDetailProps) => {
                   break;
               }
 
+              // 将回访状态转换为中文
+              let description = item.description;
+              if (item.type === 'follow_up' && item.details) {
+                const statusMap: Record<string, string> = {
+                  'pending': '待回访',
+                  'completed': '已回访',
+                  'no_contact': '无法联系'
+                };
+                const statusText = statusMap[item.details.follow_up_status] || item.details.follow_up_status;
+                description = `回访状态: ${statusText}, 备注: ${item.details.notes || '无'}`;
+              } else if (item.type === 'follow_up') {
+                // 如果没有details，从description中提取状态
+                const statusMap: Record<string, string> = {
+                  'pending': '待回访',
+                  'completed': '已回访',
+                  'no_contact': '无法联系'
+                };
+                // 尝试从description中提取英文状态并转换为中文
+                Object.keys(statusMap).forEach(enStatus => {
+                  if (item.description.includes(enStatus)) {
+                    description = item.description.replace(enStatus, statusMap[enStatus]);
+                  }
+                });
+              }
+
               return {
                 color,
                 dot,
@@ -661,7 +686,7 @@ const ParrotDetail = ({ parrot }: ParrotDetailProps) => {
                       {item.event} - {item.date ? new Date(item.date).toLocaleString('zh-CN') : '未知'}
                     </div>
                     <div style={{ color: '#666', fontSize: '14px' }}>
-                      {item.description}
+                      {description}
                     </div>
                   </div>
                 ),
