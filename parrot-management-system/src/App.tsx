@@ -9,7 +9,7 @@ import './index.css';
 // 加载中组件
 const Loading = () => (
   <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-    <Spin size="large" tip="加载中..." />
+    <Spin size="large" />
   </div>
 );
 

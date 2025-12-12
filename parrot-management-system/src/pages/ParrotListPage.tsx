@@ -9,7 +9,6 @@ import ParrotDetail from '../components/ParrotDetail';
 import { calculateAge, calculateAgeDays } from '../utils/dateUtils';
 import { api } from '../services/api';
 
-const { Search } = Input;
 const { Option } = Select;
 
 const ParrotListPage = () => {
@@ -531,7 +530,7 @@ const ParrotListPage = () => {
           </div>
 
           <Space size="middle" wrap>
-            <Search
+            <Input.Search
               placeholder="搜索品种或圈号"
               onSearch={handleSearch}
               style={{ width: 250 }}
@@ -629,7 +628,7 @@ const ParrotListPage = () => {
         onCancel={() => setIsFormVisible(false)}
         footer={null}
         width={800}
-        destroyOnClose
+        destroyOnHidden
       >
         <ParrotForm
           parrot={editingParrot}
@@ -647,7 +646,7 @@ const ParrotListPage = () => {
         onCancel={() => setIsDetailVisible(false)}
         footer={null}
         width={900}
-        destroyOnClose
+        destroyOnHidden
       >
         {selectedParrot && <ParrotDetail parrot={selectedParrot} />}
       </Modal>
@@ -691,13 +690,28 @@ const ParrotListPage = () => {
             name="salePrice"
             rules={[{ required: true, message: '请输入出售价格' }]}
           >
-            <InputNumber
-              style={{ width: '100%' }}
-              placeholder="请输入出售价格"
-              min={0}
-              precision={2}
-              addonBefore="¥"
-            />
+            <Space.Compact style={{ width: '100%' }}>
+              <div style={{
+                width: '60px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: '#f5f5f5',
+                border: '1px solid #d9d9d9',
+                borderRight: 'none',
+                borderRadius: '6px 0 0 6px',
+                fontSize: '14px',
+                color: '#666'
+              }}>
+                ¥
+              </div>
+              <InputNumber
+                style={{ width: 'calc(100% - 60px)' }}
+                placeholder="请输入出售价格"
+                min={0}
+                precision={2}
+              />
+            </Space.Compact>
           </Form.Item>
           <Form.Item
             label="联系方式"

@@ -334,7 +334,7 @@ const BreedingManagementPage = () => {
         onCancel={() => setIsDetailVisible(false)}
         footer={null}
         width={900}
-        destroyOnClose
+        destroyOnHidden
       >
         {selectedParrot && <ParrotDetail parrot={selectedParrot} />}
       </Modal>
@@ -346,7 +346,7 @@ const BreedingManagementPage = () => {
         onCancel={() => setShowFemalesModal(false)}
         footer={null}
         width={800}
-        destroyOnClose
+        destroyOnHidden
       >
         {compatibleFemales.length > 0 ? (
           <>

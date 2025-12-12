@@ -2,7 +2,7 @@ from typing import List, Optional
 from decimal import Decimal
 from datetime import date, datetime
 
-from fastapi import APIRouter, Depends, Query, HTTPException, status, File, UploadFile
+from fastapi import APIRouter, Depends, Query, HTTPException, status, File, UploadFile, Form
 from sqlalchemy import func, or_
 from sqlalchemy.orm import Session
 
@@ -20,8 +20,10 @@ from app.schemas import (
     FollowUpResponse,
     FollowUpList,
     ParrotReturnUpdate,
+    PhotoResponse,
 )
 from app.core import get_db, NotFoundException, BadRequestException
+from app.utils import FileUploadUtil
 
 from sqlalchemy.exc import IntegrityError
 
@@ -847,3 +849,68 @@ def get_sales_timeline(parrot_id: int, db: Session = Depends(get_db)):
         "parrot_id": parrot_id,
         "timeline": timeline
     }
+
+
+@router.get("/{parrot_id}/photos", response_model=List[PhotoResponse], summary="获取鹦鹉照片列表")
+def get_parrot_photos(parrot_id: int, db: Session = Depends(get_db)):
+    """
+    获取指定鹦鹉的所有照片
+    """
+    photos = db.query(Photo).filter(Photo.parrot_id == parrot_id).order_by(Photo.sort_order.desc(), Photo.created_at.desc()).all()
+
+    return [
+        PhotoResponse(
+            id=photo.id,
+            parrot_id=photo.parrot_id,
+            file_path=photo.file_path,
+            file_name=photo.file_name,
+            sort_order=photo.sort_order,
+            created_at=photo.created_at.isoformat(),
+        )
+        for photo in photos
+    ]
+
+
+@router.post("/{parrot_id}/photos", response_model=PhotoResponse, status_code=status.HTTP_201_CREATED, summary="上传鹦鹉照片")
+async def upload_parrot_photo(
+    parrot_id: int,
+    file: UploadFile = File(...),
+    sort_order: Optional[int] = Form(0),
+    db: Session = Depends(get_db),
+):
+    """
+    为指定鹦鹉上传照片
+
+    Args:
+        parrot_id: 鹦鹉ID
+        file: 上传的文件
+        sort_order: 排序权重
+    """
+    parrot = db.query(Parrot).filter(Parrot.id == parrot_id).first()
+    if not parrot:
+        raise NotFoundException(f"未找到ID为 {parrot_id} 的鹦鹉")
+
+    if not file:
+        raise BadRequestException("请选择要上传的文件")
+
+    file_path, original_filename = await FileUploadUtil.upload_photo(file, subfolder="parrots")
+
+    photo = Photo(
+        parrot_id=parrot_id,
+        file_path=file_path,
+        file_name=original_filename,
+        sort_order=sort_order,
+    )
+
+    db.add(photo)
+    db.commit()
+    db.refresh(photo)
+
+    return PhotoResponse(
+        id=photo.id,
+        parrot_id=photo.parrot_id,
+        file_path=photo.file_path,
+        file_name=photo.file_name,
+        sort_order=photo.sort_order,
+        created_at=photo.created_at.isoformat(),
+    )
