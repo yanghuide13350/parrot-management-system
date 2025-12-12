@@ -5,10 +5,8 @@ import {
   CheckCircleOutlined,
   CloseCircleOutlined,
   DollarOutlined,
-  TrophyOutlined,
   RiseOutlined,
-  FallOutlined,
-  FireOutlined
+  FallOutlined
 } from '@ant-design/icons';
 import { Line, Column } from '@ant-design/charts';
 import { useParrot } from '../context/ParrotContext';
@@ -63,15 +61,15 @@ const Dashboard = () => {
   // 计算总销售额
   const totalRevenue = statistics?.total_revenue || 0;
 
-  // 获取最后一个月的销售额
-  const lastMonthRevenue = monthlySales.length > 0
-    ? monthlySales[monthlySales.length - 1].revenue
-    : 0;
-
   // 计算环比增长
-  const monthOverMonthGrowth = monthlySales.length > 1
-    ? ((lastMonthRevenue - monthlySales[monthlySales.length - 2].revenue) / monthlySales[monthlySales.length - 2].revenue * 100).toFixed(1)
-    : '0.0';
+  const calculateGrowth = () => {
+    if (monthlySales.length < 2) return 0;
+    const lastMonth = monthlySales[monthlySales.length - 1].revenue;
+    const prevMonth = monthlySales[monthlySales.length - 2].revenue;
+    if (prevMonth === 0) return lastMonth > 0 ? 100 : 0;
+    return Number(((lastMonth - prevMonth) / prevMonth * 100).toFixed(1));
+  };
+  const monthOverMonthGrowth = calculateGrowth();
 
   // 图表配置
   const lineConfig = {
@@ -100,14 +98,7 @@ const Dashboard = () => {
         formatter: (v: any) => `¥${Number(v).toLocaleString()}`,
       },
     },
-    tooltip: {
-      formatter: (datum: any) => {
-        return {
-          name: '销售额',
-          value: `¥${Number(datum.revenue).toLocaleString()}`,
-        };
-      },
-    },
+  
   };
 
   const columnConfig = {
@@ -130,65 +121,57 @@ const Dashboard = () => {
         formatter: (v: any) => `${v}只`,
       },
     },
-    tooltip: {
-      formatter: (datum: any) => {
-        return {
-          name: '销售数量',
-          value: `${datum.count}只`,
-        };
-      },
-    },
+   
   };
 
   return (
-    <div style={{ padding: '24px', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', minHeight: '100vh' }}>
+    <div style={{ padding: '32px', background: '#f8f9fa', minHeight: '100vh' }}>
       {/* 标题区域 */}
-      <div style={{ marginBottom: '32px', color: 'white' }}>
-        <h1 style={{ margin: 0, fontSize: '32px', fontWeight: 700, marginBottom: '8px' }}>
-          🦜 鹦鹉管理系统仪表板
+      <div style={{ marginBottom: '40px' }}>
+        <h1 style={{ margin: 0, fontSize: '28px', fontWeight: 600, color: '#1a1a1a', marginBottom: '8px', letterSpacing: '-0.5px' }}>
+          鹦鹉管理系统
         </h1>
-        <p style={{ margin: 0, fontSize: '16px', opacity: 0.9 }}>
-          数据驱动决策，洞察业务趋势
+        <p style={{ margin: 0, fontSize: '14px', color: '#8c8c8c' }}>
+          数据概览 · {new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' })}
         </p>
       </div>
 
       {/* 核心指标卡片 */}
-      <Row gutter={[24, 24]} style={{ marginBottom: '24px' }}>
+      <Row gutter={[20, 20]} style={{ marginBottom: '32px' }}>
         <Col xs={24} sm={12} lg={6}>
           <Card
             hoverable
             onClick={() => handleCardClick('total')}
             style={{
-              borderRadius: '16px',
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              border: 'none',
-              color: 'white',
+              borderRadius: '12px',
+              background: '#ffffff',
+              border: '1px solid #eee',
               cursor: 'pointer',
-              transition: 'all 0.3s ease',
+              transition: 'all 0.2s ease',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+              height: '120px',
             }}
-            bodyStyle={{ padding: '24px' }}
+            bodyStyle={{ padding: '24px', height: '100%' }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '100%' }}>
               <div>
-                <div style={{ fontSize: '14px', opacity: 0.9, marginBottom: '8px' }}>
+                <div style={{ fontSize: '13px', color: '#999', marginBottom: '12px', fontWeight: 500 }}>
                   总鹦鹉数
                 </div>
-                <div style={{ fontSize: '36px', fontWeight: 700, color: 'white' }}>
+                <div style={{ fontSize: '32px', fontWeight: 600, color: '#1a1a1a', lineHeight: 1 }}>
                   {statistics?.total_parrots || 0}
-                </div>
-                <div style={{ fontSize: '12px', opacity: 0.8, marginTop: '4px' }}>
-                  <Tag color="cyan">总数统计</Tag>
                 </div>
               </div>
               <div style={{
-                width: '56px',
-                height: '56px',
-                borderRadius: '50%',
-                background: 'rgba(255, 255, 255, 0.2)',
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: '#f0f5ff',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '24px'
+                fontSize: '20px',
+                color: '#597ef7'
               }}>
                 <ShoppingOutlined />
               </div>
@@ -201,36 +184,35 @@ const Dashboard = () => {
             hoverable
             onClick={() => handleCardClick('available')}
             style={{
-              borderRadius: '16px',
-              background: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
-              border: 'none',
-              color: 'white',
+              borderRadius: '12px',
+              background: '#ffffff',
+              border: '1px solid #eee',
               cursor: 'pointer',
-              transition: 'all 0.3s ease',
+              transition: 'all 0.2s ease',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+              height: '120px',
             }}
-            bodyStyle={{ padding: '24px' }}
+            bodyStyle={{ padding: '24px', height: '100%' }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '100%' }}>
               <div>
-                <div style={{ fontSize: '14px', opacity: 0.9, marginBottom: '8px' }}>
+                <div style={{ fontSize: '13px', color: '#999', marginBottom: '12px', fontWeight: 500 }}>
                   在售鹦鹉
                 </div>
-                <div style={{ fontSize: '36px', fontWeight: 700, color: 'white' }}>
+                <div style={{ fontSize: '32px', fontWeight: 600, color: '#1a1a1a', lineHeight: 1 }}>
                   {statistics?.available_parrots || 0}
-                </div>
-                <div style={{ fontSize: '12px', opacity: 0.8, marginTop: '4px' }}>
-                  <Tag color="green">可售</Tag>
                 </div>
               </div>
               <div style={{
-                width: '56px',
-                height: '56px',
-                borderRadius: '50%',
-                background: 'rgba(255, 255, 255, 0.2)',
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: '#f6ffed',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '24px'
+                fontSize: '20px',
+                color: '#52c41a'
               }}>
                 <CheckCircleOutlined />
               </div>
@@ -243,36 +225,35 @@ const Dashboard = () => {
             hoverable
             onClick={() => handleCardClick('sold')}
             style={{
-              borderRadius: '16px',
-              background: 'linear-gradient(135deg, #ee0979 0%, #ff6a00 100%)',
-              border: 'none',
-              color: 'white',
+              borderRadius: '12px',
+              background: '#ffffff',
+              border: '1px solid #eee',
               cursor: 'pointer',
-              transition: 'all 0.3s ease',
+              transition: 'all 0.2s ease',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+              height: '120px',
             }}
-            bodyStyle={{ padding: '24px' }}
+            bodyStyle={{ padding: '24px', height: '100%' }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '100%' }}>
               <div>
-                <div style={{ fontSize: '14px', opacity: 0.9, marginBottom: '8px' }}>
+                <div style={{ fontSize: '13px', color: '#999', marginBottom: '12px', fontWeight: 500 }}>
                   已售鹦鹉
                 </div>
-                <div style={{ fontSize: '36px', fontWeight: 700, color: 'white' }}>
+                <div style={{ fontSize: '32px', fontWeight: 600, color: '#1a1a1a', lineHeight: 1 }}>
                   {statistics?.sold_parrots || 0}
-                </div>
-                <div style={{ fontSize: '12px', opacity: 0.8, marginTop: '4px' }}>
-                  <Tag color="volcano">已售出</Tag>
                 </div>
               </div>
               <div style={{
-                width: '56px',
-                height: '56px',
-                borderRadius: '50%',
-                background: 'rgba(255, 255, 255, 0.2)',
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: '#fff2e8',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '24px'
+                fontSize: '20px',
+                color: '#fa8c16'
               }}>
                 <CloseCircleOutlined />
               </div>
@@ -283,43 +264,45 @@ const Dashboard = () => {
         <Col xs={24} sm={12} lg={6}>
           <Card
             style={{
-              borderRadius: '16px',
-              background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-              border: 'none',
-              color: 'white',
+              borderRadius: '12px',
+              background: '#ffffff',
+              border: '1px solid #eee',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+              height: '120px',
             }}
-            bodyStyle={{ padding: '24px' }}
+            bodyStyle={{ padding: '24px', height: '100%' }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '100%' }}>
               <div>
-                <div style={{ fontSize: '14px', opacity: 0.9, marginBottom: '8px' }}>
+                <div style={{ fontSize: '13px', color: '#999', marginBottom: '8px', fontWeight: 500 }}>
                   总销售额
                 </div>
-                <div style={{ fontSize: '32px', fontWeight: 700, color: 'white' }}>
+                <div style={{ fontSize: '26px', fontWeight: 600, color: '#1a1a1a', lineHeight: 1 }}>
                   ¥{totalRevenue.toLocaleString()}
                 </div>
-                <div style={{ fontSize: '12px', opacity: 0.8, marginTop: '4px' }}>
-                  <Space>
-                    {Number(monthOverMonthGrowth) >= 0 ? (
-                      <RiseOutlined style={{ color: '#52c41a' }} />
+                <div style={{ fontSize: '12px', marginTop: '6px' }}>
+                  <Space size={4}>
+                    {monthOverMonthGrowth >= 0 ? (
+                      <RiseOutlined style={{ color: '#52c41a', fontSize: '12px' }} />
                     ) : (
-                      <FallOutlined style={{ color: '#ff4d4f' }} />
+                      <FallOutlined style={{ color: '#ff4d4f', fontSize: '12px' }} />
                     )}
-                    <span style={{ color: Number(monthOverMonthGrowth) >= 0 ? '#52c41a' : '#ff4d4f' }}>
-                      {Number(monthOverMonthGrowth) >= 0 ? '+' : ''}{monthOverMonthGrowth}%
+                    <span style={{ color: monthOverMonthGrowth >= 0 ? '#52c41a' : '#ff4d4f', fontSize: '12px' }}>
+                      {monthOverMonthGrowth >= 0 ? '+' : ''}{monthOverMonthGrowth}%
                     </span>
                   </Space>
                 </div>
               </div>
               <div style={{
-                width: '56px',
-                height: '56px',
-                borderRadius: '50%',
-                background: 'rgba(255, 255, 255, 0.2)',
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: '#fff0f6',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '24px'
+                fontSize: '20px',
+                color: '#eb2f96'
               }}>
                 <DollarOutlined />
               </div>
@@ -331,25 +314,35 @@ const Dashboard = () => {
       {/* 月度销售趋势图表 */}
       <Card
         style={{
-          borderRadius: '16px',
+          borderRadius: '12px',
           marginBottom: '24px',
-          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
+          border: '1px solid #eee',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
         }}
         title={
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <TrophyOutlined style={{ color: '#faad14' }} />
-            <span style={{ fontSize: '18px', fontWeight: 600 }}>月度销售趋势</span>
-            <Space>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{ fontSize: '16px', fontWeight: 600, color: '#1a1a1a' }}>月度销售趋势</span>
+            <Space size={8}>
               <Tag
-                color={chartType === 'line' ? 'blue' : 'default'}
-                style={{ cursor: 'pointer' }}
+                color={chartType === 'line' ? '#1890ff' : undefined}
+                style={{
+                  cursor: 'pointer',
+                  borderRadius: '4px',
+                  border: chartType === 'line' ? 'none' : '1px solid #d9d9d9',
+                  color: chartType === 'line' ? '#fff' : '#666'
+                }}
                 onClick={() => setChartType('line')}
               >
                 销售额
               </Tag>
               <Tag
-                color={chartType === 'column' ? 'blue' : 'default'}
-                style={{ cursor: 'pointer' }}
+                color={chartType === 'column' ? '#1890ff' : undefined}
+                style={{
+                  cursor: 'pointer',
+                  borderRadius: '4px',
+                  border: chartType === 'column' ? 'none' : '1px solid #d9d9d9',
+                  color: chartType === 'column' ? '#fff' : '#666'
+                }}
                 onClick={() => setChartType('column')}
               >
                 销售量
@@ -357,16 +350,17 @@ const Dashboard = () => {
             </Space>
           </div>
         }
+        headStyle={{ border: 'none', paddingBottom: 0 }}
         bodyStyle={{ padding: '24px' }}
       >
         {loadingChart ? (
-          <div style={{ textAlign: 'center', padding: '40px' }}>加载中...</div>
+          <div style={{ textAlign: 'center', padding: '60px', color: '#999' }}>加载中...</div>
         ) : monthlySales.length > 0 ? (
-          <div style={{ minHeight: '350px' }}>
+          <div style={{ minHeight: '320px' }}>
             {chartType === 'line' ? (
-              <Line {...lineConfig} height={320} />
+              <Line {...lineConfig} height={300} />
             ) : (
-              <Column {...columnConfig} height={320} />
+              <Column {...columnConfig} height={300} />
             )}
           </div>
         ) : (
@@ -378,58 +372,58 @@ const Dashboard = () => {
       {statistics?.breed_counts && Object.keys(statistics.breed_counts).length > 0 && (
         <Card
           style={{
-            borderRadius: '16px',
-            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
+            borderRadius: '12px',
+            border: '1px solid #eee',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
           }}
           title={
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <FireOutlined style={{ color: '#ff4d4f' }} />
-              <span style={{ fontSize: '18px', fontWeight: 600 }}>品种分布统计</span>
-            </div>
+            <span style={{ fontSize: '16px', fontWeight: 600, color: '#1a1a1a' }}>品种分布</span>
           }
+          headStyle={{ border: 'none', paddingBottom: 0 }}
           bodyStyle={{ padding: '24px' }}
         >
           <Row gutter={[16, 16]}>
             {Object.entries(statistics.breed_counts)
               .sort(([, a], [, b]) => b - a)
-              .map(([breed, count], index) => {
+              .map(([breed, count]) => {
                 const total = statistics?.total_parrots || 1;
                 const percentage = ((count / total) * 100).toFixed(1);
-                const colors = [
-                  'magenta', 'red', 'volcano', 'orange', 'gold',
-                  'lime', 'green', 'cyan', 'blue', 'geekblue', 'purple'
-                ];
-                const color = colors[index % colors.length];
 
                 return (
                   <Col xs={24} sm={12} md={8} lg={6} key={breed}>
-                    <Card
-                      hoverable
+                    <div
                       onClick={() => handleCardClick('breed', breed)}
                       style={{
-                        borderRadius: '12px',
+                        padding: '16px 20px',
+                        borderRadius: '8px',
+                        background: '#fafafa',
                         cursor: 'pointer',
-                        transition: 'all 0.3s ease',
+                        transition: 'all 0.2s ease',
+                        border: '1px solid transparent',
                       }}
-                      bodyStyle={{ padding: '16px' }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = '#f0f0f0';
+                        e.currentTarget.style.borderColor = '#e0e0e0';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = '#fafafa';
+                        e.currentTarget.style.borderColor = 'transparent';
+                      }}
                     >
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div>
-                          <div style={{ fontSize: '16px', fontWeight: 600, marginBottom: '4px' }}>
+                          <div style={{ fontSize: '14px', fontWeight: 500, color: '#1a1a1a', marginBottom: '4px' }}>
                             {breed}
                           </div>
-                          <div style={{ fontSize: '24px', fontWeight: 700, color: '#1890ff' }}>
-                            {count}
-                          </div>
                           <div style={{ fontSize: '12px', color: '#999' }}>
-                            占比 {percentage}%
+                            {percentage}%
                           </div>
                         </div>
-                        <Tag color={color} style={{ fontSize: '12px' }}>
-                          品种
-                        </Tag>
+                        <div style={{ fontSize: '24px', fontWeight: 600, color: '#1a1a1a' }}>
+                          {count}
+                        </div>
                       </div>
-                    </Card>
+                    </div>
                   </Col>
                 );
               })}
