@@ -665,14 +665,14 @@ def return_parrot(parrot_id: int, return_data: ParrotReturnUpdate, db: Session =
     parrot.returned_at = datetime.utcnow()
     parrot.return_reason = return_data.return_reason
 
-    # 清除销售相关信息
+    # 清除当前销售相关信息（但保留sold_at用于时间线显示）
     parrot.seller = None
     parrot.buyer_name = None
     parrot.sale_price = None
     parrot.contact = None
     parrot.follow_up_status = "pending"
     parrot.sale_notes = None
-    parrot.sold_at = None
+    # 保留sold_at字段用于时间线显示销售记录
 
     # 退货后状态变为待售（重新上架）
     parrot.status = "available"
@@ -685,16 +685,25 @@ def return_parrot(parrot_id: int, return_data: ParrotReturnUpdate, db: Session =
     # 转换datetime为字符串
     created_at_str = parrot.created_at.isoformat() if parrot.created_at else None
     updated_at_str = parrot.updated_at.isoformat() if parrot.updated_at else None
+    sold_at_str = parrot.sold_at.isoformat() if parrot.sold_at else None
+    returned_at_str = parrot.returned_at.isoformat() if parrot.returned_at else None
 
     return ParrotResponse(
         id=parrot.id,
         breed=parrot.breed,
         price=parrot.price,
+        min_price=parrot.min_price,
+        max_price=parrot.max_price,
         gender=parrot.gender,
         birth_date=parrot.birth_date,
         ring_number=parrot.ring_number,
-        status=parrot.status,
         health_notes=parrot.health_notes,
+        sold_at=sold_at_str,
+        returned_at=returned_at_str,
+        return_reason=parrot.return_reason,
+        mate_id=parrot.mate_id,
+        paired_at=parrot.paired_at,
+        status=parrot.status,
         created_at=created_at_str,
         updated_at=updated_at_str,
         photo_count=photo_count,
@@ -731,16 +740,22 @@ def get_sales_timeline(parrot_id: int, db: Session = Depends(get_db)):
 
     # 3. 销售信息（检查是否有销售记录，即使当前状态不是sold）
     if parrot.sold_at:
+        # 如果当前字段被清除（退货后），尝试从回访记录中推断销售信息
+        seller = parrot.seller or "未知"
+        buyer_name = parrot.buyer_name or "未知"
+        sale_price = float(parrot.sale_price) if parrot.sale_price else 0
+        contact = parrot.contact or "未知"
+
         sale_info = {
             "event": "销售",
             "date": parrot.sold_at.isoformat(),
-            "description": f"售卖人: {parrot.seller}, 购买者: {parrot.buyer_name}, 价格: ¥{float(parrot.sale_price) if parrot.sale_price else 0:.2f}",
+            "description": f"售卖人: {seller}, 购买者: {buyer_name}, 价格: ¥{sale_price:.2f}",
             "type": "sale",
             "details": {
-                "seller": parrot.seller,
-                "buyer_name": parrot.buyer_name,
-                "sale_price": float(parrot.sale_price) if parrot.sale_price else 0,
-                "contact": parrot.contact,
+                "seller": seller,
+                "buyer_name": buyer_name,
+                "sale_price": sale_price,
+                "contact": contact,
                 "follow_up_status": parrot.follow_up_status,
                 "notes": parrot.sale_notes
             }
