@@ -344,11 +344,20 @@ const ParrotListPage = () => {
     clearFilters();
   };
 
+  // 获取鹦鹉的实际状态（包括配对状态）
+  const getParrotStatus = (parrot: Parrot): string => {
+    if (parrot.mate_id) {
+      return 'paired'; // 配对中
+    }
+    return parrot.status;
+  };
+
   const statusMap: Record<string, string> = {
     'available': '待售',
     'sold': '已售',
     'returned': '退货',
     'breeding': '种鸟',
+    'paired': '配对中',
   };
 
   const statusColors: Record<string, string> = {
@@ -356,6 +365,7 @@ const ParrotListPage = () => {
     'sold': 'green',
     'returned': 'red',
     'breeding': 'purple',
+    'paired': 'gold',
   };
 
   const columns = [
@@ -390,9 +400,12 @@ const ParrotListPage = () => {
       dataIndex: 'status',
       key: 'status',
       width: 100,
-      render: (status: string) => (
-        <Tag color={statusColors[status] || 'default'}>{statusMap[status] || status}</Tag>
-      ),
+      render: (_: string, record: Parrot) => {
+        const status = getParrotStatus(record);
+        return (
+          <Tag color={statusColors[status] || 'default'}>{statusMap[status] || status}</Tag>
+        );
+      },
     },
     {
       title: '出生日期',
@@ -471,6 +484,43 @@ const ParrotListPage = () => {
                 编辑
               </Button>
               <Button type="link" size="small" disabled title="种鸟不能售卖" style={{ padding: '0 4px' }}>
+                售出
+              </Button>
+              <Popconfirm
+                title="确认删除"
+                description="确定要删除这只鹦鹉吗？此操作不可恢复。"
+                onConfirm={() => handleDeleteParrot(record.id)}
+                okText="确认"
+                cancelText="取消"
+              >
+                <Button type="link" size="small" danger icon={<DeleteOutlined />} style={{ padding: '0 4px' }}>
+                  删除
+                </Button>
+              </Popconfirm>
+            </>
+          )}
+          {getParrotStatus(record) === 'paired' && (
+            <>
+              <Button
+                type="link"
+                size="small"
+                icon={<EyeOutlined />}
+                onClick={() => handleViewDetail(record)}
+                style={{ padding: '0 4px' }}
+              >
+                查看
+              </Button>
+              <Button
+                type="link"
+                size="small"
+                icon={<HeartOutlined />}
+                disabled
+                title="配对中的鹦鹉不能编辑"
+                style={{ padding: '0 4px' }}
+              >
+                编辑
+              </Button>
+              <Button type="link" size="small" disabled title="配对中的鹦鹉不能售卖" style={{ padding: '0 4px' }}>
                 售出
               </Button>
               <Popconfirm
@@ -580,6 +630,7 @@ const ParrotListPage = () => {
               <Option value="sold">已售</Option>
               <Option value="returned">退货</Option>
               <Option value="breeding">种鸟</Option>
+              <Option value="paired">配对中</Option>
             </Select>
             <InputNumber
               placeholder="最低价格"

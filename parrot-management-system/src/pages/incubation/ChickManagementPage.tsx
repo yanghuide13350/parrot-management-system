@@ -68,6 +68,7 @@ const ChickManagementPage: React.FC = () => {
     Modal.confirm({
       title: '确认删除',
       content: '确定要删除这条雏鸟记录吗？',
+      centered: true,
       onOk: () => {
         message.success('删除成功');
       },

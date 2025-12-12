@@ -58,7 +58,12 @@ def get_parrots(
         query = query.filter(Parrot.gender == gender)
 
     if status:
-        query = query.filter(Parrot.status == status)
+        if status == "paired":
+            # 筛选已配对的鹦鹉（有配偶ID的）
+            query = query.filter(Parrot.mate_id.isnot(None))
+        else:
+            # 其他状态按原逻辑筛选
+            query = query.filter(Parrot.status == status)
 
     if min_age_days is not None:
         min_date = date.today()
@@ -111,6 +116,8 @@ def get_parrots(
                 created_at=created_at_str,
                 updated_at=updated_at_str,
                 photo_count=photo_count,
+                mate_id=parrot.mate_id,
+                paired_at=parrot.paired_at.isoformat() if parrot.paired_at else None,
             )
         )
 
@@ -142,6 +149,8 @@ def get_parrot(parrot_id: int, db: Session = Depends(get_db)):
         created_at=created_at_str,
         updated_at=updated_at_str,
         photo_count=photo_count,
+        mate_id=parrot.mate_id,
+        paired_at=parrot.paired_at.isoformat() if parrot.paired_at else None,
     )
 
 
@@ -212,6 +221,8 @@ def create_parrot(parrot_data: ParrotCreate = None, db: Session = Depends(get_db
         created_at=created_at_str,
         updated_at=updated_at_str,
         photo_count=0,
+        mate_id=parrot.mate_id,
+        paired_at=parrot.paired_at.isoformat() if parrot.paired_at else None,
     )
 
 
@@ -274,6 +285,8 @@ def update_parrot(
         created_at=created_at_str,
         updated_at=updated_at_str,
         photo_count=photo_count,
+        mate_id=parrot.mate_id,
+        paired_at=parrot.paired_at.isoformat() if parrot.paired_at else None,
     )
 
 
@@ -321,6 +334,8 @@ def update_parrot_status(
         created_at=created_at_str,
         updated_at=updated_at_str,
         photo_count=photo_count,
+        mate_id=parrot.mate_id,
+        paired_at=parrot.paired_at.isoformat() if parrot.paired_at else None,
     )
 
 
