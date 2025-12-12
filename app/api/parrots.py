@@ -661,10 +661,21 @@ def return_parrot(parrot_id: int, return_data: ParrotReturnUpdate, db: Session =
     if parrot.status != "sold":
         raise BadRequestException("只能退货已售出的鹦鹉")
 
-    # 更新鹦鹉状态为退货
-    parrot.status = "returned"
+    # 记录退货信息
     parrot.returned_at = datetime.utcnow()
     parrot.return_reason = return_data.return_reason
+
+    # 清除销售相关信息
+    parrot.seller = None
+    parrot.buyer_name = None
+    parrot.sale_price = None
+    parrot.contact = None
+    parrot.follow_up_status = "pending"
+    parrot.sale_notes = None
+    parrot.sold_at = None
+
+    # 退货后状态变为待售（重新上架）
+    parrot.status = "available"
 
     db.commit()
     db.refresh(parrot)
@@ -700,7 +711,7 @@ def get_sales_timeline(parrot_id: int, db: Session = Depends(get_db)):
 
     timeline = []
 
-    # 出生信息
+    # 1. 出生信息
     if parrot.birth_date:
         timeline.append({
             "event": "出生",
@@ -709,7 +720,7 @@ def get_sales_timeline(parrot_id: int, db: Session = Depends(get_db)):
             "type": "birth"
         })
 
-    # 创建时间
+    # 2. 录入系统时间
     if parrot.created_at:
         timeline.append({
             "event": "录入系统",
@@ -718,8 +729,8 @@ def get_sales_timeline(parrot_id: int, db: Session = Depends(get_db)):
             "type": "system"
         })
 
-    # 销售信息
-    if parrot.status == "sold" and parrot.sold_at:
+    # 3. 销售信息（检查是否有销售记录，即使当前状态不是sold）
+    if parrot.sold_at:
         sale_info = {
             "event": "销售",
             "date": parrot.sold_at.isoformat(),
@@ -736,8 +747,8 @@ def get_sales_timeline(parrot_id: int, db: Session = Depends(get_db)):
         }
         timeline.append(sale_info)
 
-    # 退货信息
-    if parrot.status == "returned" and parrot.returned_at:
+    # 4. 退货信息（检查是否有退货记录）
+    if parrot.returned_at:
         timeline.append({
             "event": "退货",
             "date": parrot.returned_at.isoformat(),
@@ -745,7 +756,7 @@ def get_sales_timeline(parrot_id: int, db: Session = Depends(get_db)):
             "type": "return"
         })
 
-    # 回访记录
+    # 5. 回访记录（按时间顺序）
     follow_ups = db.query(FollowUp).filter(FollowUp.parrot_id == parrot_id).order_by(FollowUp.follow_up_date).all()
     for follow_up in follow_ups:
         timeline.append({
@@ -759,7 +770,7 @@ def get_sales_timeline(parrot_id: int, db: Session = Depends(get_db)):
             }
         })
 
-    # 按时间排序
+    # 按时间排序（从早到晚）
     timeline.sort(key=lambda x: x["date"])
 
     return {

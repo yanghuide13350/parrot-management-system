@@ -608,12 +608,28 @@ const ParrotDetail = ({ parrot }: ParrotDetailProps) => {
       </Descriptions>
 
       {/* 销售流程时间线 */}
-      {salesTimeline.length > 0 && (
-        <div style={{ marginTop: '24px' }}>
-          <h3 style={{ margin: '0 0 16px 0' }}>销售流程</h3>
+      <div style={{ marginTop: '24px' }}>
+        <h3 style={{ margin: '0 0 16px 0' }}>销售流程</h3>
+        {loadingTimeline ? (
+          <div>加载中...</div>
+        ) : (
           <Timeline
             mode="left"
-            items={salesTimeline.map((item: any) => {
+            items={(salesTimeline.length > 0 ? salesTimeline : [
+              // 如果没有时间线数据，显示基础信息
+              {
+                event: '出生',
+                date: parrot.birth_date || parrot.created_at,
+                description: parrot.birth_date ? '鹦鹉出生' : '出生日期未记录',
+                type: 'birth'
+              },
+              {
+                event: '录入系统',
+                date: parrot.created_at,
+                description: '鹦鹉信息录入系统',
+                type: 'system'
+              }
+            ]).map((item: any) => {
               let color = 'blue';
               let dot = undefined;
 
@@ -642,7 +658,7 @@ const ParrotDetail = ({ parrot }: ParrotDetailProps) => {
                 children: (
                   <div>
                     <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
-                      {item.event} - {new Date(item.date).toLocaleString('zh-CN')}
+                      {item.event} - {item.date ? new Date(item.date).toLocaleString('zh-CN') : '未知'}
                     </div>
                     <div style={{ color: '#666', fontSize: '14px' }}>
                       {item.description}
@@ -652,8 +668,8 @@ const ParrotDetail = ({ parrot }: ParrotDetailProps) => {
               };
             })}
           />
-        </div>
-      )}
+        )}
+      </div>
 
       <div style={{ marginTop: '24px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
