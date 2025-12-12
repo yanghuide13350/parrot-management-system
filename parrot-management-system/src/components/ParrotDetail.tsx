@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Descriptions, Tag, Image, Empty, Upload, Button, message, Timeline } from 'antd';
-import { UploadOutlined, CopyOutlined, DownloadOutlined, Html5Outlined, HeartOutlined } from '@ant-design/icons';
+import { Descriptions, Tag, Image, Empty, Upload, Button, message, Timeline, Popconfirm } from 'antd';
+import { UploadOutlined, CopyOutlined, DownloadOutlined, Html5Outlined, HeartOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { Parrot, Photo } from '../types/parrot';
 import { useParrot } from '../context/ParrotContext';
 import { ParrotService } from '../services/parrotService';
@@ -162,6 +162,17 @@ const ParrotDetail = ({ parrot }: ParrotDetailProps) => {
       setUploading(false);
     }
     return false;
+  };
+
+  const handleDeletePhoto = async (photoId: number) => {
+    try {
+      await api.delete(`/photos/${photoId}`);
+      message.success('删除成功');
+      await fetchPhotos();
+    } catch (error) {
+      console.error('删除照片失败:', error);
+      message.error('删除失败，请重试');
+    }
   };
 
   const handleCopyInfo = async () => {
@@ -726,8 +737,8 @@ const ParrotDetail = ({ parrot }: ParrotDetailProps) => {
         ) : photos && photos.length > 0 ? (
           <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
             {photos.map((photo) => (
-              photo.file_type === 'video' ? (
-                <div key={photo.id} style={{ width: '200px', height: '200px' }}>
+              <div key={photo.id} style={{ position: 'relative', width: '200px', height: '200px' }}>
+                {photo.file_type === 'video' ? (
                   <video
                     width="200"
                     height="200"
@@ -737,17 +748,38 @@ const ParrotDetail = ({ parrot }: ParrotDetailProps) => {
                   >
                     您的浏览器不支持视频播放
                   </video>
-                </div>
-              ) : (
-                <Image
-                  key={photo.id}
-                  width={200}
-                  height={200}
-                  src={`/uploads/${photo.file_path}`}
-                  alt={photo.file_name}
-                  style={{ objectFit: 'cover', borderRadius: '8px' }}
-                />
-              )
+                ) : (
+                  <Image
+                    width={200}
+                    height={200}
+                    src={`/uploads/${photo.file_path}`}
+                    alt={photo.file_name}
+                    style={{ objectFit: 'cover', borderRadius: '8px' }}
+                  />
+                )}
+                {/* 删除按钮 */}
+                <Popconfirm
+                  title="确认删除"
+                  description="确定要删除这张照片/视频吗？删除后无法恢复。"
+                  onConfirm={() => handleDeletePhoto(photo.id)}
+                  okText="确认"
+                  cancelText="取消"
+                >
+                  <Button
+                    type="primary"
+                    danger
+                    size="small"
+                    icon={<DeleteOutlined />}
+                    style={{
+                      position: 'absolute',
+                      top: '8px',
+                      right: '8px',
+                      opacity: 0.7,
+                    }}
+                    title="删除"
+                  />
+                </Popconfirm>
+              </div>
             ))}
           </div>
         ) : (
