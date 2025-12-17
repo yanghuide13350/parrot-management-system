@@ -2,18 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+@import './styles/global.css';
+
 body {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-}
-
-.ant-btn-primary {
-  background: #1677ff !important;
-}
-
-.ant-btn-primary:hover {
-  background: #4096ff !important;
 }
 
 .ant-tag {

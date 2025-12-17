@@ -28,10 +28,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         />
         <Content
           style={{
-            margin: '24px',
-            padding: '24px',
             minHeight: 280,
-            background: '#fff',
+            background: 'var(--morandi-cloud)',
             borderRadius: '8px',
           }}
         >

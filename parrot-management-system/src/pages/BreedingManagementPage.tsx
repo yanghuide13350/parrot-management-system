@@ -35,6 +35,10 @@ const BreedingManagementPage = () => {
   const [selectedFemaleBreeding, setSelectedFemaleBreeding] = useState<Parrot | null>(null);
   const [compatibleMales, setCompatibleMales] = useState<Parrot[]>([]);
   const [showMalesModal, setShowMalesModal] = useState(false);
+  // 新增：孵化相关状态
+  const [selectedPairedParrot, setSelectedPairedParrot] = useState<Parrot | null>(null);
+  const [showIncubationModal, setShowIncubationModal] = useState(false);
+  const [eggCount, setEggCount] = useState<number>(2);
 
   // Minimum age for breeding (in days) - 1 year
   // const MIN_BREEDING_AGE_DAYS = 365;
@@ -109,7 +113,7 @@ const BreedingManagementPage = () => {
         },
       });
 
-      const allBreedingParrots = allBreedingResponse.items || [];
+      const allBreedingParrots = (allBreedingResponse as any).items || [];
       const eligibleMales = allBreedingParrots.filter(
         (p: Parrot) => p.gender === '公' && !p.mate_id && p.id !== femaleParrot.id
       );
@@ -208,6 +212,38 @@ const BreedingManagementPage = () => {
     }
   };
 
+  // 新增：开始孵化
+  const handleStartIncubation = (parrot: Parrot) => {
+    setSelectedPairedParrot(parrot);
+    setEggCount(2); // 默认2个蛋
+    setShowIncubationModal(true);
+  };
+
+  const handleConfirmIncubation = async () => {
+    if (!selectedPairedParrot || !selectedPairedParrot.mate_id) {
+      message.error('未选择配对的鹦鹉');
+      return;
+    }
+
+    try {
+      // 更新公鸟和母鸟的状态为孵化中
+      await Promise.all([
+        api.put(`/parrots/${selectedPairedParrot.id}/status`, { status: 'incubating' }),
+        api.put(`/parrots/${selectedPairedParrot.mate_id}/status`, { status: 'incubating' }),
+      ]);
+
+      // 这里可以添加创建孵化记录的逻辑
+      message.success(`已开始孵化！蛋数量：${eggCount}个`);
+      setShowIncubationModal(false);
+      setSelectedPairedParrot(null);
+      fetchParrots(); // Refresh the list
+    } catch (error: any) {
+      console.error('Failed to start incubation:', error);
+      const errMessage = error.response?.data?.detail || error.response?.data?.message || '开始孵化失败';
+      message.error(errMessage);
+    }
+  };
+
   const handleViewAllEligible = () => {
     // Navigate to all parrots page with no status filter to see eligible birds
     navigate('/parrots');
@@ -233,7 +269,11 @@ const BreedingManagementPage = () => {
       key: 'gender',
       width: 80,
       render: (gender: string) => (
-        <Tag color={gender === '公' ? 'blue' : 'pink'}>{gender}</Tag>
+        <Tag color={gender === '公' ? '#9CAF88' : '#C8A6A2'} style={{
+          backgroundColor: gender === '公' ? 'rgba(156, 175, 136, 0.1)' : 'rgba(200, 166, 162, 0.1)',
+          borderColor: gender === '公' ? '#9CAF88' : '#C8A6A2',
+          color: gender === '公' ? '#9CAF88' : '#C8A6A2'
+        }}>{gender}</Tag>
       ),
     },
     {
@@ -243,12 +283,20 @@ const BreedingManagementPage = () => {
       render: (record: Parrot) => {
         if (record.mate_id) {
           return (
-            <Tag color="success" icon={<HeartOutlined />}>
+            <Tag color="#9CAF88" icon={<HeartOutlined />} style={{
+              backgroundColor: 'rgba(156, 175, 136, 0.1)',
+              borderColor: '#9CAF88',
+              color: '#9CAF88'
+            }}>
               已配对
             </Tag>
           );
         }
-        return <Tag color="default">未配对</Tag>;
+        return <Tag color="#A89994" style={{
+          backgroundColor: 'rgba(168, 153, 148, 0.1)',
+          borderColor: '#A89994',
+          color: '#A89994'
+        }}>未配对</Tag>;
       },
     },
     {
@@ -257,7 +305,9 @@ const BreedingManagementPage = () => {
       width: 120,
       render: (record: Parrot) => {
         if (record.mate_id) {
-          return <span style={{ color: '#52c41a', fontSize: '12px' }}>ID: {record.mate_id}</span>;
+          // 通过mate_id查找配偶的圈号
+          const mate = parrots.find(p => p.id === record.mate_id);
+          return <span style={{ color: '#9CAF88', fontSize: '12px' }}>圈号: {mate?.ring_number || record.mate_id}</span>;
         }
         return '-';
       },
@@ -316,7 +366,7 @@ const BreedingManagementPage = () => {
               size="small"
               icon={<HeartOutlined />}
               onClick={() => handleViewCompatibleMales(record)}
-              style={{ padding: '0 4px', color: '#eb2f96' }}
+              style={{ padding: '0 4px', color: '#C8A6A2' }}
             >
               配对
             </Button>
@@ -328,9 +378,20 @@ const BreedingManagementPage = () => {
               size="small"
               icon={<DisconnectOutlined />}
               onClick={() => handleUnpairParrot(record)}
-              style={{ padding: '0 4px', color: '#fa8c16' }}
+              style={{ padding: '0 4px', color: '#6D7A8D' }}
             >
               取消配对
+            </Button>
+          )}
+          {/* 如果已配对且不是孵化中，显示孵化按钮 */}
+          {record.mate_id && (
+            <Button
+              type="link"
+              size="small"
+              onClick={() => handleStartIncubation(record)}
+              style={{ padding: '0 4px', color: '#A89994' }}
+            >
+              孵化
             </Button>
           )}
           <Button
@@ -473,7 +534,7 @@ const BreedingManagementPage = () => {
                   fontSize: '16px',
                   padding: '4px 8px',
                   height: 'auto',
-                  color: '#1890ff',
+                  color: '#9CAF88',
                   fontWeight: 500,
                 }}
               >
@@ -488,12 +549,13 @@ const BreedingManagementPage = () => {
 
           <Divider style={{ margin: '8px 0' }} />
 
-          <div style={{ background: '#f0f5ff', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
-            <p style={{ margin: 0, color: '#1890ff' }}>
+          <div style={{ background: '#F9F8F6', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
+            <p style={{ margin: 0, color: '#6D7A8D' }}>
               <strong>提示：</strong>
               种鸟是用于繁殖的鹦鹉。点击"查看可设为种鸟的鹦鹉"按钮可以查看所有鹦鹉，并将符合年龄要求的鹦鹉设置为种鸟。
               对于未配对的公种鸟和母种鸟，都可以点击"配对"按钮查看可配对的配偶。公鸟点击会显示可配对的母鸟，母鸟点击会显示可配对的公鸟。
-              已经配对的鹦鹉会显示配对状态和配偶信息，可以点击"取消配对"按钮来解除配对关系。
+              已经配对的鹦鹉可以点击"孵化"按钮开始孵化流程，并配置蛋的数量。孵化开始后，公鸟和母鸟的状态将变为"孵化中"。
+              已经配对的鹦鹉也可以点击"取消配对"按钮来解除配对关系。
             </p>
           </div>
 
@@ -541,7 +603,7 @@ const BreedingManagementPage = () => {
       >
         {compatibleFemales.length > 0 ? (
           <>
-            <p style={{ marginBottom: '16px', color: '#666' }}>
+            <p style={{ marginBottom: '16px', color: '#8B8C89' }}>
               找到 {compatibleFemales.length} 只可配对的母鸟（不局限于同品种）：
             </p>
             <Table
@@ -553,7 +615,7 @@ const BreedingManagementPage = () => {
             />
           </>
         ) : (
-          <div style={{ textAlign: 'center', padding: '40px', color: '#999' }}>
+          <div style={{ textAlign: 'center', padding: '40px', color: '#A89994' }}>
             <p>暂无可配对的母鸟</p>
             <p style={{ fontSize: '14px' }}>请先将符合条件的母鸟设置为种鸟</p>
           </div>
@@ -571,7 +633,7 @@ const BreedingManagementPage = () => {
       >
         {compatibleMales.length > 0 ? (
           <>
-            <p style={{ marginBottom: '16px', color: '#666' }}>
+            <p style={{ marginBottom: '16px', color: '#8B8C89' }}>
               找到 {compatibleMales.length} 只可配对的公鸟（不局限于同品种）：
             </p>
             <Table
@@ -583,9 +645,70 @@ const BreedingManagementPage = () => {
             />
           </>
         ) : (
-          <div style={{ textAlign: 'center', padding: '40px', color: '#999' }}>
+          <div style={{ textAlign: 'center', padding: '40px', color: '#A89994' }}>
             <p>暂无可配对的公鸟</p>
             <p style={{ fontSize: '14px' }}>请先将符合条件的公鸟设置为种鸟</p>
+          </div>
+        )}
+      </Modal>
+
+      {/* 新增：孵化配置模态框 */}
+      <Modal
+        title="配置孵化信息"
+        open={showIncubationModal}
+        onCancel={() => setShowIncubationModal(false)}
+        footer={[
+          <Button key="cancel" onClick={() => setShowIncubationModal(false)}>
+            取消
+          </Button>,
+          <Button key="submit" type="primary" onClick={handleConfirmIncubation}>
+            开始孵化
+          </Button>,
+        ]}
+        width={500}
+      >
+        {selectedPairedParrot && (
+          <div style={{ padding: '16px 0' }}>
+            <p style={{ marginBottom: '16px', color: '#8B8C89' }}>
+              为配对鹦鹉配置孵化信息：
+            </p>
+            <div style={{
+              background: '#F9F8F6',
+              padding: '12px',
+              borderRadius: '6px',
+              marginBottom: '16px'
+            }}>
+              <p style={{ margin: '4px 0', fontSize: '14px' }}>
+                <strong>公鸟：</strong>{selectedPairedParrot.breed} (圈号: {selectedPairedParrot.ring_number || '无'})
+              </p>
+              <p style={{ margin: '4px 0', fontSize: '14px' }}>
+                <strong>母鸟：</strong>
+                {parrots.find(p => p.id === selectedPairedParrot.mate_id)?.breed}
+                (圈号: {parrots.find(p => p.id === selectedPairedParrot.mate_id)?.ring_number || '无'})
+              </p>
+            </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>
+                蛋的数量：
+              </label>
+              <input
+                type="number"
+                min="1"
+                max="10"
+                value={eggCount}
+                onChange={(e) => setEggCount(parseInt(e.target.value) || 2)}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  border: '1px solid #D4D4D8',
+                  borderRadius: '6px',
+                  fontSize: '14px'
+                }}
+              />
+              <p style={{ marginTop: '8px', fontSize: '12px', color: '#A89994' }}>
+                建议数量：2-4个蛋
+              </p>
+            </div>
           </div>
         )}
       </Modal>

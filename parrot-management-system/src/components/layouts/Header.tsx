@@ -12,6 +12,7 @@ const { Header: AntHeader } = Layout;
 interface HeaderProps {
   collapsed: boolean;
   onCollapse: () => void;
+  currentPath?: string;
 }
 
 const Header: React.FC<HeaderProps> = ({ collapsed, onCollapse }) => {
@@ -76,7 +77,7 @@ const Header: React.FC<HeaderProps> = ({ collapsed, onCollapse }) => {
         borderBottom: '1px solid #f0f0f0',
       }}
     >
-      <div style={{ flex: 1 }}>
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
         <Button
           type="text"
           icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
@@ -87,6 +88,9 @@ const Header: React.FC<HeaderProps> = ({ collapsed, onCollapse }) => {
             height: 64,
           }}
         />
+        <span style={{ color: 'var(--morandi-ash)', fontSize: '14px', marginLeft: '16px' }}>
+          欢迎使用鹦鹉管理系统
+        </span>
       </div>
 
       <Space align="center">
@@ -95,12 +99,6 @@ const Header: React.FC<HeaderProps> = ({ collapsed, onCollapse }) => {
           style={{ marginRight: '24px' }}
         />
       </Space>
-
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <span style={{ color: '#666', fontSize: '14px' }}>
-          欢迎使用鹦鹉管理系统
-        </span>
-      </div>
     </AntHeader>
   );
 };

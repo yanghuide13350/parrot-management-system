@@ -1,0 +1,112 @@
+/* Morandi Color Scheme CSS Variables */
+:root {
+  --morandi-sage: #9CAF88;
+  --morandi-dusty-rose: #C8A6A2;
+  --morandi-slate: #6D7A8D;
+  --morandi-cream: #F5F4F0;
+  --morandi-stone: #A89994;
+  --morandi-mist: #D4D4D8;
+  --morandi-ash: #8B8C89;
+  --morandi-blush: #E6D4D1;
+  --morandi-tea: #BEB5A2;
+  --morandi-cloud: #F9F8F6;
+}
+
+/* Global styles for Morandi theme */
+body {
+  background-color: var(--morandi-cream);
+  color: var(--morandi-ash);
+}
+
+/* Ant Design component overrides */
+.ant-layout {
+  background: var(--morandi-cream) !important;
+}
+
+.ant-layout-content {
+  background: var(--morandi-cloud) !important;
+}
+
+.ant-menu-dark {
+  background: var(--morandi-slate) !important;
+}
+
+.ant-menu-dark .ant-menu-item:hover {
+  background-color: var(--morandi-blush) !important;
+}
+
+.ant-menu-dark .ant-menu-item-selected {
+  background-color: var(--morandi-blush) !important;
+}
+
+.ant-btn-primary {
+  background-color: var(--morandi-sage) !important;
+  border-color: var(--morandi-sage) !important;
+}
+
+.ant-btn-primary:hover {
+  background-color: var(--morandi-blush) !important;
+  border-color: var(--morandi-blush) !important;
+}
+
+.ant-table {
+  background: var(--morandi-cloud) !important;
+}
+
+.ant-table-thead > tr > th {
+  background: var(--morandi-cloud) !important;
+  color: var(--morandi-ash) !important;
+  border-bottom: 1px solid var(--morandi-mist) !important;
+}
+
+.ant-table-tbody > tr > td {
+  border-bottom: 1px solid var(--morandi-mist) !important;
+}
+
+.ant-card {
+  background: var(--morandi-cloud) !important;
+  border-color: var(--morandi-mist) !important;
+}
+
+.ant-input {
+  background: var(--morandi-cloud) !important;
+  border-color: var(--morandi-mist) !important;
+  color: var(--morandi-ash) !important;
+}
+
+.ant-select-selector {
+  background: var(--morandi-cloud) !important;
+  border-color: var(--morandi-mist) !important;
+}
+
+.ant-modal-content {
+  background: var(--morandi-cloud) !important;
+}
+
+.ant-modal-header {
+  background: var(--morandi-cloud) !important;
+}
+
+.ant-tag {
+  background: var(--morandi-cloud) !important;
+  border-color: var(--morandi-mist) !important;
+  color: var(--morandi-ash) !important;
+}
+
+/* Custom scrollbar for Morandi theme */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--morandi-mist);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--morandi-stone);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--morandi-ash);
+}

@@ -1,5 +1,5 @@
 // 鹦鹉状态
-export type ParrotStatus = 'available' | 'sold' | 'returned' | 'breeding' | 'paired';
+export type ParrotStatus = 'available' | 'sold' | 'returned' | 'breeding' | 'paired' | 'incubating';
 
 // 鹦鹉性别
 export type ParrotGender = '公' | '母' | '未验卡';

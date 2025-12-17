@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { Card, Table, Button, Space, Tag, Modal, message, Input, Select, DatePicker } from 'antd';
+import { Card, Table, Button, Space, Tag, Modal, message, Input, Select, DatePicker, Row, Col, Form } from 'antd';
 import { PlusOutlined, EyeOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
+import moment from 'moment';
+import { useParrot } from '../../context/ParrotContext';
 
 const { Option } = Select;
 const { RangePicker } = DatePicker;
@@ -40,12 +42,133 @@ const mockIncubationRecords = [
 
 const IncubationListPage: React.FC = () => {
   const [incubationRecords, setIncubationRecords] = useState(mockIncubationRecords);
-  const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
+  const [addModalVisible, setAddModalVisible] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editingRecord, setEditingRecord] = useState<any>(null);
+  const [form] = Form.useForm();
+  const { parrots, updateStatus, fetchParrots } = useParrot();
 
   const handleAddIncubation = () => {
-    message.info('添加孵化记录功能开发中...');
+    setAddModalVisible(true);
+    form.resetFields();
+  };
+
+  const handleSubmitIncubation = async (values: any) => {
+    try {
+      // 计算预计孵化日期（开始日期+21天）
+      const startDate = values.startDate.format('YYYY-MM-DD');
+      const expectedDate = values.startDate.clone().add(21, 'days').format('YYYY-MM-DD');
+
+      // 通过圈号查找父鸟和母鸟信息
+      const father = parrots.find(p => p.ring_number === values.fatherRingNumber);
+      const mother = parrots.find(p => p.ring_number === values.motherRingNumber);
+
+      if (!father) {
+        message.error('未找到对应圈号的公鸟');
+        return;
+      }
+      if (!mother) {
+        message.error('未找到对应圈号的母鸟');
+        return;
+      }
+
+      const newRecord = {
+        id: incubationRecords.length + 1,
+        motherId: mother.id,
+        fatherId: father.id,
+        motherRingNumber: values.motherRingNumber,
+        fatherRingNumber: values.fatherRingNumber,
+        motherBreed: mother?.breed || '未知',
+        fatherBreed: father?.breed || '未知',
+        startDate: startDate,
+        expectedHatchDate: expectedDate,
+        actualHatchDate: null,
+        eggsCount: values.eggsCount,
+        hatchedCount: 0,
+        status: 'incubating',
+        notes: values.notes || '',
+      };
+
+      setIncubationRecords([...incubationRecords, newRecord]);
+
+      // 更新鹦鹉状态为孵化中
+      await updateStatus(father.id, 'incubating');
+      await updateStatus(mother.id, 'incubating');
+
+      message.success('添加孵化记录成功！');
+      setAddModalVisible(false);
+      form.resetFields();
+
+      // 刷新鹦鹉列表
+      fetchParrots();
+    } catch (error) {
+      console.error('添加孵化记录失败:', error);
+      message.error('添加孵化记录失败，请重试');
+    }
+  };
+
+  const handleUpdateIncubation = async (values: any) => {
+    try {
+      if (!editingRecord) return;
+
+      // 计算预计孵化日期（如果开始日期改变了）
+      let expectedDate = editingRecord.expectedHatchDate;
+      if (values.startDate) {
+        expectedDate = values.startDate.clone().add(21, 'days').format('YYYY-MM-DD');
+      }
+
+      // 通过圈号查找父鸟和母鸟信息
+      const father = parrots.find(p => p.ring_number === values.fatherRingNumber);
+      const mother = parrots.find(p => p.ring_number === values.motherRingNumber);
+
+      if (!father) {
+        message.error('未找到对应圈号的公鸟');
+        return;
+      }
+      if (!mother) {
+        message.error('未找到对应圈号的母鸟');
+        return;
+      }
+
+      const updatedRecord = {
+        ...editingRecord,
+        motherId: mother.id,
+        fatherId: father.id,
+        motherRingNumber: values.motherRingNumber,
+        fatherRingNumber: values.fatherRingNumber,
+        motherBreed: mother?.breed || editingRecord.motherBreed,
+        fatherBreed: father?.breed || editingRecord.fatherBreed,
+        startDate: values.startDate ? values.startDate.format('YYYY-MM-DD') : editingRecord.startDate,
+        expectedHatchDate: expectedDate,
+        eggsCount: values.eggsCount,
+        status: values.status,
+        actualHatchDate: values.actualHatchDate ? values.actualHatchDate.format('YYYY-MM-DD') : null,
+        hatchedCount: values.hatchedCount,
+        notes: values.notes || '',
+      };
+
+      const updatedRecords = incubationRecords.map(r => r.id === editingRecord.id ? updatedRecord : r);
+      setIncubationRecords(updatedRecords);
+
+      // 如果状态从孵化中变为其他状态，更新鹦鹉状态为breeding
+      if (editingRecord.status === 'incubating' && values.status !== 'incubating') {
+        await updateStatus(father.id, 'breeding');
+        await updateStatus(mother.id, 'breeding');
+      }
+
+      message.success('更新孵化记录成功！');
+      setEditModalVisible(false);
+      setEditingRecord(null);
+      form.resetFields();
+
+      // 刷新鹦鹉列表
+      fetchParrots();
+    } catch (error) {
+      console.error('更新孵化记录失败:', error);
+      message.error('更新孵化记录失败，请重试');
+    }
   };
 
   const handleViewRecord = (record: any) => {
@@ -54,7 +177,18 @@ const IncubationListPage: React.FC = () => {
   };
 
   const handleEditRecord = (record: any) => {
-    message.info('编辑孵化记录功能开发中...');
+    setEditingRecord(record);
+    form.setFieldsValue({
+      fatherRingNumber: record.fatherRingNumber || record.fatherId,
+      motherRingNumber: record.motherRingNumber || record.motherId,
+      startDate: moment(record.startDate),
+      eggsCount: record.eggsCount,
+      status: record.status,
+      actualHatchDate: record.actualHatchDate ? moment(record.actualHatchDate) : null,
+      hatchedCount: record.hatchedCount,
+      notes: record.notes,
+    });
+    setEditModalVisible(true);
   };
 
   const handleDeleteRecord = (record: any) => {
@@ -62,10 +196,31 @@ const IncubationListPage: React.FC = () => {
       title: '确认删除',
       content: '确定要删除这条孵化记录吗？',
       centered: true,
-      onOk: () => {
+      onOk: async () => {
+        setIncubationRecords(incubationRecords.filter(r => r.id !== record.id));
+
+        // 通过圈号查找鹦鹉并更新状态
+        const father = parrots.find(p => p.ring_number === (record.fatherRingNumber || record.fatherId));
+        const mother = parrots.find(p => p.ring_number === (record.motherRingNumber || record.motherId));
+
+        if (father) {
+          await updateStatus(father.id, 'breeding');
+        }
+        if (mother) {
+          await updateStatus(mother.id, 'breeding');
+        }
+
         message.success('删除成功');
+
+        // 刷新鹦鹉列表
+        fetchParrots();
       },
     });
+  };
+
+  // 获取已配对且状态为breeding的鹦鹉作为候选父母
+  const getPairedParrots = () => {
+    return parrots.filter(p => p.mate_id && p.status === 'breeding');
   };
 
   const getStatusColor = (status: string) => {
@@ -105,13 +260,13 @@ const IncubationListPage: React.FC = () => {
       title: '父鸟',
       dataIndex: 'fatherBreed',
       key: 'fatherBreed',
-      render: (text, record) => `${text} (ID: ${record.fatherId})`,
+      render: (text, record) => `${text} (圈号: ${record.fatherRingNumber || record.fatherId})`,
     },
     {
       title: '母鸟',
       dataIndex: 'motherBreed',
       key: 'motherBreed',
-      render: (text, record) => `${text} (ID: ${record.motherId})`,
+      render: (text, record) => `${text} (圈号: ${record.motherRingNumber || record.motherId})`,
     },
     {
       title: '开始日期',
@@ -230,7 +385,6 @@ const IncubationListPage: React.FC = () => {
           columns={columns}
           dataSource={incubationRecords}
           rowKey="id"
-          loading={loading}
           pagination={{
             total: incubationRecords.length,
             pageSize: 10,
@@ -253,8 +407,8 @@ const IncubationListPage: React.FC = () => {
           <div style={{ padding: '16px 0' }}>
             <Row gutter={[16, 16]}>
               <Col span={12}>
-                <p><strong>父鸟:</strong> {selectedRecord.fatherBreed} (ID: {selectedRecord.fatherId})</p>
-                <p><strong>母鸟:</strong> {selectedRecord.motherBreed} (ID: {selectedRecord.motherId})</p>
+                <p><strong>父鸟:</strong> {selectedRecord.fatherBreed} (圈号: {selectedRecord.fatherRingNumber || selectedRecord.fatherId})</p>
+                <p><strong>母鸟:</strong> {selectedRecord.motherBreed} (圈号: {selectedRecord.motherRingNumber || selectedRecord.motherId})</p>
                 <p><strong>开始日期:</strong> {selectedRecord.startDate}</p>
                 <p><strong>预计孵化日期:</strong> {selectedRecord.expectedHatchDate}</p>
               </Col>
@@ -273,6 +427,210 @@ const IncubationListPage: React.FC = () => {
             )}
           </div>
         )}
+      </Modal>
+
+      {/* 添加孵化记录模态框 */}
+      <Modal
+        title="添加孵化记录"
+        open={addModalVisible}
+        onCancel={() => setAddModalVisible(false)}
+        footer={null}
+        width={700}
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleSubmitIncubation}
+          initialValues={{
+            status: 'incubating',
+            startDate: moment(),
+            eggsCount: 2,
+          }}
+        >
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <Form.Item
+              label="父亲圈号"
+              name="fatherRingNumber"
+              rules={[{ required: true, message: '请输入父亲圈号' }]}
+            >
+              <Select placeholder="请选择父亲" showSearch optionFilterProp="children">
+                {getPairedParrots()
+                  .filter(p => p.gender === '公')
+                  .map(parrot => (
+                    <Option key={parrot.id} value={parrot.ring_number}>
+                      {parrot.breed} (圈号: {parrot.ring_number || '无'})
+                    </Option>
+                  ))}
+              </Select>
+            </Form.Item>
+
+            <Form.Item
+              label="母亲圈号"
+              name="motherRingNumber"
+              rules={[{ required: true, message: '请输入母亲圈号' }]}
+            >
+              <Select placeholder="请选择母亲" showSearch optionFilterProp="children">
+                {getPairedParrots()
+                  .filter(p => p.gender === '母')
+                  .map(parrot => (
+                    <Option key={parrot.id} value={parrot.ring_number}>
+                      {parrot.breed} (圈号: {parrot.ring_number || '无'})
+                    </Option>
+                  ))}
+              </Select>
+            </Form.Item>
+
+            <Form.Item
+              label="开始日期"
+              name="startDate"
+              rules={[{ required: true, message: '请选择开始日期' }]}
+            >
+              <DatePicker style={{ width: '100%' }} placeholder="请选择开始日期" />
+            </Form.Item>
+
+            <Form.Item
+              label="蛋数量"
+              name="eggsCount"
+              rules={[{ required: true, message: '请输入蛋数量' }]}
+            >
+              <Input type="number" placeholder="请输入蛋数量" min="1" max="10" />
+            </Form.Item>
+          </div>
+
+          <Form.Item
+            label="备注"
+            name="notes"
+          >
+            <Input.TextArea rows={3} placeholder="请输入备注信息" />
+          </Form.Item>
+
+          <Form.Item>
+            <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
+              <Button onClick={() => setAddModalVisible(false)}>
+                取消
+              </Button>
+              <Button type="primary" htmlType="submit">
+                添加记录
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* 编辑孵化记录模态框 */}
+      <Modal
+        title="编辑孵化记录"
+        open={editModalVisible}
+        onCancel={() => {
+          setEditModalVisible(false);
+          setEditingRecord(null);
+          form.resetFields();
+        }}
+        footer={null}
+        width={700}
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleUpdateIncubation}
+        >
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <Form.Item
+              label="父亲圈号"
+              name="fatherRingNumber"
+              rules={[{ required: true, message: '请输入父亲圈号' }]}
+            >
+              <Select placeholder="请选择父亲" showSearch optionFilterProp="children">
+                {getPairedParrots()
+                  .filter(p => p.gender === '公')
+                  .map(parrot => (
+                    <Option key={parrot.id} value={parrot.ring_number}>
+                      {parrot.breed} (圈号: {parrot.ring_number || '无'})
+                    </Option>
+                  ))}
+              </Select>
+            </Form.Item>
+
+            <Form.Item
+              label="母亲圈号"
+              name="motherRingNumber"
+              rules={[{ required: true, message: '请输入母亲圈号' }]}
+            >
+              <Select placeholder="请选择母亲" showSearch optionFilterProp="children">
+                {getPairedParrots()
+                  .filter(p => p.gender === '母')
+                  .map(parrot => (
+                    <Option key={parrot.id} value={parrot.ring_number}>
+                      {parrot.breed} (圈号: {parrot.ring_number || '无'})
+                    </Option>
+                  ))}
+              </Select>
+            </Form.Item>
+
+            <Form.Item
+              label="开始日期"
+              name="startDate"
+            >
+              <DatePicker style={{ width: '100%' }} placeholder="请选择开始日期" />
+            </Form.Item>
+
+            <Form.Item
+              label="蛋数量"
+              name="eggsCount"
+              rules={[{ required: true, message: '请输入蛋数量' }]}
+            >
+              <Input type="number" placeholder="请输入蛋数量" min="1" max="10" />
+            </Form.Item>
+
+            <Form.Item
+              label="状态"
+              name="status"
+              rules={[{ required: true, message: '请选择状态' }]}
+            >
+              <Select placeholder="请选择状态">
+                <Option value="incubating">孵化中</Option>
+                <Option value="hatched">已孵化</Option>
+                <Option value="failed">孵化失败</Option>
+              </Select>
+            </Form.Item>
+
+            <Form.Item
+              label="实际孵化日期"
+              name="actualHatchDate"
+            >
+              <DatePicker style={{ width: '100%' }} placeholder="请选择实际孵化日期" />
+            </Form.Item>
+
+            <Form.Item
+              label="成功孵化数"
+              name="hatchedCount"
+            >
+              <Input type="number" placeholder="请输入成功孵化数" min="0" />
+            </Form.Item>
+          </div>
+
+          <Form.Item
+            label="备注"
+            name="notes"
+          >
+            <Input.TextArea rows={3} placeholder="请输入备注信息" />
+          </Form.Item>
+
+          <Form.Item>
+            <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
+              <Button onClick={() => {
+                setEditModalVisible(false);
+                setEditingRecord(null);
+                form.resetFields();
+              }}>
+                取消
+              </Button>
+              <Button type="primary" htmlType="submit">
+                更新记录
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
       </Modal>
     </div>
   );

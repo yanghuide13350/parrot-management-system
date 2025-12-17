@@ -353,14 +353,16 @@ const ParrotListPage = () => {
     'returned': '退货',
     'breeding': '种鸟',
     'paired': '配对中',
+    'incubating': '孵化中',
   };
 
   const statusColors: Record<string, string> = {
-    'available': 'blue',
-    'sold': 'green',
-    'returned': 'red',
-    'breeding': 'purple',
-    'paired': 'gold',
+    'available': '#9CAF88',  // sage green
+    'sold': '#C8A6A2',       // dusty rose
+    'returned': '#BEB5A2',   // tea
+    'breeding': '#A89994',   // stone
+    'paired': '#6D7A8D',     // slate
+    'incubating': '#6D7A8D', // slate
   };
 
   const columns = [
@@ -623,6 +625,7 @@ const ParrotListPage = () => {
               <Option value="returned">退货</Option>
               <Option value="breeding">种鸟</Option>
               <Option value="paired">配对中</Option>
+              <Option value="incubating">孵化中</Option>
             </Select>
             <InputNumber
               placeholder="最低价格"

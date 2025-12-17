@@ -88,11 +88,11 @@ const Dashboard = () => {
       shape: 'diamond',
       style: {
         fill: 'white',
-        stroke: '#1890ff',
+        stroke: '#9CAF88',
         lineWidth: 2,
       },
     },
-    color: '#1890ff',
+    color: '#9CAF88',
     yAxis: {
       label: {
         formatter: (v: any) => `¥${Number(v).toLocaleString()}`,
@@ -105,7 +105,7 @@ const Dashboard = () => {
     data: monthlySales,
     xField: 'month_name',
     yField: 'count',
-    color: '#52c41a',
+    color: '#C8A6A2',
     animation: {
       appear: {
         animation: 'grow-in-x',
@@ -125,13 +125,13 @@ const Dashboard = () => {
   };
 
   return (
-    <div style={{ padding: '32px', background: '#f8f9fa', minHeight: '100vh' }}>
+    <div style={{ padding: '32px', background: '#F5F2ED', minHeight: '100vh' }}>
       {/* 标题区域 */}
       <div style={{ marginBottom: '40px' }}>
-        <h1 style={{ margin: 0, fontSize: '28px', fontWeight: 600, color: '#1a1a1a', marginBottom: '8px', letterSpacing: '-0.5px' }}>
+        <h1 style={{ margin: 0, fontSize: '28px', fontWeight: 600, color: '#4A453F', marginBottom: '8px', letterSpacing: '-0.5px' }}>
           鹦鹉管理系统
         </h1>
-        <p style={{ margin: 0, fontSize: '14px', color: '#8c8c8c' }}>
+        <p style={{ margin: 0, fontSize: '14px', color: '#9A9591' }}>
           数据概览 · {new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' })}
         </p>
       </div>
@@ -144,7 +144,7 @@ const Dashboard = () => {
             onClick={() => handleCardClick('total')}
             style={{
               borderRadius: '12px',
-              background: '#ffffff',
+              background: '#FBF9F6',
               border: '1px solid #eee',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
@@ -155,10 +155,10 @@ const Dashboard = () => {
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '100%' }}>
               <div>
-                <div style={{ fontSize: '13px', color: '#999', marginBottom: '12px', fontWeight: 500 }}>
+                <div style={{ fontSize: '13px', color: '#9A9591', marginBottom: '12px', fontWeight: 500 }}>
                   总鹦鹉数
                 </div>
-                <div style={{ fontSize: '32px', fontWeight: 600, color: '#1a1a1a', lineHeight: 1 }}>
+                <div style={{ fontSize: '32px', fontWeight: 600, color: '#4A453F', lineHeight: 1 }}>
                   {statistics?.total_parrots || 0}
                 </div>
               </div>
@@ -166,12 +166,12 @@ const Dashboard = () => {
                 width: '48px',
                 height: '48px',
                 borderRadius: '12px',
-                background: '#f0f5ff',
+                background: 'rgba(156, 175, 136, 0.15)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontSize: '20px',
-                color: '#597ef7'
+                color: '#9CAF88'
               }}>
                 <ShoppingOutlined />
               </div>
@@ -185,7 +185,7 @@ const Dashboard = () => {
             onClick={() => handleCardClick('available')}
             style={{
               borderRadius: '12px',
-              background: '#ffffff',
+              background: '#FBF9F6',
               border: '1px solid #eee',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
@@ -196,10 +196,10 @@ const Dashboard = () => {
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '100%' }}>
               <div>
-                <div style={{ fontSize: '13px', color: '#999', marginBottom: '12px', fontWeight: 500 }}>
+                <div style={{ fontSize: '13px', color: '#9A9591', marginBottom: '12px', fontWeight: 500 }}>
                   在售鹦鹉
                 </div>
-                <div style={{ fontSize: '32px', fontWeight: 600, color: '#1a1a1a', lineHeight: 1 }}>
+                <div style={{ fontSize: '32px', fontWeight: 600, color: '#4A453F', lineHeight: 1 }}>
                   {statistics?.available_parrots || 0}
                 </div>
               </div>
@@ -207,12 +207,12 @@ const Dashboard = () => {
                 width: '48px',
                 height: '48px',
                 borderRadius: '12px',
-                background: '#f6ffed',
+                background: 'rgba(156, 175, 136, 0.1)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontSize: '20px',
-                color: '#52c41a'
+                color: '#9CAF88'
               }}>
                 <CheckCircleOutlined />
               </div>
@@ -226,7 +226,7 @@ const Dashboard = () => {
             onClick={() => handleCardClick('sold')}
             style={{
               borderRadius: '12px',
-              background: '#ffffff',
+              background: '#FBF9F6',
               border: '1px solid #eee',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
@@ -237,10 +237,10 @@ const Dashboard = () => {
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '100%' }}>
               <div>
-                <div style={{ fontSize: '13px', color: '#999', marginBottom: '12px', fontWeight: 500 }}>
+                <div style={{ fontSize: '13px', color: '#9A9591', marginBottom: '12px', fontWeight: 500 }}>
                   已售鹦鹉
                 </div>
-                <div style={{ fontSize: '32px', fontWeight: 600, color: '#1a1a1a', lineHeight: 1 }}>
+                <div style={{ fontSize: '32px', fontWeight: 600, color: '#4A453F', lineHeight: 1 }}>
                   {statistics?.sold_parrots || 0}
                 </div>
               </div>
@@ -248,12 +248,12 @@ const Dashboard = () => {
                 width: '48px',
                 height: '48px',
                 borderRadius: '12px',
-                background: '#fff2e8',
+                background: 'rgba(200, 166, 162, 0.1)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontSize: '20px',
-                color: '#fa8c16'
+                color: '#C8A6A2'
               }}>
                 <CloseCircleOutlined />
               </div>
@@ -265,7 +265,7 @@ const Dashboard = () => {
           <Card
             style={{
               borderRadius: '12px',
-              background: '#ffffff',
+              background: '#FBF9F6',
               border: '1px solid #eee',
               boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
               height: '120px',
@@ -274,20 +274,20 @@ const Dashboard = () => {
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '100%' }}>
               <div>
-                <div style={{ fontSize: '13px', color: '#999', marginBottom: '8px', fontWeight: 500 }}>
+                <div style={{ fontSize: '13px', color: '#9A9591', marginBottom: '8px', fontWeight: 500 }}>
                   总销售额
                 </div>
-                <div style={{ fontSize: '26px', fontWeight: 600, color: '#1a1a1a', lineHeight: 1 }}>
+                <div style={{ fontSize: '26px', fontWeight: 600, color: '#4A453F', lineHeight: 1 }}>
                   ¥{totalRevenue.toLocaleString()}
                 </div>
                 <div style={{ fontSize: '12px', marginTop: '6px' }}>
                   <Space size={4}>
                     {monthOverMonthGrowth >= 0 ? (
-                      <RiseOutlined style={{ color: '#52c41a', fontSize: '12px' }} />
+                      <RiseOutlined style={{ color: '#9CAF88', fontSize: '12px' }} />
                     ) : (
-                      <FallOutlined style={{ color: '#ff4d4f', fontSize: '12px' }} />
+                      <FallOutlined style={{ color: '#BEB5A2', fontSize: '12px' }} />
                     )}
-                    <span style={{ color: monthOverMonthGrowth >= 0 ? '#52c41a' : '#ff4d4f', fontSize: '12px' }}>
+                    <span style={{ color: monthOverMonthGrowth >= 0 ? '#9CAF88' : '#BEB5A2', fontSize: '12px' }}>
                       {monthOverMonthGrowth >= 0 ? '+' : ''}{monthOverMonthGrowth}%
                     </span>
                   </Space>
@@ -297,12 +297,12 @@ const Dashboard = () => {
                 width: '48px',
                 height: '48px',
                 borderRadius: '12px',
-                background: '#fff0f6',
+                background: 'rgba(109, 122, 141, 0.1)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontSize: '20px',
-                color: '#eb2f96'
+                color: '#6D7A8D'
               }}>
                 <DollarOutlined />
               </div>
@@ -321,27 +321,27 @@ const Dashboard = () => {
         }}
         title={
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: '16px', fontWeight: 600, color: '#1a1a1a' }}>月度销售趋势</span>
+            <span style={{ fontSize: '16px', fontWeight: 600, color: '#4A453F' }}>月度销售趋势</span>
             <Space size={8}>
               <Tag
-                color={chartType === 'line' ? '#1890ff' : undefined}
+                color={chartType === 'line' ? '#9CAF88' : undefined}
                 style={{
                   cursor: 'pointer',
                   borderRadius: '4px',
-                  border: chartType === 'line' ? 'none' : '1px solid #d9d9d9',
-                  color: chartType === 'line' ? '#fff' : '#666'
+                  border: chartType === 'line' ? 'none' : '1px solid #9A9591',
+                  color: chartType === 'line' ? '#fff' : '#4A453F'
                 }}
                 onClick={() => setChartType('line')}
               >
                 销售额
               </Tag>
               <Tag
-                color={chartType === 'column' ? '#1890ff' : undefined}
+                color={chartType === 'column' ? '#C8A6A2' : undefined}
                 style={{
                   cursor: 'pointer',
                   borderRadius: '4px',
-                  border: chartType === 'column' ? 'none' : '1px solid #d9d9d9',
-                  color: chartType === 'column' ? '#fff' : '#666'
+                  border: chartType === 'column' ? 'none' : '1px solid #9A9591',
+                  color: chartType === 'column' ? '#fff' : '#4A453F'
                 }}
                 onClick={() => setChartType('column')}
               >
@@ -377,7 +377,7 @@ const Dashboard = () => {
             boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
           }}
           title={
-            <span style={{ fontSize: '16px', fontWeight: 600, color: '#1a1a1a' }}>品种分布</span>
+            <span style={{ fontSize: '16px', fontWeight: 600, color: '#4A453F' }}>品种分布</span>
           }
           headStyle={{ border: 'none', paddingBottom: 0 }}
           bodyStyle={{ padding: '24px' }}
@@ -396,23 +396,23 @@ const Dashboard = () => {
                       style={{
                         padding: '16px 20px',
                         borderRadius: '8px',
-                        background: '#fafafa',
+                        background: '#FBF9F6',
                         cursor: 'pointer',
                         transition: 'all 0.2s ease',
                         border: '1px solid transparent',
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.background = '#f0f0f0';
-                        e.currentTarget.style.borderColor = '#e0e0e0';
+                        e.currentTarget.style.background = '#F0E6E1';
+                        e.currentTarget.style.borderColor = '#D6D0C7';
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.background = '#fafafa';
+                        e.currentTarget.style.background = '#FBF9F6';
                         e.currentTarget.style.borderColor = 'transparent';
                       }}
                     >
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div>
-                          <div style={{ fontSize: '14px', fontWeight: 500, color: '#1a1a1a', marginBottom: '4px' }}>
+                          <div style={{ fontSize: '14px', fontWeight: 500, color: '#4A453F', marginBottom: '4px' }}>
                             {breed}
                           </div>
                           <div style={{ fontSize: '12px', color: '#999' }}>

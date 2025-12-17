@@ -180,7 +180,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
       collapsed={collapsed}
       width={240}
       style={{
-        background: '#001529',
+        background: 'var(--morandi-slate)',
         overflow: 'auto',
         height: '100vh',
         position: 'fixed',
@@ -199,7 +199,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
           color: '#fff',
           fontSize: '18px',
           fontWeight: 'bold',
-          background: '#002140',
+          background: 'rgba(0, 0, 0, 0.1)',
         }}
       >
         {collapsed ? '🦜' : '鹦鹉管理系统'}
