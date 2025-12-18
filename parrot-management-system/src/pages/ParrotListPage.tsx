@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Table, Button, Space, Card, Input, Select, Modal, message, Tag, Popconfirm, InputNumber, Form } from 'antd';
-import { EditOutlined, DeleteOutlined, EyeOutlined, ShoppingCartOutlined, ArrowLeftOutlined, HeartOutlined, SearchOutlined, CustomerServiceOutlined, RollbackOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, EyeOutlined, ShoppingCartOutlined, ArrowLeftOutlined, HeartOutlined, SearchOutlined, CustomerServiceOutlined, RollbackOutlined, PlusOutlined } from '@ant-design/icons';
 import { useParrot } from '../context/ParrotContext';
 import type { Parrot } from '../types/parrot';
 import ParrotForm from '../components/ParrotForm';
@@ -571,35 +571,60 @@ const ParrotListPage = () => {
 
   return (
     <div style={{ padding: '24px' }}>
-      <Card>
-        <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-            <Space size="large" align="center">
-              <Button
-                type="text"
-                icon={<ArrowLeftOutlined />}
-                onClick={() => navigate('/dashboard')}
-                style={{
-                  fontSize: '16px',
-                  padding: '4px 8px',
-                  height: 'auto',
-                  color: '#6D7A8D',
-                  fontWeight: 500,
-                }}
-              >
-                返回仪表板
-              </Button>
-              <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 600 }}>鹦鹉列表</h2>
-            </Space>
-          </div>
+      {/* 固定标题栏 */}
+      <div style={{
+        position: 'sticky',
+        top: 64,
+        zIndex: 50,
+        background: '#F5F2ED',
+        margin: '-24px -24px 0 -24px',
+        padding: '24px 24px 0 24px',
+      }}>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          background: '#fff',
+          padding: '16px 24px',
+          borderRadius: '8px 8px 0 0',
+          borderBottom: '1px solid #f0f0f0',
+        }}>
+          <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>鹦鹉管理</h2>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => {
+              setEditingParrot(null);
+              setIsFormVisible(true);
+            }}
+          >
+            添加鹦鹉
+          </Button>
+        </div>
+      </div>
 
+      <Card style={{ borderRadius: '0 0 8px 8px' }}>
+        <Space direction="vertical" size="middle" style={{ width: '100%' }}>
           <Space size="middle" wrap>
-            <Input.Search
-              placeholder="搜索品种或圈号"
-              onSearch={handleSearch}
-              style={{ width: 250 }}
-              allowClear
-            />
+            <Space.Compact>
+              <Input
+                placeholder="搜索品种或圈号"
+                style={{ width: 200 }}
+                allowClear
+                onPressEnter={(e) => handleSearch((e.target as HTMLInputElement).value)}
+                onChange={(e) => {
+                  if (!e.target.value) handleSearch('');
+                }}
+              />
+              <Button
+                type="primary"
+                icon={<SearchOutlined />}
+                onClick={(e) => {
+                  const input = (e.currentTarget.parentElement?.querySelector('input') as HTMLInputElement);
+                  handleSearch(input?.value || '');
+                }}
+              />
+            </Space.Compact>
             <Select
               placeholder="选择品种"
               style={{ width: 150 }}

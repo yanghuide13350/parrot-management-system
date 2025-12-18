@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Table, Button, Space, Card, Tag, Modal, Divider, message } from 'antd';
-import { ArrowLeftOutlined, HeartOutlined, EyeOutlined, DeleteOutlined, DisconnectOutlined } from '@ant-design/icons';
+import { Table, Button, Space, Card, Tag, Modal, message, Input, Select, InputNumber } from 'antd';
+import { HeartOutlined, EyeOutlined, DeleteOutlined, DisconnectOutlined, SearchOutlined } from '@ant-design/icons';
 import { useParrot } from '../context/ParrotContext';
 import { api } from '../services/api';
 import type { Parrot } from '../types/parrot';
 import ParrotDetail from '../components/ParrotDetail';
 import { calculateAge } from '../utils/dateUtils';
+
+const { Option } = Select;
 
 const BreedingManagementPage = () => {
   const navigate = useNavigate();
@@ -40,6 +42,12 @@ const BreedingManagementPage = () => {
   const [showIncubationModal, setShowIncubationModal] = useState(false);
   const [eggCount, setEggCount] = useState<number>(2);
 
+  // 查询条件状态
+  const [searchText, setSearchText] = useState('');
+  const [selectedBreed, setSelectedBreed] = useState<string>();
+  const [selectedGender, setSelectedGender] = useState<string>();
+  const [pairingStatus, setPairingStatus] = useState<string>();
+
   // Minimum age for breeding (in days) - 1 year
   // const MIN_BREEDING_AGE_DAYS = 365;
 
@@ -62,6 +70,28 @@ const BreedingManagementPage = () => {
     fetchParrots();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, pageSize, filters, isInitialized]);
+
+  // 筛选配对状态的辅助函数
+  const filterParrotsByPairingStatus = (parrots: Parrot[]) => {
+    if (!pairingStatus) {
+      return parrots;
+    }
+    if (pairingStatus === 'paired') {
+      return parrots.filter(p => p.mate_id);
+    } else if (pairingStatus === 'unpaired') {
+      return parrots.filter(p => !p.mate_id);
+    }
+    return parrots;
+  };
+
+  // 监听配对状态变化，自动刷新数据
+  useEffect(() => {
+    if (isInitialized) {
+      // 触发重新渲染
+      fetchParrots();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pairingStatus]);
 
   const handleViewDetail = (parrot: Parrot) => {
     setSelectedParrotLocal(parrot);
@@ -247,6 +277,36 @@ const BreedingManagementPage = () => {
   const handleViewAllEligible = () => {
     // Navigate to all parrots page with no status filter to see eligible birds
     navigate('/parrots');
+  };
+
+  // 查询条件处理函数
+  const handleSearch = () => {
+    // 构建筛选条件 - 始终筛选种鸟状态
+    const searchFilters: any = { status: 'breeding' };
+
+    if (searchText) {
+      searchFilters.keyword = searchText;
+    }
+    if (selectedBreed) {
+      searchFilters.breed = selectedBreed;
+    }
+    if (selectedGender) {
+      searchFilters.gender = selectedGender;
+    }
+    // 配对状态由前端在获取数据后进行筛选
+
+    // 更新筛选条件并重新获取数据
+    setFilters(searchFilters);
+    setPage(1); // 重置到第一页
+  };
+
+  const handleClearFilters = () => {
+    setSearchText('');
+    setSelectedBreed(undefined);
+    setSelectedGender(undefined);
+    setPairingStatus(undefined);
+    setFilters({ status: 'breeding' });
+    setPage(1);
   };
 
   const columns = [
@@ -522,36 +582,87 @@ const BreedingManagementPage = () => {
 
   return (
     <div style={{ padding: '24px' }}>
-      <Card>
+      {/* 固定标题栏 */}
+      <div style={{
+        position: 'sticky',
+        top: 64,
+        zIndex: 50,
+        background: '#F5F2ED',
+        margin: '-24px -24px 0 -24px',
+        padding: '24px 24px 0 24px',
+      }}>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          background: '#fff',
+          padding: '16px 24px',
+          borderRadius: '8px 8px 0 0',
+          borderBottom: '1px solid #f0f0f0',
+        }}>
+          <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>繁殖管理</h2>
+          <Button type="primary" onClick={handleViewAllEligible}>
+            查看可设为种鸟的鹦鹉
+          </Button>
+        </div>
+      </div>
+
+      <Card style={{ borderRadius: '0 0 8px 8px' }}>
         <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-            <Space size="large" align="center">
-              <Button
-                type="text"
-                icon={<ArrowLeftOutlined />}
-                onClick={() => navigate('/dashboard')}
-                style={{
-                  fontSize: '16px',
-                  padding: '4px 8px',
-                  height: 'auto',
-                  color: '#9CAF88',
-                  fontWeight: 500,
-                }}
-              >
-                返回仪表板
-              </Button>
-              <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 600 }}>种鸟管理</h2>
-            </Space>
-            <Button type="primary" onClick={handleViewAllEligible}>
-              查看可设为种鸟的鹦鹉
+          <Space size="middle" wrap>
+            <Space.Compact>
+              <Input
+                placeholder="搜索圈号或品种"
+                style={{ width: 200 }}
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                onPressEnter={handleSearch}
+              />
+            </Space.Compact>
+            <Select
+              placeholder="选择品种"
+              style={{ width: 150 }}
+              allowClear
+              value={selectedBreed}
+              onChange={setSelectedBreed}
+            >
+              <Option value="虎皮鹦鹉">虎皮鹦鹉</Option>
+              <Option value="玄凤鹦鹉">玄凤鹦鹉</Option>
+              <Option value="牡丹鹦鹉">牡丹鹦鹉</Option>
+              <Option value="小太阳">小太阳</Option>
+              <Option value="和尚鹦鹉">和尚鹦鹉</Option>
+              <Option value="凯克鹦鹉">凯克鹦鹉</Option>
+            </Select>
+            <Select
+              placeholder="选择性别"
+              style={{ width: 120 }}
+              allowClear
+              value={selectedGender}
+              onChange={setSelectedGender}
+            >
+              <Option value="公">公</Option>
+              <Option value="母">母</Option>
+            </Select>
+            <Select
+              placeholder="配对状态"
+              style={{ width: 120 }}
+              allowClear
+              value={pairingStatus}
+              onChange={setPairingStatus}
+            >
+              <Option value="paired">已配对</Option>
+              <Option value="unpaired">未配对</Option>
+            </Select>
+            <Button type="primary" icon={<SearchOutlined />} onClick={handleSearch}>
+              查询
             </Button>
-          </div>
-
-          <Divider style={{ margin: '8px 0' }} />
-
+            <Button onClick={handleClearFilters}>
+              清空
+            </Button>
+          </Space>
           <Table
             columns={columns}
-            dataSource={parrots}
+            dataSource={filterParrotsByPairingStatus(parrots)}
             rowKey="id"
             loading={loading}
             scroll={{ x: 1400 }}

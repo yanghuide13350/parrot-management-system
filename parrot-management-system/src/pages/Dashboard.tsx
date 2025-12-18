@@ -126,16 +126,6 @@ const Dashboard = () => {
 
   return (
     <div style={{ padding: '32px', background: '#F5F2ED', minHeight: '100vh' }}>
-      {/* 标题区域 */}
-      <div style={{ marginBottom: '40px' }}>
-        <h1 style={{ margin: 0, fontSize: '28px', fontWeight: 600, color: '#2C2A28', marginBottom: '8px', letterSpacing: '-0.5px' }}>
-          鹦鹉管理系统
-        </h1>
-        <p style={{ margin: 0, fontSize: '14px', color: '#6D7A8D' }}>
-          数据概览 · {new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' })}
-        </p>
-      </div>
-
       {/* 核心指标卡片 */}
       <Row gutter={[20, 20]} style={{ marginBottom: '32px' }}>
         <Col xs={24} sm={12} lg={6}>
@@ -358,11 +348,11 @@ const Dashboard = () => {
         {loadingChart ? (
           <div style={{ textAlign: 'center', padding: '60px', color: '#6D7A8D' }}>加载中...</div>
         ) : monthlySales.length > 0 ? (
-          <div style={{ minHeight: '320px' }}>
+          <div style={{ minHeight: '200px' }}>
             {chartType === 'line' ? (
-              <Line {...lineConfig} height={300} />
+              <Line {...lineConfig} height={180} />
             ) : (
-              <Column {...columnConfig} height={300} />
+              <Column {...columnConfig} height={180} />
             )}
           </div>
         ) : (
