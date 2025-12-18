@@ -46,17 +46,25 @@ def get_incubation_records(
     if start_date_to:
         query = query.filter(IncubationRecord.start_date <= start_date_to)
 
-    if father_ring_number:
-        # 通过JOIN查找父亲圈号匹配
-        query = query.join(Parrot, IncubationRecord.father_id == Parrot.id).filter(
-            Parrot.ring_number.contains(father_ring_number)
-        )
+    # 处理圈号搜索（父鸟或母鸟）
+    if father_ring_number or mother_ring_number:
+        # 使用别名避免冲突
+        father_alias = Parrot.alias('father')
+        mother_alias = Parrot.alias('mother')
 
-    if mother_ring_number:
-        # 通过JOIN查找母亲圈号匹配
-        query = query.join(Parrot, IncubationRecord.mother_id == Parrot.id).filter(
-            Parrot.ring_number.contains(mother_ring_number)
-        )
+        # 构建 OR 条件：匹配父鸟或母鸟的圈号
+        conditions = []
+        if father_ring_number:
+            conditions.append(father_alias.ring_number.contains(father_ring_number))
+        if mother_ring_number:
+            conditions.append(mother_alias.ring_number.contains(mother_ring_number))
+
+        # 需要 JOIN 两次（父子和母）
+        query = query.join(father_alias, IncubationRecord.father_id == father_alias.id)
+        query = query.join(mother_alias, IncubationRecord.mother_id == mother_alias.id)
+
+        # 应用 OR 条件
+        query = query.filter(or_(*conditions))
 
     # 统计总数
     total = query.count()

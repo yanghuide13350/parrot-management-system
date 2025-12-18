@@ -22,6 +22,7 @@ const IncubationListPage: React.FC = () => {
   const [addModalVisible, setAddModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editingRecord, setEditingRecord] = useState<IncubationRecord | null>(null);
+  const [filterParams, setFilterParams] = useState<IncubationFilterParams>({});
   const [form] = Form.useForm();
   const { parrots, loading: parrotsLoading, fetchParrots } = useParrot();
 
@@ -42,8 +43,43 @@ const IncubationListPage: React.FC = () => {
   useEffect(() => {
     // 并行获取鹦鹉数据和孵化记录数据
     fetchParrots();
-    fetchIncubationRecords();
+    fetchIncubationRecords(filterParams);
   }, []);
+
+  // 筛选表单状态和处理函数
+  const [searchText, setSearchText] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string | undefined>();
+  const [dateRange, setDateRange] = useState<any>(null);
+
+  const handleSearch = () => {
+    const params: IncubationFilterParams = {};
+
+    if (statusFilter) {
+      params.status = statusFilter;
+    }
+
+    if (dateRange && dateRange.length === 2) {
+      params.start_date_from = dateRange[0].format('YYYY-MM-DD');
+      params.start_date_to = dateRange[1].format('YYYY-MM-DD');
+    }
+
+    if (searchText) {
+      // 搜索父鸟或母鸟的圈号（使用 mother_ring_number 以匹配相同值的 OR 逻辑）
+      params.father_ring_number = searchText;
+      params.mother_ring_number = searchText;
+    }
+
+    setFilterParams(params);
+    fetchIncubationRecords(params);
+  };
+
+  const handleReset = () => {
+    setSearchText('');
+    setStatusFilter(undefined);
+    setDateRange(null);
+    setFilterParams({});
+    fetchIncubationRecords();
+  };
 
   // 监听鹦鹉数据加载状态
   useEffect(() => {
@@ -365,15 +401,31 @@ const IncubationListPage: React.FC = () => {
         {/* 筛选区域 */}
         <div style={{ marginBottom: '16px', padding: '16px', background: '#f5f5f5', borderRadius: '8px' }}>
           <Space wrap>
-            <Input placeholder="搜索配对..." style={{ width: 200 }} />
-            <Select placeholder="状态" style={{ width: 150 }} allowClear>
+            <Input
+              placeholder="搜索配对..."
+              style={{ width: 200 }}
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              onPressEnter={handleSearch}
+            />
+            <Select
+              placeholder="状态"
+              style={{ width: 150 }}
+              allowClear
+              value={statusFilter}
+              onChange={setStatusFilter}
+            >
               <Option value="incubating">孵化中</Option>
               <Option value="hatched">已孵化</Option>
               <Option value="failed">孵化失败</Option>
             </Select>
-            <RangePicker placeholder={['开始日期', '结束日期']} />
-            <Button type="primary">搜索</Button>
-            <Button>重置</Button>
+            <RangePicker
+              placeholder={['开始日期', '结束日期']}
+              value={dateRange}
+              onChange={setDateRange}
+            />
+            <Button type="primary" onClick={handleSearch}>搜索</Button>
+            <Button onClick={handleReset}>重置</Button>
           </Space>
         </div>
 

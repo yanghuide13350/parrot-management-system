@@ -2,9 +2,6 @@ import React from 'react';
 import { DatePicker, Space, Button } from 'antd';
 import type { DatePickerProps } from 'antd/es/date-picker';
 import dayjs from 'dayjs';
-import 'dayjs/locale/zh-cn';
-
-dayjs.locale('zh-cn');
 
 interface DatePickerWithShortcutsProps extends Omit<DatePickerProps, 'value' | 'onChange'> {
   value?: dayjs.Dayjs | null;
