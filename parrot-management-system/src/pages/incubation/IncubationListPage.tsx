@@ -1,58 +1,82 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, Table, Button, Space, Tag, Modal, message, Input, Select, DatePicker, Row, Col, Form } from 'antd';
 import { PlusOutlined, EyeOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import moment from 'moment';
 import { useParrot } from '../../context/ParrotContext';
+import { IncubationService } from '../../services/incubationService';
+import type {
+  IncubationRecord,
+  IncubationRecordCreate,
+  IncubationRecordUpdate,
+  IncubationFilterParams,
+} from '../../services/incubationService';
 
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 
-// 模拟孵化记录数据
-const mockIncubationRecords = [
-  {
-    id: 1,
-    motherId: 1,
-    fatherId: 2,
-    motherBreed: '玄凤',
-    fatherBreed: '玄凤',
-    startDate: '2024-11-01',
-    expectedHatchDate: '2024-12-01',
-    actualHatchDate: null,
-    eggsCount: 3,
-    hatchedCount: 0,
-    status: 'incubating', // incubating, hatched, failed
-    notes: '第一次孵化',
-  },
-  {
-    id: 2,
-    motherId: 3,
-    fatherId: 4,
-    motherBreed: '虎皮',
-    fatherBreed: '虎皮',
-    startDate: '2024-10-15',
-    expectedHatchDate: '2024-11-15',
-    actualHatchDate: '2024-11-16',
-    eggsCount: 4,
-    hatchedCount: 3,
-    status: 'hatched',
-    notes: '成功孵化3只雏鸟',
-  },
-];
-
 const IncubationListPage: React.FC = () => {
-  const [incubationRecords, setIncubationRecords] = useState(mockIncubationRecords);
+  const [incubationRecords, setIncubationRecords] = useState<IncubationRecord[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
   const [addModalVisible, setAddModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
-  const [editingRecord, setEditingRecord] = useState<any>(null);
+  const [editingRecord, setEditingRecord] = useState<IncubationRecord | null>(null);
   const [form] = Form.useForm();
-  const { parrots, updateStatus, fetchParrots } = useParrot();
+  const { parrots, loading: parrotsLoading, fetchParrots } = useParrot();
+
+  // 获取孵化记录列表
+  const fetchIncubationRecords = async (params?: IncubationFilterParams) => {
+    try {
+      const response = await IncubationService.getIncubationRecords(params);
+      if (response.success) {
+        setIncubationRecords(response.data.items);
+      }
+    } catch (error) {
+      console.error('获取孵化记录失败:', error);
+      message.error('获取孵化记录失败');
+    }
+  };
+
+  // 页面加载时获取数据
+  useEffect(() => {
+    // 并行获取鹦鹉数据和孵化记录数据
+    fetchParrots();
+    fetchIncubationRecords();
+  }, []);
+
+  // 监听鹦鹉数据加载状态
+  useEffect(() => {
+    if (!parrotsLoading && parrots.length === 0) {
+      // 如果鹦鹉数据为空，尝试重新获取
+      fetchParrots();
+    }
+  }, [parrotsLoading, parrots.length, fetchParrots]);
 
   const handleAddIncubation = () => {
     setAddModalVisible(true);
     form.resetFields();
+  };
+
+  // 父亲选择后自动带出母亲圈号
+  const handleFatherChange = (fatherRingNumber: string) => {
+    // 根据父亲圈号查找鹦鹉对象
+    const father = parrots.find(p => p.ring_number === fatherRingNumber);
+
+    // 检查是否已配对（mate_id存在）
+    if (father?.mate_id) {
+      // 查找母亲鹦鹉
+      const mother = parrots.find(p => p.id === father.mate_id);
+
+      // 自动填充母亲圈号
+      if (mother?.ring_number) {
+        form.setFieldsValue({ motherRingNumber: mother.ring_number });
+        message.success(`已自动填充母亲圈号: ${mother.ring_number}`);
+      }
+    } else {
+      // 未配对提示
+      message.warning('该父亲鹦鹉尚未配对，请手动选择母亲');
+    }
   };
 
   const handleSubmitIncubation = async (values: any) => {
@@ -74,35 +98,26 @@ const IncubationListPage: React.FC = () => {
         return;
       }
 
-      const newRecord = {
-        id: incubationRecords.length + 1,
-        motherId: mother.id,
-        fatherId: father.id,
-        motherRingNumber: values.motherRingNumber,
-        fatherRingNumber: values.fatherRingNumber,
-        motherBreed: mother?.breed || '未知',
-        fatherBreed: father?.breed || '未知',
-        startDate: startDate,
-        expectedHatchDate: expectedDate,
-        actualHatchDate: null,
-        eggsCount: values.eggsCount,
-        hatchedCount: 0,
+      // 使用API创建孵化记录
+      const recordData: IncubationRecordCreate = {
+        father_id: father.id,
+        mother_id: mother.id,
+        start_date: startDate,
+        expected_hatch_date: expectedDate,
+        eggs_count: values.eggsCount,
+        hatched_count: 0,
         status: 'incubating',
         notes: values.notes || '',
       };
 
-      setIncubationRecords([...incubationRecords, newRecord]);
-
-      // 更新鹦鹉状态为孵化中
-      await updateStatus(father.id, 'incubating');
-      await updateStatus(mother.id, 'incubating');
-
-      message.success('添加孵化记录成功！');
-      setAddModalVisible(false);
-      form.resetFields();
-
-      // 刷新鹦鹉列表
-      fetchParrots();
+      const response = await IncubationService.createIncubationRecord(recordData);
+      if (response.success) {
+        message.success('添加孵化记录成功！');
+        setAddModalVisible(false);
+        form.resetFields();
+        fetchIncubationRecords();
+        fetchParrots();
+      }
     } catch (error) {
       console.error('添加孵化记录失败:', error);
       message.error('添加孵化记录失败，请重试');
@@ -114,10 +129,9 @@ const IncubationListPage: React.FC = () => {
       if (!editingRecord) return;
 
       // 计算预计孵化日期（如果开始日期改变了）
-      let expectedDate = editingRecord.expectedHatchDate;
-      if (values.startDate) {
-        expectedDate = values.startDate.clone().add(21, 'days').format('YYYY-MM-DD');
-      }
+      let expectedDate = values.startDate
+        ? values.startDate.clone().add(21, 'days').format('YYYY-MM-DD')
+        : undefined;
 
       // 通过圈号查找父鸟和母鸟信息
       const father = parrots.find(p => p.ring_number === values.fatherRingNumber);
@@ -132,39 +146,28 @@ const IncubationListPage: React.FC = () => {
         return;
       }
 
-      const updatedRecord = {
-        ...editingRecord,
-        motherId: mother.id,
-        fatherId: father.id,
-        motherRingNumber: values.motherRingNumber,
-        fatherRingNumber: values.fatherRingNumber,
-        motherBreed: mother?.breed || editingRecord.motherBreed,
-        fatherBreed: father?.breed || editingRecord.fatherBreed,
-        startDate: values.startDate ? values.startDate.format('YYYY-MM-DD') : editingRecord.startDate,
-        expectedHatchDate: expectedDate,
-        eggsCount: values.eggsCount,
+      // 使用API更新孵化记录
+      const updateData: IncubationRecordUpdate = {
+        father_id: father.id,
+        mother_id: mother.id,
+        start_date: values.startDate ? values.startDate.format('YYYY-MM-DD') : undefined,
+        expected_hatch_date: expectedDate,
+        actual_hatch_date: values.actualHatchDate ? values.actualHatchDate.format('YYYY-MM-DD') : undefined,
+        eggs_count: values.eggsCount,
+        hatched_count: values.hatchedCount,
         status: values.status,
-        actualHatchDate: values.actualHatchDate ? values.actualHatchDate.format('YYYY-MM-DD') : null,
-        hatchedCount: values.hatchedCount,
         notes: values.notes || '',
       };
 
-      const updatedRecords = incubationRecords.map(r => r.id === editingRecord.id ? updatedRecord : r);
-      setIncubationRecords(updatedRecords);
-
-      // 如果状态从孵化中变为其他状态，更新鹦鹉状态为breeding
-      if (editingRecord.status === 'incubating' && values.status !== 'incubating') {
-        await updateStatus(father.id, 'breeding');
-        await updateStatus(mother.id, 'breeding');
+      const response = await IncubationService.updateIncubationRecord(editingRecord.id, updateData);
+      if (response.success) {
+        message.success('更新孵化记录成功！');
+        setEditModalVisible(false);
+        setEditingRecord(null);
+        form.resetFields();
+        fetchIncubationRecords();
+        fetchParrots();
       }
-
-      message.success('更新孵化记录成功！');
-      setEditModalVisible(false);
-      setEditingRecord(null);
-      form.resetFields();
-
-      // 刷新鹦鹉列表
-      fetchParrots();
     } catch (error) {
       console.error('更新孵化记录失败:', error);
       message.error('更新孵化记录失败，请重试');
@@ -176,44 +179,37 @@ const IncubationListPage: React.FC = () => {
     setModalVisible(true);
   };
 
-  const handleEditRecord = (record: any) => {
+  const handleEditRecord = (record: IncubationRecord) => {
     setEditingRecord(record);
     form.setFieldsValue({
-      fatherRingNumber: record.fatherRingNumber || record.fatherId,
-      motherRingNumber: record.motherRingNumber || record.motherId,
-      startDate: moment(record.startDate),
-      eggsCount: record.eggsCount,
+      fatherRingNumber: record.father.ring_number,
+      motherRingNumber: record.mother.ring_number,
+      startDate: moment(record.start_date),
+      eggsCount: record.eggs_count,
       status: record.status,
-      actualHatchDate: record.actualHatchDate ? moment(record.actualHatchDate) : null,
-      hatchedCount: record.hatchedCount,
+      actualHatchDate: record.actual_hatch_date ? moment(record.actual_hatch_date) : null,
+      hatchedCount: record.hatched_count,
       notes: record.notes,
     });
     setEditModalVisible(true);
   };
 
-  const handleDeleteRecord = (record: any) => {
+  const handleDeleteRecord = (record: IncubationRecord) => {
     Modal.confirm({
       title: '确认删除',
       content: '确定要删除这条孵化记录吗？',
       centered: true,
       onOk: async () => {
-        setIncubationRecords(incubationRecords.filter(r => r.id !== record.id));
-
-        // 通过圈号查找鹦鹉并更新状态
-        const father = parrots.find(p => p.ring_number === (record.fatherRingNumber || record.fatherId));
-        const mother = parrots.find(p => p.ring_number === (record.motherRingNumber || record.motherId));
-
-        if (father) {
-          await updateStatus(father.id, 'breeding');
+        try {
+          const response = await IncubationService.deleteIncubationRecord(record.id);
+          if (response.success) {
+            message.success('删除成功！');
+            fetchIncubationRecords();
+          }
+        } catch (error) {
+          console.error('删除孵化记录失败:', error);
+          message.error('删除孵化记录失败，请重试');
         }
-        if (mother) {
-          await updateStatus(mother.id, 'breeding');
-        }
-
-        message.success('删除成功');
-
-        // 刷新鹦鹉列表
-        fetchParrots();
       },
     });
   };
@@ -249,7 +245,7 @@ const IncubationListPage: React.FC = () => {
     }
   };
 
-  const columns: ColumnsType<any> = [
+  const columns: ColumnsType<IncubationRecord> = [
     {
       title: 'ID',
       dataIndex: 'id',
@@ -258,42 +254,42 @@ const IncubationListPage: React.FC = () => {
     },
     {
       title: '父鸟',
-      dataIndex: 'fatherBreed',
-      key: 'fatherBreed',
-      render: (text, record) => `${text} (圈号: ${record.fatherRingNumber || record.fatherId})`,
+      key: 'father',
+      render: (_, record) => `${record.father.breed} (圈号: ${record.father.ring_number || '无'})`,
     },
     {
       title: '母鸟',
-      dataIndex: 'motherBreed',
-      key: 'motherBreed',
-      render: (text, record) => `${text} (圈号: ${record.motherRingNumber || record.motherId})`,
+      key: 'mother',
+      render: (_, record) => `${record.mother.breed} (圈号: ${record.mother.ring_number || '无'})`,
     },
     {
       title: '开始日期',
-      dataIndex: 'startDate',
-      key: 'startDate',
+      dataIndex: 'start_date',
+      key: 'start_date',
+      render: (date) => date,
     },
     {
       title: '预计孵化日期',
-      dataIndex: 'expectedHatchDate',
-      key: 'expectedHatchDate',
+      dataIndex: 'expected_hatch_date',
+      key: 'expected_hatch_date',
+      render: (date) => date,
     },
     {
       title: '实际孵化日期',
-      dataIndex: 'actualHatchDate',
-      key: 'actualHatchDate',
+      dataIndex: 'actual_hatch_date',
+      key: 'actual_hatch_date',
       render: (date) => date || '-',
     },
     {
       title: '蛋数量',
-      dataIndex: 'eggsCount',
-      key: 'eggsCount',
+      dataIndex: 'eggs_count',
+      key: 'eggs_count',
       width: 100,
     },
     {
       title: '成功孵化数',
-      dataIndex: 'hatchedCount',
-      key: 'hatchedCount',
+      dataIndex: 'hatched_count',
+      key: 'hatched_count',
       width: 120,
     },
     {
@@ -385,6 +381,7 @@ const IncubationListPage: React.FC = () => {
           columns={columns}
           dataSource={incubationRecords}
           rowKey="id"
+          loading={parrotsLoading}
           pagination={{
             total: incubationRecords.length,
             pageSize: 10,
@@ -453,8 +450,15 @@ const IncubationListPage: React.FC = () => {
               name="fatherRingNumber"
               rules={[{ required: true, message: '请输入父亲圈号' }]}
             >
-              <Select placeholder="请选择父亲" showSearch optionFilterProp="children">
-                {getPairedParrots()
+              <Select
+                placeholder={parrotsLoading ? "加载中..." : "请选择父亲"}
+                showSearch
+                optionFilterProp="children"
+                onChange={handleFatherChange}
+                loading={parrotsLoading}
+                disabled={parrotsLoading}
+              >
+                {!parrotsLoading && getPairedParrots()
                   .filter(p => p.gender === '公')
                   .map(parrot => (
                     <Option key={parrot.id} value={parrot.ring_number}>
@@ -469,8 +473,14 @@ const IncubationListPage: React.FC = () => {
               name="motherRingNumber"
               rules={[{ required: true, message: '请输入母亲圈号' }]}
             >
-              <Select placeholder="请选择母亲" showSearch optionFilterProp="children">
-                {getPairedParrots()
+              <Select
+                placeholder={parrotsLoading ? "加载中..." : "请选择母亲"}
+                showSearch
+                optionFilterProp="children"
+                loading={parrotsLoading}
+                disabled={parrotsLoading}
+              >
+                {!parrotsLoading && getPairedParrots()
                   .filter(p => p.gender === '母')
                   .map(parrot => (
                     <Option key={parrot.id} value={parrot.ring_number}>
@@ -540,8 +550,15 @@ const IncubationListPage: React.FC = () => {
               name="fatherRingNumber"
               rules={[{ required: true, message: '请输入父亲圈号' }]}
             >
-              <Select placeholder="请选择父亲" showSearch optionFilterProp="children">
-                {getPairedParrots()
+              <Select
+                placeholder={parrotsLoading ? "加载中..." : "请选择父亲"}
+                showSearch
+                optionFilterProp="children"
+                onChange={handleFatherChange}
+                loading={parrotsLoading}
+                disabled={parrotsLoading}
+              >
+                {!parrotsLoading && getPairedParrots()
                   .filter(p => p.gender === '公')
                   .map(parrot => (
                     <Option key={parrot.id} value={parrot.ring_number}>
@@ -556,8 +573,14 @@ const IncubationListPage: React.FC = () => {
               name="motherRingNumber"
               rules={[{ required: true, message: '请输入母亲圈号' }]}
             >
-              <Select placeholder="请选择母亲" showSearch optionFilterProp="children">
-                {getPairedParrots()
+              <Select
+                placeholder={parrotsLoading ? "加载中..." : "请选择母亲"}
+                showSearch
+                optionFilterProp="children"
+                loading={parrotsLoading}
+                disabled={parrotsLoading}
+              >
+                {!parrotsLoading && getPairedParrots()
                   .filter(p => p.gender === '母')
                   .map(parrot => (
                     <Option key={parrot.id} value={parrot.ring_number}>

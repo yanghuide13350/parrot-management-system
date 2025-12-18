@@ -1,6 +1,7 @@
 from app.schemas.parrot import *
 from app.schemas.photo import *
 from app.schemas.statistics import *
+from app.schemas.incubation import *
 
 __all__ = [
     "ParrotCreate",
@@ -19,4 +20,11 @@ __all__ = [
     "PhotoUpload",
     "PhotoResponse",
     "StatisticsOverview",
+    "IncubationRecordCreate",
+    "IncubationRecordUpdate",
+    "IncubationRecordResponse",
+    "IncubationRecordList",
+    "IncubationRecordFilter",
+    "IncubationStatistics",
+    "ParrotInfo",
 ]

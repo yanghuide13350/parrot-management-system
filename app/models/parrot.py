@@ -44,3 +44,7 @@ class Parrot(Base):
     follow_ups = relationship("FollowUp", back_populates="parrot", cascade="all, delete-orphan")
     # 关联销售历史记录
     sales_history = relationship("SalesHistory", back_populates="parrot", cascade="all, delete-orphan")
+    # 关联孵化记录（作为父亲）
+    father_incubation_records = relationship("IncubationRecord", foreign_keys="IncubationRecord.father_id", back_populates="father", cascade="all, delete-orphan")
+    # 关联孵化记录（作为母亲）
+    mother_incubation_records = relationship("IncubationRecord", foreign_keys="IncubationRecord.mother_id", back_populates="mother", cascade="all, delete-orphan")

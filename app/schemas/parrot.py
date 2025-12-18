@@ -20,8 +20,8 @@ class ParrotBase(BaseModel):
     paired_at: Optional[datetime] = Field(None, description="配对时间")
 
     @field_serializer('price')
-    def serialize_price(self, price: Decimal, _info):
-        return float(price)
+    def serialize_price(self, price: Optional[Decimal], _info):
+        return float(price) if price is not None else None
 
 
 class ParrotCreate(ParrotBase):
