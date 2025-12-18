@@ -186,20 +186,20 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
           height: '64px',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: collapsed ? 'center' : 'flex-start',
-          padding: collapsed ? '0' : '0 24px',
+          justifyContent: collapsed ? 'center' : 'center',
+          padding: collapsed ? '0' : '0 16px',
           color: '#fff',
           fontSize: '18px',
           fontWeight: 'bold',
+          gap: collapsed ? '0' : '8px',
         }}
       >
-        {collapsed ? (
-          <img
-            src="/parrot-icon.svg"
-            alt="🦜"
-            style={{ width: '24px', height: '24px', objectFit: 'contain', filter: 'brightness(0) invert(1)' }}
-          />
-        ) : '鹦鹉管理系统'}
+        <img
+          src="/parrot-icon.svg"
+          alt="🦜"
+          style={{ width: '24px', height: '24px', objectFit: 'contain', filter: 'brightness(0) invert(1)' }}
+        />
+        {!collapsed && <span>鹦鹉管理系统</span>}
       </div>
       <Menu
         theme="dark"

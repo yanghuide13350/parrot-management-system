@@ -811,8 +811,7 @@ const ParrotListPage = () => {
             label="联系方式"
             name="contact"
             rules={[
-              { required: true, message: '请输入联系方式' },
-              { min: 6, message: '联系方式至少6位' }
+              { required: true, message: '请输入联系方式' }
             ]}
           >
             <Input placeholder="请输入微信号或电话号码" />
