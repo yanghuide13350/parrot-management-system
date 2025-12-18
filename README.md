@@ -130,6 +130,67 @@ uvicorn main:app --reload
 - `GET /api/v1/returns` - 获取退货记录列表
 - `GET /api/v1/returns/{return_id}` - 获取退货详情
 
+## 数据库配置
+
+### 开发环境 (SQLite)
+默认使用SQLite数据库，适合开发和测试：
+```bash
+# 配置文件 .env
+DATABASE_URL=sqlite:///./parrot_management.db
+```
+
+### 生产环境 (MySQL/PostgreSQL)
+推荐使用MySQL或PostgreSQL生产级数据库：
+
+#### MySQL配置
+```bash
+# 安装依赖
+pip install PyMySQL
+
+# 配置文件 .env
+DATABASE_URL=mysql+pymysql://用户名:密码@localhost:3306/数据库名
+```
+
+#### PostgreSQL配置
+```bash
+# 安装依赖
+pip install psycopg2-binary
+
+# 配置文件 .env
+DATABASE_URL=postgresql://用户名:密码@localhost:5432/数据库名
+```
+
+### 数据库迁移
+```bash
+# 初始化迁移环境
+alembic init alembic
+
+# 创建迁移文件
+alembic revision --autogenerate -m "描述"
+
+# 应用迁移
+alembic upgrade head
+
+# 查看迁移历史
+alembic history
+```
+
+### 快速初始化数据库
+```bash
+# 运行数据库初始化脚本
+python init_database.py
+```
+
+## 生产环境部署
+
+详细部署指南请参考：[DEPLOYMENT.md](DEPLOYMENT.md)
+
+快速部署脚本：
+```bash
+# 运行快速部署脚本
+./deploy.sh
+```
+
 ## 许可证
 
 MIT

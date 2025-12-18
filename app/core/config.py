@@ -9,7 +9,10 @@ class Settings(BaseSettings):
     DEBUG: bool = True
 
     # 数据库配置
+    # 开发环境使用SQLite，生产环境使用MySQL/PostgreSQL
     DATABASE_URL: str = "sqlite:///./parrot_management.db"
+    # 如果使用MySQL: mysql+pymysql://username:password@localhost:3306/database_name
+    # 如果使用PostgreSQL: postgresql://username:password@localhost:5432/database_name
 
     # 文件上传配置
     UPLOAD_DIR: str = "uploads"
