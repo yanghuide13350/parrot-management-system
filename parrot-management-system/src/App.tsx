@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Suspense } from 'react';
 import { Spin, ConfigProvider } from 'antd';
+import zhCN from 'antd/locale/zh_CN';
 import { ParrotProvider } from './context/ParrotContext';
 import MainLayout from './layouts/MainLayout';
 import { routes } from './configs/routes';
@@ -16,7 +17,7 @@ const Loading = () => (
 
 function App() {
   return (
-    <ConfigProvider theme={antdMorandiTheme}>
+    <ConfigProvider theme={antdMorandiTheme} locale={zhCN}>
       <ParrotProvider>
         <Router>
           <MainLayout>
@@ -28,7 +29,12 @@ function App() {
                     return (
                       <Route key={route.path} path={route.path}>
                         {route.children.map((child) => (
-                          <Route key={child.path || 'index'} {...child} />
+                          <Route
+                            key={child.path || 'index'}
+                            path={child.path}
+                            element={child.element}
+                            index={child.index}
+                          />
                         ))}
                       </Route>
                     );

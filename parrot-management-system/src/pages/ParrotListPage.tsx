@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Table, Button, Space, Card, Input, Select, Modal, message, Tag, Popconfirm, InputNumber, Form } from 'antd';
-import { EditOutlined, DeleteOutlined, EyeOutlined, ShoppingCartOutlined, ArrowLeftOutlined, HeartOutlined, SearchOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, EyeOutlined, ShoppingCartOutlined, ArrowLeftOutlined, HeartOutlined, SearchOutlined, CustomerServiceOutlined, RollbackOutlined } from '@ant-design/icons';
 import { useParrot } from '../context/ParrotContext';
 import type { Parrot } from '../types/parrot';
 import ParrotForm from '../components/ParrotForm';
@@ -357,12 +357,12 @@ const ParrotListPage = () => {
   };
 
   const statusColors: Record<string, string> = {
-    'available': '#9CAF88',  // sage green
-    'sold': '#C8A6A2',       // dusty rose
-    'returned': '#BEB5A2',   // tea
-    'breeding': '#A89994',   // stone
-    'paired': '#6D7A8D',     // slate
-    'incubating': '#6D7A8D', // slate
+    'available': '#52B788',  // 鲜绿色
+    'sold': '#E56B6F',       // 珊瑚红
+    'returned': '#8D99AE',   // 蓝灰色
+    'breeding': '#F4A261',   // 橙黄色
+    'paired': '#00BBF9',     // 天蓝色
+    'incubating': '#9B5DE5', // 紫色
   };
 
   const columns = [
@@ -428,138 +428,149 @@ const ParrotListPage = () => {
       key: 'action',
       fixed: 'right' as const,
       width: 320,
-      render: (_: any, record: Parrot) => (
-        <Space size={4}>
-          <Button
-            type="link"
-            size="small"
-            icon={<EyeOutlined />}
-            onClick={() => handleViewDetail(record)}
-            style={{ padding: '0 4px' }}
-          >
-            查看
-          </Button>
-          {record.status === 'available' && (
-            <>
-              <Button
-                type="link"
-                size="small"
-                icon={<EditOutlined />}
-                onClick={() => handleEditParrot(record)}
-                style={{ padding: '0 4px' }}
-              >
-                编辑
-              </Button>
-              <Button type="link" size="small" icon={<ShoppingCartOutlined />} onClick={() => handleSellParrot(record)} style={{ padding: '0 4px' }}>
-                售出
-              </Button>
-              <Button type="link" size="small" icon={<HeartOutlined />} onClick={() => handleSetAsBreeding(record)} style={{ padding: '0 4px' }}>
-                种鸟
-              </Button>
-              <Popconfirm
-                title="确认删除"
-                description="确定要删除这只鹦鹉吗？此操作不可恢复。"
-                onConfirm={() => handleDeleteParrot(record.id)}
-                okText="确认"
-                cancelText="取消"
-              >
-                <Button type="link" size="small" danger icon={<DeleteOutlined />} style={{ padding: '0 4px' }}>
-                  删除
+      render: (_: any, record: Parrot) => {
+        const actualStatus = getParrotStatus(record);
+
+        return (
+          <Space size={4}>
+            {actualStatus === 'paired' && (
+              <>
+                <Button
+                  type="link"
+                  size="small"
+                  icon={<EyeOutlined />}
+                  onClick={() => handleViewDetail(record)}
+                  style={{ padding: '0 4px' }}
+                >
+                  查看
                 </Button>
-              </Popconfirm>
-            </>
-          )}
-          {record.status === 'breeding' && (
-            <>
-              <Button
-                type="link"
-                size="small"
-                icon={<EditOutlined />}
-                onClick={() => handleEditParrot(record)}
-                style={{ padding: '0 4px' }}
-              >
-                编辑
-              </Button>
-              <Button type="link" size="small" disabled title="种鸟不能售卖" style={{ padding: '0 4px' }}>
-                售出
-              </Button>
-              <Popconfirm
-                title="确认删除"
-                description="确定要删除这只鹦鹉吗？此操作不可恢复。"
-                onConfirm={() => handleDeleteParrot(record.id)}
-                okText="确认"
-                cancelText="取消"
-              >
-                <Button type="link" size="small" danger icon={<DeleteOutlined />} style={{ padding: '0 4px' }}>
-                  删除
+                <Button
+                  type="link"
+                  size="small"
+                  icon={<EditOutlined />}
+                  disabled
+                  title="配对中的鹦鹉不能编辑"
+                  style={{ padding: '0 4px' }}
+                >
+                  编辑
                 </Button>
-              </Popconfirm>
-            </>
-          )}
-          {getParrotStatus(record) === 'paired' && (
-            <>
-              <Button
-                type="link"
-                size="small"
-                icon={<EyeOutlined />}
-                onClick={() => handleViewDetail(record)}
-                style={{ padding: '0 4px' }}
-              >
-                查看
-              </Button>
-              <Button
-                type="link"
-                size="small"
-                icon={<HeartOutlined />}
-                disabled
-                title="配对中的鹦鹉不能编辑"
-                style={{ padding: '0 4px' }}
-              >
-                编辑
-              </Button>
-              <Button type="link" size="small" disabled title="配对中的鹦鹉不能售卖" style={{ padding: '0 4px' }}>
-                售出
-              </Button>
-              <Popconfirm
-                title="确认删除"
-                description="确定要删除这只鹦鹉吗？此操作不可恢复。"
-                onConfirm={() => handleDeleteParrot(record.id)}
-                okText="确认"
-                cancelText="取消"
-              >
-                <Button type="link" size="small" danger icon={<DeleteOutlined />} style={{ padding: '0 4px' }}>
-                  删除
+                <Button type="link" size="small" icon={<ShoppingCartOutlined />} disabled title="配对中的鹦鹉不能售卖" style={{ padding: '0 4px' }}>
+                  售出
                 </Button>
-              </Popconfirm>
-            </>
-          )}
-          {record.status === 'sold' && (
-            <>
-              <Button type="link" size="small" onClick={() => handleFollowUp(record)} style={{ padding: '0 4px' }}>
-                回访
-              </Button>
-              <Button type="link" size="small" danger onClick={() => handleReturnParrot(record)} style={{ padding: '0 4px' }}>
-                退回
-              </Button>
-            </>
-          )}
-          {record.status === 'returned' && (
-            <>
-              <Button type="link" size="small" icon={<EditOutlined />} onClick={() => handleEditParrot(record)} style={{ padding: '0 4px' }}>
-                编辑
-              </Button>
-              <Button type="link" size="small" icon={<ShoppingCartOutlined />} onClick={() => handleSellParrot(record)} style={{ padding: '0 4px' }}>
-                重新售出
-              </Button>
-            </>
-          )}
-        </Space>
-      ),
+              </>
+            )}
+            {actualStatus === 'available' && (
+              <>
+                <Button
+                  type="link"
+                  size="small"
+                  icon={<EyeOutlined />}
+                  onClick={() => handleViewDetail(record)}
+                  style={{ padding: '0 4px' }}
+                >
+                  查看
+                </Button>
+                <Button
+                  type="link"
+                  size="small"
+                  icon={<EditOutlined />}
+                  onClick={() => handleEditParrot(record)}
+                  style={{ padding: '0 4px' }}
+                >
+                  编辑
+                </Button>
+                <Button type="link" size="small" icon={<ShoppingCartOutlined />} onClick={() => handleSellParrot(record)} style={{ padding: '0 4px' }}>
+                  售出
+                </Button>
+                <Button type="link" size="small" icon={<HeartOutlined />} onClick={() => handleSetAsBreeding(record)} style={{ padding: '0 4px' }}>
+                  种鸟
+                </Button>
+                <Popconfirm
+                  title="确认删除"
+                  description="确定要删除这只鹦鹉吗？此操作不可恢复。"
+                  onConfirm={() => handleDeleteParrot(record.id)}
+                  okText="确认"
+                  cancelText="取消"
+                >
+                  <Button type="link" size="small" danger icon={<DeleteOutlined />} style={{ padding: '0 4px' }}>
+                    删除
+                  </Button>
+                </Popconfirm>
+              </>
+            )}
+            {actualStatus === 'breeding' && (
+              <>
+                <Button
+                  type="link"
+                  size="small"
+                  icon={<EyeOutlined />}
+                  onClick={() => handleViewDetail(record)}
+                  style={{ padding: '0 4px' }}
+                >
+                  查看
+                </Button>
+                <Button
+                  type="link"
+                  size="small"
+                  icon={<EditOutlined />}
+                  onClick={() => handleEditParrot(record)}
+                  style={{ padding: '0 4px' }}
+                >
+                  编辑
+                </Button>
+                <Button type="link" size="small" icon={<ShoppingCartOutlined />} disabled title="种鸟不能售卖" style={{ padding: '0 4px' }}>
+                  售出
+                </Button>
+                <Popconfirm
+                  title="确认删除"
+                  description="确定要删除这只鹦鹉吗？此操作不可恢复。"
+                  onConfirm={() => handleDeleteParrot(record.id)}
+                  okText="确认"
+                  cancelText="取消"
+                >
+                  <Button type="link" size="small" danger icon={<DeleteOutlined />} style={{ padding: '0 4px' }}>
+                    删除
+                  </Button>
+                </Popconfirm>
+              </>
+            )}
+            {actualStatus === 'sold' && (
+              <>
+                <Button type="link" size="small" icon={<CustomerServiceOutlined />} onClick={() => handleFollowUp(record)} style={{ padding: '0 4px' }}>
+                  回访
+                </Button>
+                <Button type="link" size="small" danger icon={<RollbackOutlined />} onClick={() => handleReturnParrot(record)} style={{ padding: '0 4px' }}>
+                  退回
+                </Button>
+              </>
+            )}
+            {actualStatus === 'returned' && (
+              <>
+                <Button
+                  type="link"
+                  size="small"
+                  icon={<EyeOutlined />}
+                  onClick={() => handleViewDetail(record)}
+                  style={{ padding: '0 4px' }}
+                >
+                  查看
+                </Button>
+                <Button type="link" size="small" icon={<EditOutlined />} onClick={() => handleEditParrot(record)} style={{ padding: '0 4px' }}>
+                  编辑
+                </Button>
+                <Button type="link" size="small" icon={<ShoppingCartOutlined />} onClick={() => handleSellParrot(record)} style={{ padding: '0 4px' }}>
+                  重新售出
+                </Button>
+              </>
+            )}
+          </Space>
+        );
+      },
     },
   ];
 
   return (
-    <div>
+    <div style={{ padding: '24px' }}>
       <Card>
         <Space direction="vertical" size="middle" style={{ width: '100%' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
@@ -572,7 +583,7 @@ const ParrotListPage = () => {
                   fontSize: '16px',
                   padding: '4px 8px',
                   height: 'auto',
-                  color: '#1890ff',
+                  color: '#6D7A8D',
                   fontWeight: 500,
                 }}
               >
@@ -759,7 +770,7 @@ const ParrotListPage = () => {
                 borderRight: 'none',
                 borderRadius: '6px 0 0 6px',
                 fontSize: '14px',
-                color: '#666'
+                color: '#6D7A8D'
               }}>
                 ¥
               </div>

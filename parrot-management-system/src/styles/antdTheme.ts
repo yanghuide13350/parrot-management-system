@@ -8,8 +8,8 @@ export const antdMorandiTheme = {
     colorBgBase: morandiTheme.colors.background,
     colorBgContainer: morandiTheme.colors.surface,
     colorBgElevated: morandiTheme.colors.surface,
-    colorTextBase: morandiTheme.colors.ash,
-    colorTextSecondary: morandiTheme.colors.stone,
+    colorTextBase: '#2C2A28', // Darker text for better contrast
+    colorTextSecondary: '#6D7A8D', // Medium contrast text
     colorBorder: morandiTheme.colors.mist,
     colorBorderSecondary: morandiTheme.colors.mist,
     colorSuccess: morandiTheme.colors.primary,
@@ -40,16 +40,16 @@ export const antdMorandiTheme = {
     },
     Menu: {
       colorBgContainer: morandiTheme.colors.slate,
-      colorItemBg: 'transparent',
-      colorItemText: '#ffffff',
-      colorItemTextSelected: morandiTheme.colors.primary,
-      colorItemBgSelected: morandiTheme.colors.blush,
-      colorSubItemBg: 'rgba(255, 255, 255, 0.05)',
+      itemBg: 'transparent',
+      itemColor: '#ffffff',
+      itemSelectedColor: morandiTheme.colors.primary,
+      itemSelectedBg: morandiTheme.colors.blush,
+      subMenuItemBg: 'rgba(255, 255, 255, 0.05)',
     },
     Input: {
       colorBgContainer: morandiTheme.colors.surface,
       colorBorder: morandiTheme.colors.mist,
-      colorText: morandiTheme.colors.ash,
+      colorText: '#2C2A28',
     },
     Select: {
       colorBgContainer: morandiTheme.colors.surface,
@@ -63,7 +63,7 @@ export const antdMorandiTheme = {
     Tag: {
       colorBgContainer: morandiTheme.colors.cloud,
       colorBorder: morandiTheme.colors.mist,
-      colorText: morandiTheme.colors.ash,
+      colorText: '#2C2A28',
     },
   },
 };

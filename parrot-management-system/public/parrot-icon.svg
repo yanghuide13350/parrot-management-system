@@ -1,0 +1,21 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- 简化版鹦鹉，专门为favicon优化 -->
+
+  <!-- 喙部 (最显眼，放在前面) -->
+  <polygon points="16,12 20,14 16,16" fill="#FF8C00"/>
+
+  <!-- 头部 (红色主体) -->
+  <circle cx="16" cy="10" r="6" fill="#FF4444"/>
+
+  <!-- 眼睛 (黑色) -->
+  <circle cx="14" cy="9" r="1.2" fill="#000000"/>
+
+  <!-- 身体 (深红色，更大更饱满) -->
+  <ellipse cx="16" cy="20" rx="8" ry="7" fill="#CC0000"/>
+
+  <!-- 翅膀 (深色对比) -->
+  <ellipse cx="12" cy="18" rx="3.5" ry="4.5" fill="#990000"/>
+
+  <!-- 尾巴 (简单三角形) -->
+  <polygon points="22,18 28,16 28,22" fill="#AA0000"/>
+</svg>

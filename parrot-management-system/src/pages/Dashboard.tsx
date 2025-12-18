@@ -6,7 +6,7 @@ import {
   CloseCircleOutlined,
   DollarOutlined,
   RiseOutlined,
-  FallOutlined
+  FallOutlined,
 } from '@ant-design/icons';
 import { Line, Column } from '@ant-design/charts';
 import { useParrot } from '../context/ParrotContext';
@@ -128,10 +128,10 @@ const Dashboard = () => {
     <div style={{ padding: '32px', background: '#F5F2ED', minHeight: '100vh' }}>
       {/* 标题区域 */}
       <div style={{ marginBottom: '40px' }}>
-        <h1 style={{ margin: 0, fontSize: '28px', fontWeight: 600, color: '#4A453F', marginBottom: '8px', letterSpacing: '-0.5px' }}>
+        <h1 style={{ margin: 0, fontSize: '28px', fontWeight: 600, color: '#2C2A28', marginBottom: '8px', letterSpacing: '-0.5px' }}>
           鹦鹉管理系统
         </h1>
-        <p style={{ margin: 0, fontSize: '14px', color: '#9A9591' }}>
+        <p style={{ margin: 0, fontSize: '14px', color: '#6D7A8D' }}>
           数据概览 · {new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' })}
         </p>
       </div>
@@ -151,14 +151,14 @@ const Dashboard = () => {
               boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
               height: '120px',
             }}
-            bodyStyle={{ padding: '24px', height: '100%' }}
+            styles={{ body: { padding: '24px', height: '100%' } }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '100%' }}>
               <div>
-                <div style={{ fontSize: '13px', color: '#9A9591', marginBottom: '12px', fontWeight: 500 }}>
+                <div style={{ fontSize: '13px', color: '#6D7A8D', marginBottom: '12px', fontWeight: 500 }}>
                   总鹦鹉数
                 </div>
-                <div style={{ fontSize: '32px', fontWeight: 600, color: '#4A453F', lineHeight: 1 }}>
+                <div style={{ fontSize: '32px', fontWeight: 600, color: '#2C2A28', lineHeight: 1 }}>
                   {statistics?.total_parrots || 0}
                 </div>
               </div>
@@ -192,14 +192,14 @@ const Dashboard = () => {
               boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
               height: '120px',
             }}
-            bodyStyle={{ padding: '24px', height: '100%' }}
+            styles={{ body: { padding: '24px', height: '100%' } }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '100%' }}>
               <div>
-                <div style={{ fontSize: '13px', color: '#9A9591', marginBottom: '12px', fontWeight: 500 }}>
+                <div style={{ fontSize: '13px', color: '#6D7A8D', marginBottom: '12px', fontWeight: 500 }}>
                   在售鹦鹉
                 </div>
-                <div style={{ fontSize: '32px', fontWeight: 600, color: '#4A453F', lineHeight: 1 }}>
+                <div style={{ fontSize: '32px', fontWeight: 600, color: '#2C2A28', lineHeight: 1 }}>
                   {statistics?.available_parrots || 0}
                 </div>
               </div>
@@ -233,14 +233,14 @@ const Dashboard = () => {
               boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
               height: '120px',
             }}
-            bodyStyle={{ padding: '24px', height: '100%' }}
+            styles={{ body: { padding: '24px', height: '100%' } }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '100%' }}>
               <div>
-                <div style={{ fontSize: '13px', color: '#9A9591', marginBottom: '12px', fontWeight: 500 }}>
+                <div style={{ fontSize: '13px', color: '#6D7A8D', marginBottom: '12px', fontWeight: 500 }}>
                   已售鹦鹉
                 </div>
-                <div style={{ fontSize: '32px', fontWeight: 600, color: '#4A453F', lineHeight: 1 }}>
+                <div style={{ fontSize: '32px', fontWeight: 600, color: '#2C2A28', lineHeight: 1 }}>
                   {statistics?.sold_parrots || 0}
                 </div>
               </div>
@@ -270,14 +270,14 @@ const Dashboard = () => {
               boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
               height: '120px',
             }}
-            bodyStyle={{ padding: '24px', height: '100%' }}
+            styles={{ body: { padding: '24px', height: '100%' } }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '100%' }}>
               <div>
-                <div style={{ fontSize: '13px', color: '#9A9591', marginBottom: '8px', fontWeight: 500 }}>
+                <div style={{ fontSize: '13px', color: '#6D7A8D', marginBottom: '8px', fontWeight: 500 }}>
                   总销售额
                 </div>
-                <div style={{ fontSize: '26px', fontWeight: 600, color: '#4A453F', lineHeight: 1 }}>
+                <div style={{ fontSize: '26px', fontWeight: 600, color: '#2C2A28', lineHeight: 1 }}>
                   ¥{totalRevenue.toLocaleString()}
                 </div>
                 <div style={{ fontSize: '12px', marginTop: '6px' }}>
@@ -321,7 +321,7 @@ const Dashboard = () => {
         }}
         title={
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: '16px', fontWeight: 600, color: '#4A453F' }}>月度销售趋势</span>
+            <span style={{ fontSize: '16px', fontWeight: 600, color: '#2C2A28' }}>月度销售趋势</span>
             <Space size={8}>
               <Tag
                 color={chartType === 'line' ? '#9CAF88' : undefined}
@@ -329,7 +329,7 @@ const Dashboard = () => {
                   cursor: 'pointer',
                   borderRadius: '4px',
                   border: chartType === 'line' ? 'none' : '1px solid #9A9591',
-                  color: chartType === 'line' ? '#fff' : '#4A453F'
+                  color: chartType === 'line' ? '#fff' : '#2C2A28'
                 }}
                 onClick={() => setChartType('line')}
               >
@@ -341,7 +341,7 @@ const Dashboard = () => {
                   cursor: 'pointer',
                   borderRadius: '4px',
                   border: chartType === 'column' ? 'none' : '1px solid #9A9591',
-                  color: chartType === 'column' ? '#fff' : '#4A453F'
+                  color: chartType === 'column' ? '#fff' : '#2C2A28'
                 }}
                 onClick={() => setChartType('column')}
               >
@@ -350,11 +350,13 @@ const Dashboard = () => {
             </Space>
           </div>
         }
-        headStyle={{ border: 'none', paddingBottom: 0 }}
-        bodyStyle={{ padding: '24px' }}
+        styles={{
+          header: { border: 'none', paddingBottom: 0 },
+          body: { padding: '24px' }
+        }}
       >
         {loadingChart ? (
-          <div style={{ textAlign: 'center', padding: '60px', color: '#999' }}>加载中...</div>
+          <div style={{ textAlign: 'center', padding: '60px', color: '#6D7A8D' }}>加载中...</div>
         ) : monthlySales.length > 0 ? (
           <div style={{ minHeight: '320px' }}>
             {chartType === 'line' ? (
@@ -377,10 +379,12 @@ const Dashboard = () => {
             boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
           }}
           title={
-            <span style={{ fontSize: '16px', fontWeight: 600, color: '#4A453F' }}>品种分布</span>
+            <span style={{ fontSize: '16px', fontWeight: 600, color: '#2C2A28' }}>品种分布</span>
           }
-          headStyle={{ border: 'none', paddingBottom: 0 }}
-          bodyStyle={{ padding: '24px' }}
+          styles={{
+            header: { border: 'none', paddingBottom: 0 },
+            body: { padding: '24px' }
+          }}
         >
           <Row gutter={[16, 16]}>
             {Object.entries(statistics.breed_counts)
@@ -396,30 +400,30 @@ const Dashboard = () => {
                       style={{
                         padding: '16px 20px',
                         borderRadius: '8px',
-                        background: '#FBF9F6',
+                        background: '#E6D4D1',
                         cursor: 'pointer',
                         transition: 'all 0.2s ease',
                         border: '1px solid transparent',
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.background = '#F0E6E1';
-                        e.currentTarget.style.borderColor = '#D6D0C7';
+                        e.currentTarget.style.background = '#D9C5C1';
+                        e.currentTarget.style.borderColor = '#C8A6A2';
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.background = '#FBF9F6';
+                        e.currentTarget.style.background = '#E6D4D1';
                         e.currentTarget.style.borderColor = 'transparent';
                       }}
                     >
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div>
-                          <div style={{ fontSize: '14px', fontWeight: 500, color: '#4A453F', marginBottom: '4px' }}>
+                          <div style={{ fontSize: '14px', fontWeight: 500, color: '#2C2A28', marginBottom: '4px' }}>
                             {breed}
                           </div>
-                          <div style={{ fontSize: '12px', color: '#999' }}>
+                          <div style={{ fontSize: '12px', color: '#6D7A8D' }}>
                             {percentage}%
                           </div>
                         </div>
-                        <div style={{ fontSize: '24px', fontWeight: 600, color: '#1a1a1a' }}>
+                        <div style={{ fontSize: '24px', fontWeight: 600, color: '#2C2A28' }}>
                           {count}
                         </div>
                       </div>

@@ -20,14 +20,15 @@ export const getStatusColor = (status: string) => {
  */
 export const getStatusBackgroundColor = (status: string) => {
   const bgStatusMap: Record<string, string> = {
-    available: 'rgba(156, 175, 136, 0.1)',
-    sold: 'rgba(200, 166, 162, 0.1)',
-    breeding: 'rgba(168, 153, 148, 0.1)',
-    returned: 'rgba(190, 181, 162, 0.1)',
-    incubating: 'rgba(109, 122, 141, 0.1)',
+    available: 'rgba(82, 183, 136, 0.1)',      // 鲜绿色淡化
+    sold: 'rgba(229, 107, 111, 0.1)',         // 珊瑚红淡化
+    breeding: 'rgba(244, 162, 97, 0.1)',       // 橙黄色淡化
+    returned: 'rgba(141, 153, 174, 0.1)',      // 蓝灰色淡化
+    incubating: 'rgba(155, 93, 229, 0.1)',     // 紫色淡化
+    paired: 'rgba(0, 187, 249, 0.1)',          // 天蓝色淡化
   };
 
-  return bgStatusMap[status] || 'rgba(168, 153, 148, 0.1)';
+  return bgStatusMap[status] || 'rgba(141, 153, 174, 0.1)';
 };
 
 /**

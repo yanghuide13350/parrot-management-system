@@ -60,8 +60,8 @@ class ApiService {
     return response.data;
   }
 
-  async delete<T>(url: string) {
-    const response = await this.client.delete<T>(url);
+  async delete<T>(url: string, config?: any) {
+    const response = await this.client.delete<T>(url, config);
     return response.data;
   }
 

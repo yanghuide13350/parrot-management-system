@@ -10,12 +10,20 @@
   --morandi-blush: #E6D4D1;
   --morandi-tea: #BEB5A2;
   --morandi-cloud: #F9F8F6;
+
+  /* High Contrast Status Colors */
+  --status-available: #52B788;    /* 鲜绿色 - 在售状态 */
+  --status-sold: #E56B6F;         /* 珊瑚红 - 已售状态 */
+  --status-breeding: #F4A261;     /* 橙黄色 - 种鸟状态 */
+  --status-returned: #8D99AE;     /* 蓝灰色 - 退回状态 */
+  --status-incubating: #9B5DE5;   /* 紫色 - 孵化中状态 */
+  --status-paired: #00BBF9;       /* 天蓝色 - 配对状态 */
 }
 
 /* Global styles for Morandi theme */
 body {
   background-color: var(--morandi-cream);
-  color: var(--morandi-ash);
+  color: #2C2A28; /* Darker text for better contrast */
 }
 
 /* Ant Design component overrides */
@@ -27,7 +35,13 @@ body {
   background: var(--morandi-cloud) !important;
 }
 
+/* Menu styling - ensure full dark background */
 .ant-menu-dark {
+  background: var(--morandi-slate) !important;
+  border-right: none !important;
+}
+
+.ant-menu-dark .ant-menu-item {
   background: var(--morandi-slate) !important;
 }
 
@@ -55,7 +69,7 @@ body {
 
 .ant-table-thead > tr > th {
   background: var(--morandi-cloud) !important;
-  color: var(--morandi-ash) !important;
+  color: #2C2A28 !important;
   border-bottom: 1px solid var(--morandi-mist) !important;
 }
 
@@ -71,7 +85,7 @@ body {
 .ant-input {
   background: var(--morandi-cloud) !important;
   border-color: var(--morandi-mist) !important;
-  color: var(--morandi-ash) !important;
+  color: #2C2A28 !important;
 }
 
 .ant-select-selector {
@@ -90,7 +104,7 @@ body {
 .ant-tag {
   background: var(--morandi-cloud) !important;
   border-color: var(--morandi-mist) !important;
-  color: var(--morandi-ash) !important;
+  color: #2C2A28 !important;
 }
 
 /* Custom scrollbar for Morandi theme */
@@ -109,4 +123,336 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--morandi-ash);
+}
+
+/* Ant Design Menu height fix */
+.ant-menu.ant-menu-root.ant-menu-inline.ant-menu-dark {
+  height: calc(100vh - 64px) !important;
+  overflow-y: auto !important;
+}
+
+/* Ensure menu fills remaining space after title */
+.ant-layout-sider .ant-menu {
+  height: calc(100% - 64px) !important;
+}
+
+/* Set background color for sider children container */
+.ant-layout-sider-children {
+  background-color: #00142a !important;
+}
+
+/* Remove sider background color */
+.ant-layout-sider {
+  background: transparent !important;
+}
+
+.ant-layout-sider.ant-layout-sider-dark {
+  background: transparent !important;
+}
+
+/* Status Colors - Consistent across the entire application */
+.status-available {
+  color: var(--status-available) !important;
+  background-color: rgba(82, 183, 136, 0.1) !important;
+  border-color: var(--status-available) !important;
+}
+
+.status-sold {
+  color: var(--status-sold) !important;
+  background-color: rgba(229, 107, 111, 0.1) !important;
+  border-color: var(--status-sold) !important;
+}
+
+.status-breeding {
+  color: var(--status-breeding) !important;
+  background-color: rgba(244, 162, 97, 0.1) !important;
+  border-color: var(--status-breeding) !important;
+}
+
+.status-returned {
+  color: var(--status-returned) !important;
+  background-color: rgba(141, 153, 174, 0.1) !important;
+  border-color: var(--status-returned) !important;
+}
+
+.status-incubating {
+  color: var(--status-incubating) !important;
+  background-color: rgba(155, 93, 229, 0.1) !important;
+  border-color: var(--status-incubating) !important;
+}
+
+.status-paired {
+  color: var(--status-paired) !important;
+  background-color: rgba(0, 187, 249, 0.1) !important;
+  border-color: var(--status-paired) !important;
+}
+
+/* Status Badge Styles */
+.ant-tag.status-badge {
+  border-radius: 12px !important;
+  padding: 4px 12px !important;
+  font-weight: 500 !important;
+  font-size: 12px !important;
+  border-width: 1px !important;
+  border-style: solid !important;
+}
+
+/* Status Icon Styles */
+.status-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 600;
+  color: white !important;
+  margin-right: 8px;
+}
+
+.status-icon.available {
+  background-color: var(--status-available);
+}
+
+.status-icon.sold {
+  background-color: var(--status-sold);
+}
+
+.status-icon.breeding {
+  background-color: var(--status-breeding);
+}
+
+.status-icon.returned {
+  background-color: var(--status-returned);
+}
+
+.status-icon.incubating {
+  background-color: var(--status-incubating);
+}
+
+.status-icon.paired {
+  background-color: var(--status-paired);
+}
+
+/* Gender Colors - Consistent across the entire application */
+.gender-male {
+  color: #0077B6 !important;
+  background-color: rgba(0, 119, 182, 0.1) !important;
+  border-color: #0077B6 !important;
+}
+
+.gender-female {
+  color: #FB5607 !important;
+  background-color: rgba(251, 86, 7, 0.1) !important;
+  border-color: #FB5607 !important;
+}
+
+.gender-unknown {
+  color: var(--morandi-ash) !important;
+  background-color: rgba(139, 140, 137, 0.1) !important;
+  border-color: var(--morandi-ash) !important;
+}
+
+/* Action Button Status Colors */
+.btn-action-available {
+  border-color: var(--status-available) !important;
+  color: var(--status-available) !important;
+}
+
+.btn-action-available:hover {
+  background-color: var(--status-available) !important;
+  color: white !important;
+}
+
+.btn-action-sold {
+  border-color: var(--status-sold) !important;
+  color: var(--status-sold) !important;
+}
+
+.btn-action-sold:hover {
+  background-color: var(--status-sold) !important;
+  color: white !important;
+}
+
+.btn-action-breeding {
+  border-color: var(--status-breeding) !important;
+  color: var(--status-breeding) !important;
+}
+
+.btn-action-breeding:hover {
+  background-color: var(--status-breeding) !important;
+  color: white !important;
+}
+
+.btn-action-return {
+  border-color: var(--status-returned) !important;
+  color: var(--status-returned) !important;
+}
+
+.btn-action-return:hover {
+  background-color: var(--status-returned) !important;
+  color: white !important;
+}
+
+.btn-action-incubating {
+  border-color: var(--status-incubating) !important;
+  color: var(--status-incubating) !important;
+}
+
+.btn-action-incubating:hover {
+  background-color: var(--status-incubating) !important;
+  color: white !important;
+}
+
+/* ==================== Sales Page Styles ==================== */
+
+.sales-record-card {
+  background: var(--morandi-cloud) !important;
+  border: 1px solid var(--morandi-mist) !important;
+}
+
+.sales-stat-card {
+  background: var(--morandi-cloud) !important;
+  border: 1px solid var(--morandi-mist) !important;
+  border-radius: 8px !important;
+  padding: 16px !important;
+}
+
+.sales-stat-card .ant-statistic-title {
+  color: var(--morandi-ash) !important;
+  font-size: 14px !important;
+  margin-bottom: 8px !important;
+}
+
+.sales-stat-card .ant-statistic-content {
+  font-size: 24px !important;
+  font-weight: 600 !important;
+}
+
+.sales-filter-section {
+  background: var(--morandi-cloud) !important;
+  border: 1px solid var(--morandi-mist) !important;
+  border-radius: 8px !important;
+  padding: 16px !important;
+  margin-bottom: 16px !important;
+}
+
+.sales-table .ant-table {
+  background: var(--morandi-cloud) !important;
+}
+
+.sales-table .ant-table-thead > tr > th {
+  background: var(--morandi-cloud) !important;
+  color: var(--morandi-ash) !important;
+  border-bottom: 2px solid var(--morandi-mist) !important;
+  font-weight: 600 !important;
+}
+
+.sales-table .ant-table-tbody > tr > td {
+  border-bottom: 1px solid var(--morandi-mist) !important;
+  color: #2C2A28 !important;
+}
+
+.sales-table .ant-table-tbody > tr:hover > td {
+  background: var(--morandi-blush) !important;
+}
+
+.sales-modal .ant-modal-content {
+  background: var(--morandi-cloud) !important;
+}
+
+.sales-modal .ant-modal-header {
+  background: var(--morandi-cloud) !important;
+  border-bottom: 1px solid var(--morandi-mist) !important;
+}
+
+.sales-modal .ant-modal-title {
+  color: var(--morandi-slate) !important;
+  font-weight: 600 !important;
+}
+
+/* Payment Method Tag Styles */
+.payment-tag {
+  border-radius: 12px !important;
+  padding: 2px 8px !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+}
+
+.payment-tag-cash {
+  color: #52B788 !important;
+  background-color: rgba(82, 183, 136, 0.1) !important;
+  border-color: #52B788 !important;
+}
+
+.payment-tag-transfer {
+  color: #3A86FF !important;
+  background-color: rgba(58, 134, 255, 0.1) !important;
+  border-color: #3A86FF !important;
+}
+
+.payment-tag-wechat {
+  color: #09b83e !important;
+  background-color: rgba(9, 184, 62, 0.1) !important;
+  border-color: #09b83e !important;
+}
+
+.payment-tag-alipay {
+  color: #1677ff !important;
+  background-color: rgba(22, 119, 255, 0.1) !important;
+  border-color: #1677ff !important;
+}
+
+.payment-tag-other {
+  color: var(--morandi-ash) !important;
+  background-color: rgba(139, 140, 137, 0.1) !important;
+  border-color: var(--morandi-ash) !important;
+}
+
+/* Follow-up Status Styles */
+.follow-up-status-pending {
+  color: #faad14 !important;
+  background-color: rgba(250, 173, 20, 0.1) !important;
+  border-color: #faad14 !important;
+}
+
+.follow-up-status-completed {
+  color: var(--status-available) !important;
+  background-color: rgba(82, 183, 136, 0.1) !important;
+  border-color: var(--status-available) !important;
+}
+
+.follow-up-status-no_contact {
+  color: #ff4d4f !important;
+  background-color: rgba(255, 77, 79, 0.1) !important;
+  border-color: #ff4d4f !important;
+}
+
+/* Sales Action Buttons */
+.btn-sales-view {
+  color: var(--status-available) !important;
+}
+
+.btn-sales-view:hover {
+  background-color: var(--status-available) !important;
+  color: white !important;
+}
+
+.btn-sales-edit {
+  color: var(--status-breeding) !important;
+}
+
+.btn-sales-edit:hover {
+  background-color: var(--status-breeding) !important;
+  color: white !important;
+}
+
+.btn-sales-delete {
+  color: #ff4d4f !important;
+}
+
+.btn-sales-delete:hover {
+  background-color: #ff4d4f !important;
+  color: white !important;
 }

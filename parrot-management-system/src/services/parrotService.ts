@@ -1,5 +1,13 @@
 import { api } from './api';
 import type { Parrot, ParrotFormData, FilterParams, PaginatedData, Statistics, Photo } from '../types/parrot';
+import type {
+  SaleRecord,
+  SalesHistoryRecord,
+  FollowUpRecord,
+  SalesFilterParams,
+  SalesStatistics,
+  SalesTimelineEvent,
+} from '../types/parrot';
 
 export class ParrotService {
   static async getParrots(params?: FilterParams) {
@@ -55,5 +63,107 @@ export class ParrotService {
       count: count as number,
     }));
     return { success: true, data: breeds };
+  }
+
+  // ==================== 销售相关API ====================
+
+  /**
+   * 获取销售记录列表
+   */
+  static async getSalesRecords(params?: SalesFilterParams) {
+    const data = await api.get<PaginatedData<SaleRecord>>('/sales', params);
+    return { success: true, data };
+  }
+
+  /**
+   * 获取销售历史记录
+   */
+  static async getSalesHistory(params?: SalesFilterParams) {
+    const data = await api.get<PaginatedData<SalesHistoryRecord>>('/sales/history', params);
+    return { success: true, data };
+  }
+
+  /**
+   * 获取鹦鹉的销售信息
+   */
+  static async getParrotSaleInfo(parrotId: number) {
+    const data = await api.get<SaleRecord>(`/parrots/${parrotId}/sale-info`);
+    return { success: true, data };
+  }
+
+  /**
+   * 更新鹦鹉的销售信息
+   */
+  static async updateParrotSaleInfo(
+    parrotId: number,
+    saleInfo: {
+      seller: string;
+      buyer_name: string;
+      sale_price: number;
+      contact: string;
+      follow_up_status?: string;
+      notes?: string;
+      payment_method?: string;
+    }
+  ) {
+    const data = await api.put<SaleRecord>(`/parrots/${parrotId}/sale-info`, saleInfo);
+    return { success: true, data };
+  }
+
+  /**
+   * 处理退货
+   */
+  static async processReturn(parrotId: number, returnReason: string) {
+    const data = await api.put(`/parrots/${parrotId}/return`, { return_reason: returnReason });
+    return { success: true, data };
+  }
+
+  /**
+   * 获取回访记录
+   */
+  static async getFollowUps(parrotId: number, params?: { page?: number; pageSize?: number }) {
+    const data = await api.get<PaginatedData<FollowUpRecord>>(`/parrots/${parrotId}/follow-ups`, params);
+    return { success: true, data };
+  }
+
+  /**
+   * 创建回访记录
+   */
+  static async createFollowUp(
+    parrotId: number,
+    followUp: {
+      follow_up_status: string;
+      notes: string;
+    }
+  ) {
+    const data = await api.post<FollowUpRecord>(`/parrots/${parrotId}/follow-ups`, {
+      parrot_id: parrotId,
+      ...followUp,
+    });
+    return { success: true, data };
+  }
+
+  /**
+   * 获取销售时间线
+   */
+  static async getSalesTimeline(parrotId: number) {
+    const data = await api.get<SalesTimelineEvent[]>(`/parrots/${parrotId}/sales-timeline`);
+    return { success: true, data };
+  }
+
+  /**
+   * 获取销售统计信息
+   */
+  static async getSalesStatistics(params?: { start_date?: string; end_date?: string }) {
+    const data = await api.get<SalesStatistics>('/sales/statistics', params);
+    return { success: true, data };
+  }
+
+  /**
+   * 批量删除销售记录
+   */
+  static async deleteSalesRecords(ids: number[]) {
+    await api.delete('/sales/batch', { data: { ids } });
+    return { success: true };
   }
 }

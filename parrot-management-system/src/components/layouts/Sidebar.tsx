@@ -35,14 +35,7 @@ const menuItems: MenuItem[] = [
     key: 'parrots',
     label: '鹦鹉管理',
     icon: <StarOutlined />,
-    children: [
-      {
-        key: 'parrot-list',
-        label: '鹦鹉列表',
-        icon: <StarOutlined />,
-        path: '/parrots/list',
-      },
-    ],
+    path: '/parrots/list',
   },
   {
     key: 'breeding',
@@ -131,7 +124,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
     const path = location.pathname;
     if (path === '/dashboard') return ['dashboard'];
     if (path.startsWith('/parrots')) {
-      return ['parrot-list'];
+      return ['parrots'];
     }
     if (path.startsWith('/breeding')) return ['breeding'];
     if (path.startsWith('/incubation')) {
@@ -148,7 +141,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
 
   const getOpenKeys = (): string[] => {
     const path = location.pathname;
-    if (path.startsWith('/parrots')) return ['parrots'];
+    if (path.startsWith('/parrots')) return [];
     if (path.startsWith('/incubation')) return ['incubation'];
     if (path.startsWith('/sales')) return ['sales'];
     if (path.startsWith('/settings')) return ['settings'];
@@ -180,7 +173,6 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
       collapsed={collapsed}
       width={240}
       style={{
-        background: 'var(--morandi-slate)',
         overflow: 'auto',
         height: '100vh',
         position: 'fixed',
@@ -199,10 +191,15 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
           color: '#fff',
           fontSize: '18px',
           fontWeight: 'bold',
-          background: 'rgba(0, 0, 0, 0.1)',
         }}
       >
-        {collapsed ? '🦜' : '鹦鹉管理系统'}
+        {collapsed ? (
+          <img
+            src="/parrot-icon.svg"
+            alt="🦜"
+            style={{ width: '24px', height: '24px', objectFit: 'contain', filter: 'brightness(0) invert(1)' }}
+          />
+        ) : '鹦鹉管理系统'}
       </div>
       <Menu
         theme="dark"

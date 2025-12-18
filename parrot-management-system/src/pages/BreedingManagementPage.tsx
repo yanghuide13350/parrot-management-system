@@ -254,14 +254,14 @@ const BreedingManagementPage = () => {
       title: '圈号',
       dataIndex: 'ring_number',
       key: 'ring_number',
-      width: 120,
+      width: 80,
       render: (val: string | null) => val || '-',
     },
     {
       title: '品种',
       dataIndex: 'breed',
       key: 'breed',
-      width: 150,
+      width: 120,
     },
     {
       title: '性别',
@@ -269,33 +269,33 @@ const BreedingManagementPage = () => {
       key: 'gender',
       width: 80,
       render: (gender: string) => (
-        <Tag color={gender === '公' ? '#9CAF88' : '#C8A6A2'} style={{
-          backgroundColor: gender === '公' ? 'rgba(156, 175, 136, 0.1)' : 'rgba(200, 166, 162, 0.1)',
-          borderColor: gender === '公' ? '#9CAF88' : '#C8A6A2',
-          color: gender === '公' ? '#9CAF88' : '#C8A6A2'
+        <Tag color={gender === '公' ? '#0077B6' : '#FB5607'} style={{
+          backgroundColor: gender === '公' ? 'rgba(0, 119, 182, 0.1)' : 'rgba(251, 86, 7, 0.1)',
+          borderColor: gender === '公' ? '#0077B6' : '#FB5607',
+          color: gender === '公' ? '#0077B6' : '#FB5607'
         }}>{gender}</Tag>
       ),
     },
     {
       title: '配对状态',
       key: 'pairing_status',
-      width: 100,
+      width: 80,
       render: (record: Parrot) => {
         if (record.mate_id) {
           return (
-            <Tag color="#9CAF88" icon={<HeartOutlined />} style={{
-              backgroundColor: 'rgba(156, 175, 136, 0.1)',
-              borderColor: '#9CAF88',
-              color: '#9CAF88'
+            <Tag color="#00BBF9" icon={<HeartOutlined />} style={{
+              backgroundColor: 'rgba(0, 187, 249, 0.1)',
+              borderColor: '#00BBF9',
+              color: '#00BBF9'
             }}>
               已配对
             </Tag>
           );
         }
-        return <Tag color="#A89994" style={{
-          backgroundColor: 'rgba(168, 153, 148, 0.1)',
-          borderColor: '#A89994',
-          color: '#A89994'
+        return <Tag color="#8D99AE" style={{
+          backgroundColor: 'rgba(141, 153, 174, 0.1)',
+          borderColor: '#8D99AE',
+          color: '#8D99AE'
         }}>未配对</Tag>;
       },
     },
@@ -307,7 +307,7 @@ const BreedingManagementPage = () => {
         if (record.mate_id) {
           // 通过mate_id查找配偶的圈号
           const mate = parrots.find(p => p.id === record.mate_id);
-          return <span style={{ color: '#9CAF88', fontSize: '12px' }}>圈号: {mate?.ring_number || record.mate_id}</span>;
+          return <span style={{ color: '#00BBF9', fontSize: '12px' }}>圈号: {mate?.ring_number || record.mate_id}</span>;
         }
         return '-';
       },
@@ -335,7 +335,7 @@ const BreedingManagementPage = () => {
       title: '操作',
       key: 'action',
       fixed: 'right' as const,
-      width: 420,
+      width: 260,
       render: (_: any, record: Parrot) => (
         <Space size={4}>
           <Button
@@ -366,7 +366,7 @@ const BreedingManagementPage = () => {
               size="small"
               icon={<HeartOutlined />}
               onClick={() => handleViewCompatibleMales(record)}
-              style={{ padding: '0 4px', color: '#C8A6A2' }}
+              style={{ padding: '0 4px', color: '#00BBF9' }}
             >
               配对
             </Button>
@@ -378,7 +378,7 @@ const BreedingManagementPage = () => {
               size="small"
               icon={<DisconnectOutlined />}
               onClick={() => handleUnpairParrot(record)}
-              style={{ padding: '0 4px', color: '#6D7A8D' }}
+              style={{ padding: '0 4px', color: '#E56B6F' }}
             >
               取消配对
             </Button>
@@ -389,7 +389,7 @@ const BreedingManagementPage = () => {
               type="link"
               size="small"
               onClick={() => handleStartIncubation(record)}
-              style={{ padding: '0 4px', color: '#A89994' }}
+              style={{ padding: '0 4px', color: '#9B5DE5' }}
             >
               孵化
             </Button>
@@ -521,7 +521,7 @@ const BreedingManagementPage = () => {
   ];
 
   return (
-    <div>
+    <div style={{ padding: '24px' }}>
       <Card>
         <Space direction="vertical" size="middle" style={{ width: '100%' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
@@ -548,16 +548,6 @@ const BreedingManagementPage = () => {
           </div>
 
           <Divider style={{ margin: '8px 0' }} />
-
-          <div style={{ background: '#F9F8F6', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
-            <p style={{ margin: 0, color: '#6D7A8D' }}>
-              <strong>提示：</strong>
-              种鸟是用于繁殖的鹦鹉。点击"查看可设为种鸟的鹦鹉"按钮可以查看所有鹦鹉，并将符合年龄要求的鹦鹉设置为种鸟。
-              对于未配对的公种鸟和母种鸟，都可以点击"配对"按钮查看可配对的配偶。公鸟点击会显示可配对的母鸟，母鸟点击会显示可配对的公鸟。
-              已经配对的鹦鹉可以点击"孵化"按钮开始孵化流程，并配置蛋的数量。孵化开始后，公鸟和母鸟的状态将变为"孵化中"。
-              已经配对的鹦鹉也可以点击"取消配对"按钮来解除配对关系。
-            </p>
-          </div>
 
           <Table
             columns={columns}

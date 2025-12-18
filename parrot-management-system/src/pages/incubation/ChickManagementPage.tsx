@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { Card, Table, Button, Space, Tag, Modal, message, Input, Select, Tooltip, Form, DatePicker } from 'antd';
+import { Card, Table, Button, Space, Tag, Modal, message, Input, Select, Form, DatePicker } from 'antd';
 import { PlusOutlined, EyeOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import moment from 'moment';
 import { useParrot } from '../../context/ParrotContext';
-import type { Parrot } from '../../types/parrot';
 
 const { Option } = Select;
 
@@ -50,7 +49,7 @@ const mockChicks = [
 
 const ChickManagementPage: React.FC = () => {
   const [chicks, setChicks] = useState(mockChicks);
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedChick, setSelectedChick] = useState<any>(null);
   const [addModalVisible, setAddModalVisible] = useState(false);
@@ -148,11 +147,6 @@ const ChickManagementPage: React.FC = () => {
     }
   };
 
-  // 获取已配对且孵化的鹦鹉（作为候选父母）
-  const getParentCandidates = () => {
-    return parrots.filter(p => p.mate_id && p.status === 'incubating');
-  };
-
   // 获取所有大于4个月的鹦鹉作为父母候选
   const getAllParrotsAsParents = () => {
     const fourMonthsAgo = new Date();
@@ -163,11 +157,6 @@ const ChickManagementPage: React.FC = () => {
       const birthDate = new Date(p.birth_date);
       return birthDate <= fourMonthsAgo;
     });
-  };
-
-  // 获取所有已配对的鹦鹉作为父母
-  const getAllPairedParrots = () => {
-    return parrots.filter(p => p.mate_id);
   };
 
   const handleViewChick = (chick: any) => {

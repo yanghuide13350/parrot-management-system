@@ -1,5 +1,5 @@
 import React from 'react';
-import { Layout, Button, Space, Breadcrumb } from 'antd';
+import { Layout, Button, Breadcrumb } from 'antd';
 import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
@@ -24,7 +24,6 @@ const Header: React.FC<HeaderProps> = ({ collapsed, onCollapse }) => {
     const breadcrumbNameMap: Record<string, string> = {
       dashboard: '仪表板',
       parrots: '鹦鹉管理',
-      list: '鹦鹉列表',
       breeding: '繁殖管理',
       'breeding-birds': '种鸟管理',
       incubation: '孵化管理',
@@ -37,10 +36,23 @@ const Header: React.FC<HeaderProps> = ({ collapsed, onCollapse }) => {
       users: '用户管理',
     };
 
+    // 根据层级定义颜色
+    const getBreadcrumbColor = (level: number, isLast: boolean) => {
+      if (isLast) {
+        return '#8B8C89'; // 最后一级用 ash 灰色
+      }
+      switch (level) {
+        case 0: return '#6D7A8D'; // 一级用 slate 深色
+        case 1: return '#A89994'; // 二级用 stone 中等
+        case 2: return '#BEB5A2'; // 三级用 tea 浅色
+        default: return '#8B8C89'; // 更多层级用 ash
+      }
+    };
+
     return [
       {
         title: (
-          <span onClick={() => navigate('/dashboard')} style={{ cursor: 'pointer' }}>
+          <span onClick={() => navigate('/dashboard')} style={{ cursor: 'pointer', color: getBreadcrumbColor(-1, false) }}>
             <HomeOutlined /> 首页
           </span>
         ),
@@ -50,19 +62,24 @@ const Header: React.FC<HeaderProps> = ({ collapsed, onCollapse }) => {
         const isLast = index === pathSnippets.length - 1;
         const name = breadcrumbNameMap[pathSnippets[index]] || pathSnippets[index];
 
+        // 跳过 'list' 面包屑项（鹦鹉列表）
+        if (pathSnippets[index] === 'list') {
+          return null;
+        }
+
         return {
           title: isLast ? (
-            <span>{name}</span>
+            <span style={{ color: getBreadcrumbColor(index, true) }}>{name}</span>
           ) : (
             <span
               onClick={() => navigate(url)}
-              style={{ cursor: 'pointer', color: '#1890ff' }}
+              style={{ cursor: 'pointer', color: getBreadcrumbColor(index, false) }}
             >
               {name}
             </span>
           ),
         };
-      }),
+      }).filter(Boolean),
     ];
   };
 
@@ -88,17 +105,11 @@ const Header: React.FC<HeaderProps> = ({ collapsed, onCollapse }) => {
             height: 64,
           }}
         />
-        <span style={{ color: 'var(--morandi-ash)', fontSize: '14px', marginLeft: '16px' }}>
-          欢迎使用鹦鹉管理系统
-        </span>
-      </div>
-
-      <Space align="center">
         <Breadcrumb
           items={getBreadcrumbItems()}
-          style={{ marginRight: '24px' }}
+          style={{ marginLeft: '16px' }}
         />
-      </Space>
+      </div>
     </AntHeader>
   );
 };
