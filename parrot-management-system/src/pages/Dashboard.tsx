@@ -33,7 +33,12 @@ const Dashboard = () => {
     setLoadingChart(true);
     try {
       const response = await api.get<MonthlySales>('/statistics/monthly-sales');
-      setMonthlySales(response.monthly_sales || []);
+      // 为每条数据添加 series 字段用于图例显示
+      const dataWithSeries = (response.monthly_sales || []).map(item => ({
+        ...item,
+        series: '销售额'
+      }));
+      setMonthlySales(dataWithSeries);
     } catch (error) {
       console.error('获取月度销售数据失败:', error);
     } finally {
@@ -76,6 +81,7 @@ const Dashboard = () => {
     data: monthlySales,
     xField: 'month_name',
     yField: 'revenue',
+    seriesField: 'series',
     smooth: true,
     animation: {
       appear: {
@@ -98,13 +104,19 @@ const Dashboard = () => {
         formatter: (v: any) => `¥${Number(v).toLocaleString()}`,
       },
     },
-  
+    legend: {
+      position: 'top-right' as const,
+    },
   };
 
   const columnConfig = {
-    data: monthlySales,
+    data: monthlySales.map(item => ({
+      ...item,
+      series: '销售量'
+    })),
     xField: 'month_name',
     yField: 'count',
+    seriesField: 'series',
     color: '#C8A6A2',
     animation: {
       appear: {
@@ -121,7 +133,9 @@ const Dashboard = () => {
         formatter: (v: any) => `${v}只`,
       },
     },
-   
+    legend: {
+      position: 'top-right' as const,
+    },
   };
 
   return (
