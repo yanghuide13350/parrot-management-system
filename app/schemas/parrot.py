@@ -145,3 +145,31 @@ class FollowUpList(BaseModel):
 class ParrotReturnUpdate(BaseModel):
     """鹦鹉退货请求"""
     return_reason: str = Field(..., min_length=1, max_length=500, description="退货原因")
+
+
+class SaleRecordResponse(BaseModel):
+    """销售记录响应"""
+    id: int
+    parrot_id: int
+    seller: Optional[str] = None
+    buyer_name: Optional[str] = None
+    sale_price: Optional[float] = None
+    contact: Optional[str] = None
+    follow_up_status: Optional[str] = "pending"
+    sale_notes: Optional[str] = None
+    sale_date: Optional[str] = None  # sold_at
+    payment_method: Optional[str] = None
+    created_at: str
+    updated_at: str
+    parrot: Optional[dict] = None  # 包含breed, ring_number, gender
+
+    class Config:
+        from_attributes = True
+
+
+class SaleRecordList(BaseModel):
+    """销售记录列表响应"""
+    total: int
+    items: List[SaleRecordResponse]
+    page: int
+    size: int

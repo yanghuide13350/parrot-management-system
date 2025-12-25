@@ -117,3 +117,109 @@ def get_monthly_sales(db: Session = Depends(get_db)):
     return {
         "monthly_sales": monthly_data
     }
+
+
+
+@router.get("/statistics/sales", summary="获取销售统计")
+def get_sales_statistics(db: Session = Depends(get_db)):
+    """
+    获取销售统计数据
+    
+    **统计范围**:
+    - 当前在售鹦鹉（Parrot表，status=sold）
+    - 历史销售记录（SalesHistory表）
+    
+    **返回数据**:
+    - total_sales: 总销售数量（当前在售 + 历史销售）
+    - total_revenue: 总销售额
+    - average_price: 平均销售价格
+    - return_rate: 退货率（百分比）
+    - returned_count: 退货数量
+    
+    **计算公式**:
+    - 退货率 = (退货数量 / 总销售数量) × 100%
+    - 平均价格 = 总销售额 / 总销售数量
+    """
+    from app.models import SalesHistory
+    
+    # 当前在售数量(Parrot表中status=sold)
+    current_sold_count = db.query(Parrot).filter(Parrot.status == "sold").count()
+    
+    # 历史销售数量(SalesHistory表)
+    history_sales_count = db.query(SalesHistory).count()
+    
+    # 总销售数量 = 当前在售 + 历史销售
+    total_sales = current_sold_count + history_sales_count
+    
+    # 当前在售总额
+    current_revenue_result = (
+        db.query(func.sum(Parrot.sale_price))
+        .filter(Parrot.status == "sold")
+        .scalar()
+    )
+    current_revenue = float(current_revenue_result) if current_revenue_result else 0.0
+    
+    # 历史销售总额
+    history_revenue_result = (
+        db.query(func.sum(SalesHistory.sale_price))
+        .scalar()
+    )
+    history_revenue = float(history_revenue_result) if history_revenue_result else 0.0
+    
+    # 总销售额
+    total_revenue = current_revenue + history_revenue
+    
+    # 平均价格
+    average_price = total_revenue / total_sales if total_sales > 0 else 0.0
+    
+    # 退货数量(SalesHistory表中return_date不为空)
+    returned_count = db.query(SalesHistory).filter(SalesHistory.return_date.isnot(None)).count()
+    
+    # 退货率
+    return_rate = (returned_count / total_sales * 100) if total_sales > 0 else 0.0
+    
+    return {
+        "total_sales": total_sales,
+        "total_revenue": total_revenue,
+        "average_price": average_price,
+        "return_rate": return_rate,
+        "returned_count": returned_count
+    }
+
+
+@router.get("/statistics/returns", summary="获取退货统计")
+def get_return_statistics(db: Session = Depends(get_db)):
+    """
+    获取退货统计数据
+    
+    **统计范围**:
+    - SalesHistory表中return_date不为空的记录
+    
+    **返回数据**:
+    - return_count: 退货数量
+    - return_rate: 退货率（百分比）
+    
+    **计算公式**:
+    - 退货率 = (退货数量 / 总销售数量) × 100%
+    
+    **使用场景**:
+    - 退货管理页面的统计卡片
+    - 销售质量分析
+    """
+    from app.models import SalesHistory
+    
+    # 总销售数量
+    current_sold_count = db.query(Parrot).filter(Parrot.status == "sold").count()
+    history_sales_count = db.query(SalesHistory).count()
+    total_sales = current_sold_count + history_sales_count
+    
+    # 退货数量
+    return_count = db.query(SalesHistory).filter(SalesHistory.return_date.isnot(None)).count()
+    
+    # 退货率
+    return_rate = (return_count / total_sales * 100) if total_sales > 0 else 0.0
+    
+    return {
+        "return_count": return_count,
+        "return_rate": return_rate
+    }

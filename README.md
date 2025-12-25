@@ -1,70 +1,78 @@
-# 鹦鹉管理系统后端服务
+# 鹦鹉管理系统
 
 ## 项目概述
 
-这是一个基于FastAPI的鹦鹉养殖和销售管理系统后端服务。
+这是一个完整的鹦鹉养殖和销售管理系统，包含后端服务（FastAPI）和前端应用（React + TypeScript）。系统支持鹦鹉信息管理、配对管理、销售记录、退货管理、回访跟踪和数据统计分析等功能。
+
+## 核心功能
+
+- **鹦鹉管理**：录入、查询、更新、删除鹦鹉信息，支持照片/视频上传
+- **配对管理**：配对种鸟、取消配对、查询可配对对象
+- **销售管理**：记录销售信息、查询销售记录、销售统计分析
+- **退货管理**：处理退货、查询退货历史、退货率统计
+- **回访管理**：创建回访记录、跟踪回访状态
+- **数据统计**：销售统计、退货统计、月度销售趋势
+- **销售时间线**：完整的鹦鹉销售历史追踪
 
 ## 技术栈
+
+### 后端
 
 - **框架**：FastAPI (Python 3.8+)
 - **数据库**：SQLite（开发）/ MySQL（生产）
 - **ORM**：SQLAlchemy
 - **数据验证**：Pydantic
 - **数据库迁移**：Alembic
-- **文件上传**：本地文件系统（开发）
-- **API文档**：Swagger/OpenAPI 自动生成
+
+### 前端
+
+- **框架**：React 18 + TypeScript
+- **UI 库**：Ant Design
+- **状态管理**：React Hooks
+- **路由**：React Router
+- **构建工具**：Vite
 
 ## 项目结构
 
 ```
-parrot_management/
-├── app/
-│   ├── api/
-│   │   ├── __init__.py
-│   │   ├── v1/
-│   │   │   ├── __init__.py
-│   │   │   ├── parrots.py          # 鹦鹉管理API
-│   │   │   ├── photos.py           # 照片管理API
-│   │   │   ├── sales.py            # 销售管理API
-│   │   │   └── returns.py          # 退货管理API
-│   ├── core/
-│   │   ├── __init__.py
-│   │   ├── config.py               # 配置管理
-│   │   └── security.py             # 安全相关
-│   ├── db/
-│   │   ├── __init__.py
-│   │   ├── base.py                 # 数据库基类
-│   │   ├── session.py              # 数据库会话
-│   │   └── init_db.py              # 数据库初始化
-│   ├── models/
-│   │   ├── __init__.py
-│   │   ├── parrot.py               # 鹦鹉模型
-│   │   ├── photo.py                # 照片模型
-│   │   ├── sale.py                 # 销售记录模型
-│   │   ├── return_record.py        # 退货记录模型
-│   │   └── breed.py                # 品种字典模型
-│   ├── schemas/
-│   │   ├── __init__.py
-│   │   ├── parrot.py               # 鹦鹉Schema
-│   │   ├── photo.py                # 照片Schema
-│   │   ├── sale.py                 # 销售Schema
-│   │   ├── return_record.py        # 退货Schema
-│   │   └── breed.py                # 品种Schema
-│   ├── services/
-│   │   ├── __init__.py
-│   │   ├── parrot_service.py       # 鹦鹉业务逻辑
-│   │   ├── photo_service.py        # 照片业务逻辑
-│   │   ├── sale_service.py         # 销售业务逻辑
-│   │   └── return_service.py       # 退货业务逻辑
-│   └── utils/
-│       ├── __init__.py
-│       └── file_upload.py          # 文件上传工具
-├── alembic/
-│   ├── versions/                   # 迁移版本
-│   ├── env.py                      # 迁移环境配置
-│   └── script.py.mako              # 迁移脚本模板
-├── uploads/                        # 上传文件存储目录
-├── main.py                         # 应用入口
+parrot-management-system/
+├── app/                            # 后端应用
+│   ├── api/                        # API路由
+│   │   ├── parrots.py             # 鹦鹉管理API
+│   │   ├── sales.py               # 销售管理API
+│   │   └── statistics.py          # 统计分析API
+│   ├── core/                       # 核心模块
+│   │   ├── config.py              # 配置管理
+│   │   ├── database.py            # 数据库连接
+│   │   └── exceptions.py          # 异常处理
+│   ├── models/                     # 数据模型
+│   │   ├── parrot.py              # 鹦鹉模型
+│   │   ├── photo.py               # 照片模型
+│   │   ├── sales_history.py       # 销售历史模型
+│   │   ├── follow_up.py           # 回访记录模型
+│   │   └── incubation_record.py   # 孵化记录模型
+│   ├── schemas/                    # Pydantic模式
+│   │   └── parrot.py              # 鹦鹉Schema
+│   └── utils/                      # 工具函数
+│       └── file_upload.py         # 文件上传工具
+├── parrot-management-system/       # 前端应用
+│   ├── src/
+│   │   ├── components/            # React组件
+│   │   ├── pages/                 # 页面组件
+│   │   │   ├── dashboard/         # 仪表盘
+│   │   │   ├── parrots/           # 鹦鹉管理
+│   │   │   ├── breeding/          # 配对管理
+│   │   │   ├── sales/             # 销售管理
+│   │   │   └── incubation/        # 孵化管理
+│   │   ├── services/              # API服务
+│   │   ├── types/                 # TypeScript类型
+│   │   └── App.tsx                # 应用入口
+│   ├── public/                    # 静态资源
+│   └── package.json               # 前端依赖
+├── alembic/                        # 数据库迁移
+│   └── versions/                  # 迁移版本
+├── uploads/                        # 上传文件存储
+├── main.py                         # 后端入口
 ├── requirements.txt                # Python依赖
 └── .env                           # 环境变量配置
 ```
@@ -74,75 +82,173 @@ parrot_management/
 ### 环境要求
 
 - Python 3.8+
-- pip (Python包管理器)
+- Node.js 16+
+- pip (Python 包管理器)
+- npm 或 yarn
 
-### 安装步骤
+### 后端安装步骤
 
 1. 创建虚拟环境：
+
 ```bash
 python -m venv venv
 source venv/bin/activate  # Linux/Mac
 # 或
-venv\\Scripts\\activate  # Windows
+venv\Scripts\activate  # Windows
 ```
 
 2. 安装依赖：
+
 ```bash
 pip install -r requirements.txt
 ```
 
 3. 创建数据库表：
+
 ```bash
-alembic upgrade head
+python init_database.py
 ```
 
-4. 运行应用：
+4. 运行后端服务：
+
 ```bash
 uvicorn main:app --reload
 ```
 
-5. 访问API文档：
+5. 访问 API 文档：
+
 - Swagger UI: http://localhost:8000/docs
 - ReDoc: http://localhost:8000/redoc
 
-## API接口概览
+### 前端安装步骤
+
+1. 进入前端目录：
+
+```bash
+cd parrot-management-system
+```
+
+2. 安装依赖：
+
+```bash
+npm install
+# 或
+yarn install
+```
+
+3. 运行开发服务器：
+
+```bash
+npm run dev
+# 或
+yarn dev
+```
+
+4. 访问前端应用：
+
+- 开发环境: http://localhost:5173
+
+## API 接口概览
 
 ### 鹦鹉管理
-- `POST /api/v1/parrots` - 创建鹦鹉
-- `GET /api/v1/parrots` - 获取鹦鹉列表（支持筛选）
-- `GET /api/v1/parrots/{parrot_id}` - 获取鹦鹉详情
-- `PUT /api/v1/parrots/{parrot_id}` - 更新鹦鹉信息
-- `DELETE /api/v1/parrots/{parrot_id}` - 删除鹦鹉
-- `PATCH /api/v1/parrots/{parrot_id}/status` - 更新销售状态
+
+- `POST /api/parrots` - 创建鹦鹉
+- `GET /api/parrots` - 获取鹦鹉列表（支持筛选）
+- `GET /api/parrots/{parrot_id}` - 获取鹦鹉详情
+- `PUT /api/parrots/{parrot_id}` - 更新鹦鹉信息
+- `DELETE /api/parrots/{parrot_id}` - 删除鹦鹉
+- `PUT /api/parrots/{parrot_id}/status` - 更新鹦鹉状态
+- `GET /api/parrots/ring-number/{ring_number}/exists` - 检查圈号是否存在
 
 ### 照片管理
-- `POST /api/v1/parrots/{parrot_id}/photos` - 上传照片
-- `GET /api/v1/parrots/{parrot_id}/photos` - 获取照片列表
-- `DELETE /api/v1/photos/{photo_id}` - 删除照片
+
+- `POST /api/parrots/{parrot_id}/photos` - 上传照片/视频
+- `GET /api/parrots/{parrot_id}/photos` - 获取照片列表
+
+### 配对管理
+
+- `POST /api/parrots/pair` - 配对两只鹦鹉
+- `POST /api/parrots/unpair/{parrot_id}` - 取消配对
+- `GET /api/parrots/{parrot_id}/mate` - 获取配偶信息
+- `GET /api/parrots/eligible-females/{male_id}` - 获取可配对母鹦鹉列表
 
 ### 销售管理
-- `POST /api/v1/sales` - 创建销售记录
-- `GET /api/v1/sales` - 获取销售记录列表
-- `GET /api/v1/sales/{sale_id}` - 获取销售详情
+
+- `GET /api/sales-records` - 获取销售记录列表（当前在售）
+- `GET /api/sales-history` - 获取销售历史记录（包含退货）
+- `PUT /api/parrots/{parrot_id}/sale-info` - 更新销售信息
+- `GET /api/parrots/{parrot_id}/sale-info` - 获取销售信息
+- `GET /api/parrots/{parrot_id}/sales-timeline` - 获取销售时间线
 
 ### 退货管理
-- `POST /api/v1/returns` - 创建退货记录
-- `GET /api/v1/returns` - 获取退货记录列表
-- `GET /api/v1/returns/{return_id}` - 获取退货详情
+
+- `PUT /api/parrots/{parrot_id}/return` - 处理退货
+
+### 回访管理
+
+- `POST /api/parrots/{parrot_id}/follow-ups` - 创建回访记录
+- `GET /api/parrots/{parrot_id}/follow-ups` - 获取回访记录列表
+
+### 统计分析
+
+- `GET /api/statistics` - 获取统计概览
+- `GET /api/statistics/sales` - 获取销售统计
+- `GET /api/statistics/returns` - 获取退货统计
+- `GET /api/statistics/monthly-sales` - 获取月度销售数据
+
+## 数据库设计
+
+### 核心表结构
+
+#### Parrot（鹦鹉表）
+
+存储鹦鹉基本信息和当前销售状态
+
+- 基本信息：品种、性别、出生日期、圈号、健康备注
+- 价格信息：价格、最低价格、最高价格
+- 状态信息：状态（available/sold/breeding）、销售时间、退货时间
+- 配对信息：配偶 ID、配对时间
+- 销售信息：售卖人、购买者、销售价格、联系方式、回访状态
+
+#### SalesHistory（销售历史表）
+
+存储所有历史销售记录（包括退货）
+
+- 销售信息：售卖人、购买者、销售价格、销售日期
+- 退货信息：退货日期、退货原因
+- 回访信息：回访状态、销售备注
+
+#### Photo（照片表）
+
+存储鹦鹉照片和视频
+
+- 文件信息：文件路径、文件名、文件类型
+- 关联信息：鹦鹉 ID、排序顺序
+
+#### FollowUp（回访记录表）
+
+存储客户回访记录
+
+- 回访信息：回访日期、回访状态、回访备注
+- 关联信息：鹦鹉 ID
 
 ## 数据库配置
 
 ### 开发环境 (SQLite)
-默认使用SQLite数据库，适合开发和测试：
+
+默认使用 SQLite 数据库，适合开发和测试：
+
 ```bash
 # 配置文件 .env
 DATABASE_URL=sqlite:///./parrot_management.db
 ```
 
-### 生产环境 (MySQL/PostgreSQL)
-推荐使用MySQL或PostgreSQL生产级数据库：
+### 生产环境 (MySQL)
 
-#### MySQL配置
+推荐使用 MySQL 生产级数据库：
+
+#### MySQL 配置
+
 ```bash
 # 安装依赖
 pip install PyMySQL
@@ -151,31 +257,8 @@ pip install PyMySQL
 DATABASE_URL=mysql+pymysql://用户名:密码@localhost:3306/数据库名
 ```
 
-#### PostgreSQL配置
-```bash
-# 安装依赖
-pip install psycopg2-binary
+### 数据库初始化
 
-# 配置文件 .env
-DATABASE_URL=postgresql://用户名:密码@localhost:5432/数据库名
-```
-
-### 数据库迁移
-```bash
-# 初始化迁移环境
-alembic init alembic
-
-# 创建迁移文件
-alembic revision --autogenerate -m "描述"
-
-# 应用迁移
-alembic upgrade head
-
-# 查看迁移历史
-alembic history
-```
-
-### 快速初始化数据库
 ```bash
 # 运行数据库初始化脚本
 python init_database.py
@@ -186,10 +269,38 @@ python init_database.py
 详细部署指南请参考：[DEPLOYMENT.md](DEPLOYMENT.md)
 
 快速部署脚本：
+
 ```bash
 # 运行快速部署脚本
 ./deploy.sh
 ```
+
+## 系统架构
+
+系统采用前后端分离架构：
+
+- **前端**：React SPA，通过 HTTP API 与后端通信
+- **后端**：FastAPI RESTful API，处理业务逻辑和数据持久化
+- **数据库**：关系型数据库（SQLite/MySQL），存储业务数据
+- **文件存储**：本地文件系统，存储上传的照片和视频
+
+### 数据流设计
+
+1. **销售流程**：
+
+   - 鹦鹉状态从 available 变为 sold
+   - 销售信息存储在 Parrot 表
+   - 创建初始回访记录
+
+2. **退货流程**：
+
+   - 销售信息从 Parrot 表迁移到 SalesHistory 表
+   - 鹦鹉状态从 sold 变回 available
+   - 记录退货日期和原因
+
+3. **多次销售**：
+   - 每次退货后，历史记录保存在 SalesHistory 表
+   - 鹦鹉可以重新销售，形成完整的销售时间线
 
 ## 许可证
 

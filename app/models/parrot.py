@@ -19,7 +19,7 @@ class Parrot(Base):
     health_notes = Column(Text, nullable=True, comment="健康备注")
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
     updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
-    sold_at = Column(DateTime, nullable=True, comment="销售时间")
+    sold_at = Column(DateTime, nullable=True, index=True, comment="销售时间")
     returned_at = Column(DateTime, nullable=True, comment="退货时间")
     return_reason = Column(String(500), nullable=True, comment="退货原因")
 

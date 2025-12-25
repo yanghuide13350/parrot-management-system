@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Table, Button, Space, Tag, Modal, message, Input, Select, DatePicker, Row, Col, Statistic } from 'antd';
+import { Card, Table, Button, Space, Tag, Modal, message, Input, Select, DatePicker, Row, Col, Statistic, Skeleton } from 'antd';
 import { PlusOutlined, EyeOutlined, EditOutlined, DeleteOutlined, SearchOutlined, ReloadOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
-import moment from 'moment';
 import { ParrotService } from '../../services/parrotService';
 import type { SaleRecord, SalesStatistics, SalesFilterParams } from '../../types/parrot';
 
@@ -38,6 +37,7 @@ const SalesRecordsPage: React.FC = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<SaleRecord | null>(null);
   const [statistics, setStatistics] = useState<SalesStatistics | null>(null);
+  const [statisticsLoading, setStatisticsLoading] = useState(false);
 
   // 筛选条件
   const [filters, setFilters] = useState<SalesFilterParams>({
@@ -53,9 +53,10 @@ const SalesRecordsPage: React.FC = () => {
       const response = await ParrotService.getSalesRecords(filters);
       setSalesRecords(response.data.items);
       setTotal(response.data.total);
-    } catch (error) {
-      message.error('获取销售记录失败');
+    } catch (error: any) {
       console.error('Error fetching sales records:', error);
+      const errorMsg = error?.response?.data?.detail || error?.message || '获取销售记录失败';
+      message.error(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -64,10 +65,15 @@ const SalesRecordsPage: React.FC = () => {
   // 获取统计数据
   const fetchStatistics = async () => {
     try {
+      setStatisticsLoading(true);
       const response = await ParrotService.getSalesStatistics();
       setStatistics(response.data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching statistics:', error);
+      const errorMsg = error?.response?.data?.detail || error?.message || '获取统计数据失败';
+      message.error(errorMsg);
+    } finally {
+      setStatisticsLoading(false);
     }
   };
 
@@ -317,55 +323,69 @@ const SalesRecordsPage: React.FC = () => {
         </div>
 
         {/* 统计卡片 */}
-        {statistics && (
-          <div style={{ marginBottom: '16px' }}>
-            <Row gutter={16}>
-              <Col span={6}>
-                <Card>
+        <div style={{ marginBottom: '16px' }}>
+          <Row gutter={16}>
+            <Col span={6}>
+              <Card>
+                {statisticsLoading ? (
+                  <Skeleton active paragraph={{ rows: 1 }} />
+                ) : (
                   <Statistic
                     title="总销售额"
-                    value={statistics.total_revenue}
+                    value={statistics?.total_revenue || 0}
                     precision={2}
                     prefix="¥"
                     valueStyle={{ color: 'var(--status-available)' }}
                   />
-                </Card>
-              </Col>
-              <Col span={6}>
-                <Card>
+                )}
+              </Card>
+            </Col>
+            <Col span={6}>
+              <Card>
+                {statisticsLoading ? (
+                  <Skeleton active paragraph={{ rows: 1 }} />
+                ) : (
                   <Statistic
                     title="销售数量"
-                    value={statistics.total_sales}
+                    value={statistics?.total_sales || 0}
                     suffix="只"
                     valueStyle={{ color: 'var(--status-sold)' }}
                   />
-                </Card>
-              </Col>
-              <Col span={6}>
-                <Card>
+                )}
+              </Card>
+            </Col>
+            <Col span={6}>
+              <Card>
+                {statisticsLoading ? (
+                  <Skeleton active paragraph={{ rows: 1 }} />
+                ) : (
                   <Statistic
                     title="平均价格"
-                    value={statistics.average_price}
+                    value={statistics?.average_price || 0}
                     precision={2}
                     prefix="¥"
                     valueStyle={{ color: 'var(--status-breeding)' }}
                   />
-                </Card>
-              </Col>
-              <Col span={6}>
-                <Card>
+                )}
+              </Card>
+            </Col>
+            <Col span={6}>
+              <Card>
+                {statisticsLoading ? (
+                  <Skeleton active paragraph={{ rows: 1 }} />
+                ) : (
                   <Statistic
                     title="退货率"
-                    value={statistics.return_rate}
+                    value={statistics?.return_rate || 0}
                     precision={2}
                     suffix="%"
                     valueStyle={{ color: 'var(--status-returned)' }}
                   />
-                </Card>
-              </Col>
-            </Row>
-          </div>
-        )}
+                )}
+              </Card>
+            </Col>
+          </Row>
+        </div>
 
         <Table
           columns={columns}

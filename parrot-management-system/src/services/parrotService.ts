@@ -68,18 +68,18 @@ export class ParrotService {
   // ==================== 销售相关API ====================
 
   /**
-   * 获取销售记录列表
+   * 获取销售记录列表（当前在售鹦鹉，status=sold）
    */
   static async getSalesRecords(params?: SalesFilterParams) {
-    const data = await api.get<PaginatedData<SaleRecord>>('/sales', params);
+    const data = await api.get<PaginatedData<SaleRecord>>('/sales-records', params);
     return { success: true, data };
   }
 
   /**
-   * 获取销售历史记录
+   * 获取销售历史记录（SalesHistory表）
    */
   static async getSalesHistory(params?: SalesFilterParams) {
-    const data = await api.get<PaginatedData<SalesHistoryRecord>>('/sales/history', params);
+    const data = await api.get<PaginatedData<SalesHistoryRecord>>('/sales-history', params);
     return { success: true, data };
   }
 
@@ -155,7 +155,15 @@ export class ParrotService {
    * 获取销售统计信息
    */
   static async getSalesStatistics(params?: { start_date?: string; end_date?: string }) {
-    const data = await api.get<SalesStatistics>('/sales/statistics', params);
+    const data = await api.get<SalesStatistics>('/statistics/sales', params);
+    return { success: true, data };
+  }
+
+  /**
+   * 获取退货统计信息
+   */
+  static async getReturnStatistics() {
+    const data = await api.get<{ return_count: number; return_rate: number }>('/statistics/returns');
     return { success: true, data };
   }
 

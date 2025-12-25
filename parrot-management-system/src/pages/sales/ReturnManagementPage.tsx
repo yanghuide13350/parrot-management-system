@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Table, Button, Space, Tag, Modal, message, Input, Row, Col, Statistic } from 'antd';
+import { Card, Table, Button, Space, Tag, Modal, message, Input, Row, Col, Statistic, Skeleton } from 'antd';
 import { EyeOutlined, SearchOutlined, ReloadOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { ParrotService } from '../../services/parrotService';
@@ -11,6 +11,7 @@ const ReturnManagementPage: React.FC = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<SalesHistoryRecord | null>(null);
   const [statistics, setStatistics] = useState<{ return_count: number; return_rate: number } | null>(null);
+  const [statisticsLoading, setStatisticsLoading] = useState(false);
 
   // 筛选条件
   const [filters, setFilters] = useState({
@@ -30,9 +31,10 @@ const ReturnManagementPage: React.FC = () => {
       });
       setReturnRecords(response.data.items);
       setTotal(response.data.total);
-    } catch (error) {
-      message.error('获取退货记录失败');
+    } catch (error: any) {
       console.error('Error fetching return records:', error);
+      const errorMsg = error?.response?.data?.detail || error?.message || '获取退货记录失败';
+      message.error(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -41,13 +43,15 @@ const ReturnManagementPage: React.FC = () => {
   // 获取统计数据
   const fetchStatistics = async () => {
     try {
-      const response = await ParrotService.getSalesStatistics();
-      setStatistics({
-        return_count: response.data.returned_count,
-        return_rate: response.data.return_rate,
-      });
-    } catch (error) {
+      setStatisticsLoading(true);
+      const response = await ParrotService.getReturnStatistics();
+      setStatistics(response.data);
+    } catch (error: any) {
       console.error('Error fetching statistics:', error);
+      const errorMsg = error?.response?.data?.detail || error?.message || '获取统计数据失败';
+      message.error(errorMsg);
+    } finally {
+      setStatisticsLoading(false);
     }
   };
 
@@ -187,42 +191,52 @@ const ReturnManagementPage: React.FC = () => {
         </div>
 
         {/* 统计卡片 */}
-        {statistics && (
-          <div style={{ marginBottom: '16px' }}>
-            <Row gutter={16}>
-              <Col span={8}>
-                <Card>
+        <div style={{ marginBottom: '16px' }}>
+          <Row gutter={16}>
+            <Col span={8}>
+              <Card>
+                {statisticsLoading ? (
+                  <Skeleton active paragraph={{ rows: 1 }} />
+                ) : (
                   <Statistic
                     title="退货数量"
-                    value={statistics.return_count}
+                    value={statistics?.return_count || 0}
                     suffix="只"
                     valueStyle={{ color: 'var(--status-returned)' }}
                   />
-                </Card>
-              </Col>
-              <Col span={8}>
-                <Card>
+                )}
+              </Card>
+            </Col>
+            <Col span={8}>
+              <Card>
+                {statisticsLoading ? (
+                  <Skeleton active paragraph={{ rows: 1 }} />
+                ) : (
                   <Statistic
                     title="退货率"
-                    value={statistics.return_rate}
+                    value={statistics?.return_rate || 0}
                     precision={2}
                     suffix="%"
                     valueStyle={{ color: 'var(--status-returned)' }}
                   />
-                </Card>
-              </Col>
-              <Col span={8}>
-                <Card>
+                )}
+              </Card>
+            </Col>
+            <Col span={8}>
+              <Card>
+                {statisticsLoading ? (
+                  <Skeleton active paragraph={{ rows: 1 }} />
+                ) : (
                   <Statistic
                     title="状态"
                     value="正常"
                     valueStyle={{ color: 'var(--status-available)' }}
                   />
-                </Card>
-              </Col>
-            </Row>
-          </div>
-        )}
+                )}
+              </Card>
+            </Col>
+          </Row>
+        </div>
 
         <Table
           columns={columns}
