@@ -48,9 +48,12 @@ app.add_exception_handler(Exception, exception_handler)
 
 
 # CORS配置
+# 从环境变量获取允许的域名，生产环境需要设置 ALLOWED_ORIGINS
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173,http://localhost:3000").split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

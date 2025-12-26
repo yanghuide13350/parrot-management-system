@@ -1,12 +1,22 @@
 import axios, { type AxiosInstance } from 'axios';
 
+// 根据环境自动选择 API 地址
+const getBaseURL = () => {
+  // 生产环境使用环境变量或默认的 Render 地址
+  if (import.meta.env.PROD) {
+    return import.meta.env.VITE_API_URL || 'https://parrot-api.onrender.com/api';
+  }
+  // 开发环境使用本地地址
+  return 'http://localhost:8000/api';
+};
+
 class ApiService {
   private client: AxiosInstance;
 
   constructor() {
     this.client = axios.create({
-      baseURL: 'http://localhost:8000/api',
-      timeout: 10000,
+      baseURL: getBaseURL(),
+      timeout: 30000, // 生产环境可能需要更长超时（Render 冷启动）
       headers: {
         'Content-Type': 'application/json',
       },

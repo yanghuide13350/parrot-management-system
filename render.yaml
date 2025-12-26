@@ -1,0 +1,27 @@
+services:
+  # 后端 FastAPI 服务
+  - type: web
+    name: parrot-api
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: ALLOWED_ORIGINS
+        value: https://parrot-frontend.onrender.com
+      - key: PYTHON_VERSION
+        value: 3.9.18
+    disk:
+      name: uploads
+      mountPath: /opt/render/project/src/uploads
+      sizeGB: 1
+
+  # 前端 React 服务
+  - type: web
+    name: parrot-frontend
+    runtime: static
+    buildCommand: cd parrot-management-system && npm install && npm run build
+    staticPublishPath: parrot-management-system/dist
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: no-cache
