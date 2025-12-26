@@ -57,29 +57,26 @@ const Header: React.FC<HeaderProps> = ({ collapsed, onCollapse }) => {
           </span>
         ),
       },
-      ...pathSnippets.map((_, index) => {
-        const url = `/${pathSnippets.slice(0, index + 1).join('/')}`;
-        const isLast = index === pathSnippets.length - 1;
-        const name = breadcrumbNameMap[pathSnippets[index]] || pathSnippets[index];
+      ...pathSnippets
+        .filter((snippet) => snippet !== 'list')
+        .map((snippet, index, arr) => {
+          const url = `/${pathSnippets.slice(0, pathSnippets.indexOf(snippet) + 1).join('/')}`;
+          const isLast = index === arr.length - 1;
+          const name = breadcrumbNameMap[snippet] || snippet;
 
-        // 跳过 'list' 面包屑项（鹦鹉列表）
-        if (pathSnippets[index] === 'list') {
-          return null;
-        }
-
-        return {
-          title: isLast ? (
-            <span style={{ color: getBreadcrumbColor(index, true) }}>{name}</span>
-          ) : (
-            <span
-              onClick={() => navigate(url)}
-              style={{ cursor: 'pointer', color: getBreadcrumbColor(index, false) }}
-            >
-              {name}
-            </span>
-          ),
-        };
-      }).filter(Boolean),
+          return {
+            title: isLast ? (
+              <span style={{ color: getBreadcrumbColor(index, true) }}>{name}</span>
+            ) : (
+              <span
+                onClick={() => navigate(url)}
+                style={{ cursor: 'pointer', color: getBreadcrumbColor(index, false) }}
+              >
+                {name}
+              </span>
+            ),
+          };
+        }),
     ];
   };
 

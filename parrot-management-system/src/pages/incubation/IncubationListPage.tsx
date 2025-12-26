@@ -81,13 +81,8 @@ const IncubationListPage: React.FC = () => {
     fetchIncubationRecords();
   };
 
-  // 监听鹦鹉数据加载状态
-  useEffect(() => {
-    if (!parrotsLoading && parrots.length === 0) {
-      // 如果鹦鹉数据为空，尝试重新获取
-      fetchParrots();
-    }
-  }, [parrotsLoading, parrots.length, fetchParrots]);
+  // 注意：移除了会导致无限循环的 useEffect
+  // 鹦鹉数据已在页面加载时获取，无需重复获取
 
   const handleAddIncubation = () => {
     setAddModalVisible(true);

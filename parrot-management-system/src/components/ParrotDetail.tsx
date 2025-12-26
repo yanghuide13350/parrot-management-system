@@ -754,24 +754,43 @@ const ParrotDetail = ({ parrot }: ParrotDetailProps) => {
         ) : photos && photos.length > 0 ? (
           <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
             {photos.map((photo) => (
-              <div key={photo.id} style={{ position: 'relative', width: '200px', height: '200px' }}>
+              <div 
+                key={photo.id} 
+                style={{ 
+                  position: 'relative', 
+                  width: '150px', 
+                  height: '150px',
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                  backgroundColor: '#f5f5f5',
+                }}
+              >
                 {photo.file_type === 'video' ? (
                   <video
-                    width="200"
-                    height="200"
+                    width="150"
+                    height="150"
                     controls
-                    style={{ objectFit: 'cover', borderRadius: '8px' }}
+                    style={{ 
+                      width: '150px',
+                      height: '150px',
+                      objectFit: 'cover',
+                      display: 'block',
+                    }}
                     src={`/uploads/${photo.file_path}`}
                   >
                     您的浏览器不支持视频播放
                   </video>
                 ) : (
                   <Image
-                    width={200}
-                    height={200}
+                    width={150}
+                    height={150}
                     src={`/uploads/${photo.file_path}`}
                     alt={photo.file_name}
-                    style={{ objectFit: 'cover', borderRadius: '8px' }}
+                    style={{ 
+                      objectFit: 'cover',
+                      display: 'block',
+                    }}
                   />
                 )}
                 {/* 删除按钮 */}
@@ -791,7 +810,14 @@ const ParrotDetail = ({ parrot }: ParrotDetailProps) => {
                       position: 'absolute',
                       top: '8px',
                       right: '8px',
-                      opacity: 0.7,
+                      opacity: 0.8,
+                      borderRadius: '50%',
+                      width: '28px',
+                      height: '28px',
+                      padding: 0,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
                     }}
                     title="删除"
                   />

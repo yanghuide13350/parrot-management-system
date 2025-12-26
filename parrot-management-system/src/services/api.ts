@@ -75,14 +75,18 @@ class ApiService {
     return response.data;
   }
 
-  async uploadFile(url: string, file: File) {
+  async uploadFile(url: string, file: File, parrotId?: number) {
     const formData = new FormData();
     formData.append('file', file);
+    if (parrotId) {
+      formData.append('parrot_id', parrotId.toString());
+    }
 
     const response = await this.client.post(url, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
+      timeout: 600000, // 上传文件超时设置为10分钟
     });
 
     return response.data;
