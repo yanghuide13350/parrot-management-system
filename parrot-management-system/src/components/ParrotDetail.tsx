@@ -7,6 +7,23 @@ import { ParrotService } from '../services/parrotService';
 import { calculateAge } from '../utils/dateUtils';
 import { api } from '../services/api';
 
+// 格式化日期时间
+const formatDateTime = (dateStr: string | null | undefined): string => {
+  if (!dateStr) return '-';
+  try {
+    const date = new Date(dateStr);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  } catch {
+    return dateStr;
+  }
+};
+
 interface ParrotDetailProps {
   parrot: Parrot;
 }
@@ -478,7 +495,7 @@ const ParrotDetail = ({ parrot }: ParrotDetailProps) => {
         ` : ''}
 
         <div class="footer">
-            生成时间：${new Date().toLocaleString('zh-CN')}
+            生成时间：${formatDateTime(new Date().toISOString())}
         </div>
     </div>
 </body>
@@ -560,8 +577,8 @@ const ParrotDetail = ({ parrot }: ParrotDetailProps) => {
           <Tag color={statusColors[parrot.status] || 'default'}>{statusMap[parrot.status] || parrot.status}</Tag>
         </Descriptions.Item>
         <Descriptions.Item label="照片数量">{parrot.photo_count}</Descriptions.Item>
-        <Descriptions.Item label="创建时间">{parrot.created_at}</Descriptions.Item>
-        <Descriptions.Item label="更新时间">{parrot.updated_at}</Descriptions.Item>
+        <Descriptions.Item label="创建时间">{formatDateTime(parrot.created_at)}</Descriptions.Item>
+        <Descriptions.Item label="更新时间">{formatDateTime(parrot.updated_at)}</Descriptions.Item>
 
         {/* 配偶信息 */}
         {mateInfo?.has_mate && mateInfo.mate && (
@@ -573,7 +590,7 @@ const ParrotDetail = ({ parrot }: ParrotDetailProps) => {
               </div>
             </Descriptions.Item>
             <Descriptions.Item label="配对时间">
-              {mateInfo.paired_at ? new Date(mateInfo.paired_at).toLocaleString('zh-CN') : '-'}
+              {formatDateTime(mateInfo.paired_at)}
             </Descriptions.Item>
             <Descriptions.Item label="配对时长">
               {calculatePairingDuration(mateInfo.paired_at)}
@@ -694,7 +711,7 @@ const ParrotDetail = ({ parrot }: ParrotDetailProps) => {
                 children: (
                   <div>
                     <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
-                      {item.event} - {item.date ? new Date(item.date).toLocaleString('zh-CN') : '未知'}
+                      {item.event} - {formatDateTime(item.date)}
                     </div>
                     <div style={{ color: '#666', fontSize: '14px' }}>
                       {description}

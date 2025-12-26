@@ -2,8 +2,8 @@ import { api } from './api';
 
 export interface IncubationRecord {
   id: number;
-  father_id: number;
-  mother_id: number;
+  father_id?: number;
+  mother_id?: number;
   start_date: string;
   expected_hatch_date: string;
   actual_hatch_date?: string;
@@ -13,13 +13,13 @@ export interface IncubationRecord {
   notes?: string;
   created_at: string;
   updated_at: string;
-  father: {
+  father?: {
     id: number;
     breed: string;
     ring_number?: string;
     gender: string;
   };
-  mother: {
+  mother?: {
     id: number;
     breed: string;
     ring_number?: string;
@@ -28,8 +28,8 @@ export interface IncubationRecord {
 }
 
 export interface IncubationRecordCreate {
-  father_id: number;
-  mother_id: number;
+  father_id?: number;
+  mother_id?: number;
   start_date: string;
   expected_hatch_date: string;
   actual_hatch_date?: string;

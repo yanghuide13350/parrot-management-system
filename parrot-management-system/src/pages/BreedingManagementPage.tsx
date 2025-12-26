@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Table, Button, Space, Card, Tag, Modal, message, Input, Select, InputNumber } from 'antd';
-import { HeartOutlined, EyeOutlined, DeleteOutlined, DisconnectOutlined, SearchOutlined } from '@ant-design/icons';
+import { Table, Button, Space, Card, Modal, message, Input, Select } from 'antd';
+import { HeartOutlined, EyeOutlined, DeleteOutlined, DisconnectOutlined, SearchOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import { useParrot } from '../context/ParrotContext';
 import { api } from '../services/api';
 import type { Parrot } from '../types/parrot';
 import ParrotDetail from '../components/ParrotDetail';
 import { calculateAge } from '../utils/dateUtils';
+import { IncubationService } from '../services/incubationService';
+import moment from 'moment';
 
 const { Option } = Select;
 
@@ -73,8 +75,9 @@ const BreedingManagementPage = () => {
   // const MIN_BREEDING_AGE_DAYS = 365;
 
   useEffect(() => {
-    // Only show breeding birds while on this page
-    setFilters({ status: 'breeding' });
+    // 繁殖管理页面不设置status筛选，获取所有鹦鹉后在前端过滤
+    // 这样可以显示 breeding、paired、incubating 状态的鹦鹉
+    setFilters({});
     setIsInitialized(true);
 
     return () => {
@@ -94,15 +97,22 @@ const BreedingManagementPage = () => {
 
   // 筛选配对状态的辅助函数
   const filterParrotsByPairingStatus = (parrots: Parrot[]) => {
+    // 繁殖管理只显示 breeding 和 paired 状态的鹦鹉
+    // incubating 状态的鹦鹉在孵化列表中显示
+    const breedingParrots = parrots.filter(p => 
+      p.status === 'breeding' || p.status === 'paired'
+    );
+    
+    // 然后根据配对状态进一步筛选
     if (!pairingStatus) {
-      return parrots;
+      return breedingParrots;
     }
     if (pairingStatus === 'paired') {
-      return parrots.filter(p => p.mate_id);
+      return breedingParrots.filter(p => p.mate_id);
     } else if (pairingStatus === 'unpaired') {
-      return parrots.filter(p => !p.mate_id);
+      return breedingParrots.filter(p => !p.mate_id);
     }
-    return parrots;
+    return breedingParrots;
   };
 
   // 监听配对状态变化，自动刷新数据
@@ -155,19 +165,21 @@ const BreedingManagementPage = () => {
         message.warning('该母鹦鹉已经配对，无法再次配对');
         return;
       }
-      // Fetch all breeding parrots with pagination to get all males
-      // First, get a larger page size to fetch more breeding birds
+      // Fetch all breeding parrots (API限制size最大100)
       const allBreedingResponse = await api.get('/parrots', {
         params: {
           status: 'breeding',
-          size: 1000, // Get a large number to include all breeding birds
+          size: 100,
         },
       });
 
+      console.log('API Response:', allBreedingResponse);
       const allBreedingParrots = (allBreedingResponse as any).items || [];
+      console.log('All breeding parrots:', allBreedingParrots);
       const eligibleMales = allBreedingParrots.filter(
         (p: Parrot) => p.gender === '公' && !p.mate_id && p.id !== femaleParrot.id
       );
+      console.log('Eligible males:', eligibleMales);
 
       setSelectedFemaleBreeding(femaleParrot);
       setCompatibleMales(eligibleMales);
@@ -223,44 +235,48 @@ const BreedingManagementPage = () => {
     }
   };
 
-  const handleRemoveFromBreeding = async (parrot: Parrot) => {
-    const confirmed = window.confirm(
-      `确定要将 "${parrot.breed}" (圈号: ${parrot.ring_number || '无'}) 从种鸟状态移除吗？\n\n移除后将变为待售状态。`
-    );
-
-    if (!confirmed) {
-      return;
-    }
-
-    try {
-      await api.put(`/parrots/${parrot.id}/status`, { status: 'available' });
-      message.success(`已移除种鸟状态：${parrot.breed} (圈号: ${parrot.ring_number || '无'})`);
-      fetchParrots(); // Refresh the list
-    } catch (error: any) {
-      console.error('Failed to remove from breeding:', error);
-      const errMessage = error.response?.data?.detail || error.response?.data?.message || '操作失败';
-      message.error(errMessage);
-    }
+  const handleRemoveFromBreeding = (parrot: Parrot) => {
+    Modal.confirm({
+      title: '确认移除种鸟状态',
+      icon: <ExclamationCircleOutlined />,
+      content: `确定要将 "${parrot.breed}" (圈号: ${parrot.ring_number || '无'}) 从种鸟状态移除吗？移除后将变为待售状态。`,
+      okText: '确定',
+      cancelText: '取消',
+      centered: true,
+      onOk: async () => {
+        try {
+          await api.put(`/parrots/${parrot.id}/status`, { status: 'available' });
+          message.success(`已移除种鸟状态：${parrot.breed} (圈号: ${parrot.ring_number || '无'})`);
+          fetchParrots();
+        } catch (error: any) {
+          console.error('Failed to remove from breeding:', error);
+          const errMessage = error.response?.data?.detail || error.response?.data?.message || '操作失败';
+          message.error(errMessage);
+        }
+      },
+    });
   };
 
-  const handleUnpairParrot = async (parrot: Parrot) => {
-    const confirmed = window.confirm(
-      `确定要取消 "${parrot.breed}" (圈号: ${parrot.ring_number || '无'}) 的配对吗？\n\n取消后两只鹦鹉都可以重新配对。`
-    );
-
-    if (!confirmed) {
-      return;
-    }
-
-    try {
-      await api.post(`/parrots/unpair/${parrot.id}`);
-      message.success(`已取消配对：${parrot.breed} (圈号: ${parrot.ring_number || '无'})`);
-      fetchParrots(); // Refresh the list
-    } catch (error: any) {
-      console.error('Failed to unpair:', error);
-      const errMessage = error.response?.data?.detail || error.response?.data?.message || '取消配对失败';
-      message.error(errMessage);
-    }
+  const handleUnpairParrot = (parrot: Parrot) => {
+    Modal.confirm({
+      title: '确认取消配对',
+      icon: <ExclamationCircleOutlined />,
+      content: `确定要取消 "${parrot.breed}" (圈号: ${parrot.ring_number || '无'}) 的配对吗？取消后两只鹦鹉都可以重新配对。`,
+      okText: '确定',
+      cancelText: '取消',
+      centered: true,
+      onOk: async () => {
+        try {
+          await api.post(`/parrots/unpair/${parrot.id}`);
+          message.success(`已取消配对：${parrot.breed} (圈号: ${parrot.ring_number || '无'})`);
+          fetchParrots();
+        } catch (error: any) {
+          console.error('Failed to unpair:', error);
+          const errMessage = error.response?.data?.detail || error.response?.data?.message || '取消配对失败';
+          message.error(errMessage);
+        }
+      },
+    });
   };
 
   // 新增：开始孵化
@@ -277,17 +293,39 @@ const BreedingManagementPage = () => {
     }
 
     try {
-      // 更新公鸟和母鸟的状态为孵化中
-      await Promise.all([
-        api.put(`/parrots/${selectedPairedParrot.id}/status`, { status: 'incubating' }),
-        api.put(`/parrots/${selectedPairedParrot.mate_id}/status`, { status: 'incubating' }),
-      ]);
+      // 确定公鸟和母鸟
+      const mate = parrots.find(p => p.id === selectedPairedParrot.mate_id);
+      if (!mate) {
+        message.error('未找到配偶信息');
+        return;
+      }
 
-      // 这里可以添加创建孵化记录的逻辑
-      message.success(`已开始孵化！蛋数量：${eggCount}个`);
-      setShowIncubationModal(false);
-      setSelectedPairedParrot(null);
-      fetchParrots(); // Refresh the list
+      const isMale = selectedPairedParrot.gender === '公';
+      const maleParrot = isMale ? selectedPairedParrot : mate;
+      const femaleParrot = isMale ? mate : selectedPairedParrot;
+
+      // 计算预计孵化日期（开始日期+21天）
+      const startDate = moment().format('YYYY-MM-DD');
+      const expectedDate = moment().add(21, 'days').format('YYYY-MM-DD');
+
+      // 创建孵化记录（后端会自动更新鹦鹉状态为incubating）
+      const response = await IncubationService.createIncubationRecord({
+        father_id: maleParrot.id,
+        mother_id: femaleParrot.id,
+        start_date: startDate,
+        expected_hatch_date: expectedDate,
+        eggs_count: eggCount,
+        hatched_count: 0,
+        status: 'incubating',
+        notes: '',
+      });
+
+      if (response.success) {
+        message.success(`已开始孵化！蛋数量：${eggCount}个`);
+        setShowIncubationModal(false);
+        setSelectedPairedParrot(null);
+        fetchParrots(); // Refresh the list
+      }
     } catch (error: any) {
       console.error('Failed to start incubation:', error);
       const errMessage = error.response?.data?.detail || error.response?.data?.message || '开始孵化失败';
@@ -302,8 +340,8 @@ const BreedingManagementPage = () => {
 
   // 查询条件处理函数
   const handleSearch = () => {
-    // 构建筛选条件 - 始终筛选种鸟状态
-    const searchFilters: any = { status: 'breeding' };
+    // 构建筛选条件 - 不再固定筛选种鸟状态，让前端过滤
+    const searchFilters: any = {};
 
     if (searchText) {
       searchFilters.keyword = searchText;
@@ -326,7 +364,7 @@ const BreedingManagementPage = () => {
     setSelectedBreed(undefined);
     setSelectedGender(undefined);
     setPairingStatus(undefined);
-    setFilters({ status: 'breeding' });
+    setFilters({});
     setPage(1);
   };
 
@@ -348,54 +386,82 @@ const BreedingManagementPage = () => {
       title: '性别',
       dataIndex: 'gender',
       key: 'gender',
-      width: 80,
+      width: 70,
+      align: 'center' as const,
       render: (gender: string) => {
-        const color = genderColors[gender] || '#8D99AE';
+        // 莫兰迪配色：公=雾霾蓝，母=豆沙粉
+        const bgColor = gender === '公' ? '#7B9EBE' : '#D4A5A5';
         return (
-          <Tag color={color} style={{
-            backgroundColor: `${color}15`,
-            borderColor: color,
-            color: color
-          }}>{gender}</Tag>
+          <span style={{
+            display: 'inline-block',
+            padding: '4px 16px',
+            borderRadius: '6px',
+            backgroundColor: bgColor,
+            color: '#fff',
+            fontSize: '14px',
+            fontWeight: 500,
+          }}>{gender}</span>
         );
       },
     },
     {
       title: '配对状态',
       key: 'pairing_status',
-      width: 80,
+      width: 100,
+      align: 'center' as const,
       render: (record: Parrot) => {
         if (record.mate_id) {
-          const color = statusColors.paired;
+          // 莫兰迪红：柔和的砖红色
           return (
-            <Tag color={color} icon={<HeartOutlined />} style={{
-              backgroundColor: `${color}15`,
-              borderColor: color,
-              color: color
+            <span style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '4px',
+              padding: '4px 12px',
+              borderRadius: '6px',
+              backgroundColor: '#C08B8B',
+              color: '#fff',
+              fontSize: '14px',
+              fontWeight: 500,
             }}>
+              <HeartOutlined style={{ fontSize: '12px' }} />
               已配对
-            </Tag>
+            </span>
           );
         }
-        const color = statusColors.unpaired;
-        return <Tag color={color} style={{
-          backgroundColor: `${color}15`,
-          borderColor: color,
-          color: color
-        }}>未配对</Tag>;
+        return (
+          <span style={{
+            display: 'inline-block',
+            padding: '4px 12px',
+            borderRadius: '6px',
+            backgroundColor: '#A8A8A8',
+            color: '#fff',
+            fontSize: '14px',
+            fontWeight: 500,
+          }}>未配对</span>
+        );
       },
     },
     {
       title: '配偶信息',
       key: 'mate_info',
-      width: 120,
+      width: 110,
+      align: 'center' as const,
       render: (record: Parrot) => {
         if (record.mate_id) {
-          // 通过mate_id查找配偶的圈号
           const mate = parrots.find(p => p.id === record.mate_id);
-          return <span style={{ color: statusColors.paired, fontSize: '12px' }}>圈号: {mate?.ring_number || record.mate_id}</span>;
+          return (
+            <span style={{
+              color: '#C08B8B',
+              fontSize: '14px',
+              fontWeight: 500,
+            }}>
+              圈号: {mate?.ring_number || record.mate_id}
+            </span>
+          );
         }
-        return '-';
+        return <span style={{ color: '#C4C4C4' }}>-</span>;
       },
     },
     {
@@ -784,17 +850,17 @@ const BreedingManagementPage = () => {
         title="配置孵化信息"
         open={showIncubationModal}
         onCancel={() => setShowIncubationModal(false)}
-        footer={[
-          <Button key="cancel" onClick={() => setShowIncubationModal(false)}>
-            取消
-          </Button>,
-          <Button key="submit" type="primary" onClick={handleConfirmIncubation}>
-            开始孵化
-          </Button>,
-        ]}
+        onOk={handleConfirmIncubation}
+        okText="开始孵化"
+        cancelText="取消"
         width={500}
       >
-        {selectedPairedParrot && (
+        {selectedPairedParrot && (() => {
+          const mate = parrots.find(p => p.id === selectedPairedParrot.mate_id);
+          const isMale = selectedPairedParrot.gender === '公';
+          const maleParrot = isMale ? selectedPairedParrot : mate;
+          const femaleParrot = isMale ? mate : selectedPairedParrot;
+          return (
           <div style={{ padding: '16px 0' }}>
             <p style={{ marginBottom: '16px', color: uiColors.textSecondary }}>
               为配对鹦鹉配置孵化信息：
@@ -806,12 +872,10 @@ const BreedingManagementPage = () => {
               marginBottom: '16px'
             }}>
               <p style={{ margin: '4px 0', fontSize: '14px' }}>
-                <strong>公鸟：</strong>{selectedPairedParrot.breed} (圈号: {selectedPairedParrot.ring_number || '无'})
+                <strong>公鸟：</strong>{maleParrot?.breed || '-'} (圈号: {maleParrot?.ring_number || '无'})
               </p>
               <p style={{ margin: '4px 0', fontSize: '14px' }}>
-                <strong>母鸟：</strong>
-                {parrots.find(p => p.id === selectedPairedParrot.mate_id)?.breed}
-                (圈号: {parrots.find(p => p.id === selectedPairedParrot.mate_id)?.ring_number || '无'})
+                <strong>母鸟：</strong>{femaleParrot?.breed || '-'} (圈号: {femaleParrot?.ring_number || '无'})
               </p>
             </div>
             <div>
@@ -837,7 +901,8 @@ const BreedingManagementPage = () => {
               </p>
             </div>
           </div>
-        )}
+          );
+        })()}
       </Modal>
     </div>
   );

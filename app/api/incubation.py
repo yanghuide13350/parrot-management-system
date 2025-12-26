@@ -145,24 +145,28 @@ def get_incubation_record(record_id: int, db: Session = Depends(get_db)):
 def create_incubation_record(record: IncubationRecordCreate, db: Session = Depends(get_db)):
     """
     创建新的孵化记录
+    父亲和母亲ID可以为空，表示未知
     """
-    # 验证父亲鹦鹉存在
-    father = db.query(Parrot).filter(Parrot.id == record.father_id).first()
-    if not father:
-        raise BadRequestException(f"未找到ID为 {record.father_id} 的父亲鹦鹉")
+    father = None
+    mother = None
 
-    # 验证母亲鹦鹉存在
-    mother = db.query(Parrot).filter(Parrot.id == record.mother_id).first()
-    if not mother:
-        raise BadRequestException(f"未找到ID为 {record.mother_id} 的母亲鹦鹉")
+    # 验证父亲鹦鹉存在（如果提供了ID）
+    if record.father_id:
+        father = db.query(Parrot).filter(Parrot.id == record.father_id).first()
+        if not father:
+            raise BadRequestException(f"未找到ID为 {record.father_id} 的父亲鹦鹉")
+        # 验证父亲性别
+        if father.gender != "公":
+            raise BadRequestException(f"父亲鹦鹉必须是公的，当前性别：{father.gender}")
 
-    # 验证父亲性别
-    if father.gender != "公":
-        raise BadRequestException(f"父亲鹦鹉必须是公的，当前性别：{father.gender}")
-
-    # 验证母亲性别
-    if mother.gender != "母":
-        raise BadRequestException(f"母亲鹦鹉必须是母的，当前性别：{mother.gender}")
+    # 验证母亲鹦鹉存在（如果提供了ID）
+    if record.mother_id:
+        mother = db.query(Parrot).filter(Parrot.id == record.mother_id).first()
+        if not mother:
+            raise BadRequestException(f"未找到ID为 {record.mother_id} 的母亲鹦鹉")
+        # 验证母亲性别
+        if mother.gender != "母":
+            raise BadRequestException(f"母亲鹦鹉必须是母的，当前性别：{mother.gender}")
 
     # 验证日期逻辑
     if record.expected_hatch_date < record.start_date:
@@ -182,6 +186,13 @@ def create_incubation_record(record: IncubationRecordCreate, db: Session = Depen
     )
 
     db.add(db_record)
+
+    # 更新父鸟和母鸟的状态为孵化中（如果存在）
+    if father:
+        father.status = "incubating"
+    if mother:
+        mother.status = "incubating"
+
     db.commit()
     db.refresh(db_record)
 
@@ -293,13 +304,26 @@ def update_incubation_record(
 def delete_incubation_record(record_id: int, db: Session = Depends(get_db)):
     """
     删除孵化记录
+    删除后将父鸟和母鸟的状态恢复为配对中(paired)
     """
     db_record = db.query(IncubationRecord).filter(IncubationRecord.id == record_id).first()
 
     if not db_record:
         raise NotFoundException(f"未找到ID为 {record_id} 的孵化记录")
 
+    # 获取父鸟和母鸟
+    father = db.query(Parrot).filter(Parrot.id == db_record.father_id).first()
+    mother = db.query(Parrot).filter(Parrot.id == db_record.mother_id).first()
+
+    # 删除孵化记录
     db.delete(db_record)
+
+    # 恢复父鸟和母鸟的状态为配对中
+    if father and father.status == "incubating":
+        father.status = "paired"
+    if mother and mother.status == "incubating":
+        mother.status = "paired"
+
     db.commit()
 
     return None

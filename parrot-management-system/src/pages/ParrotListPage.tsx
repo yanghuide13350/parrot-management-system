@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Table, Button, Space, Card, Input, Select, Modal, message, Tag, Popconfirm, InputNumber, Form } from 'antd';
-import { EditOutlined, DeleteOutlined, EyeOutlined, ShoppingCartOutlined, ArrowLeftOutlined, HeartOutlined, SearchOutlined, CustomerServiceOutlined, RollbackOutlined, PlusOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, EyeOutlined, ShoppingCartOutlined, ArrowLeftOutlined, HeartOutlined, SearchOutlined, CustomerServiceOutlined, RollbackOutlined, PlusOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import { useParrot } from '../context/ParrotContext';
 import type { Parrot } from '../types/parrot';
 import ParrotForm from '../components/ParrotForm';
@@ -199,6 +199,12 @@ const ParrotListPage = () => {
       return;
     }
 
+    // 检查是否未验卡
+    if (parrot.gender === '未验卡') {
+      message.error('未验卡的鹦鹉不能设置为种鸟');
+      return;
+    }
+
     if (parrot.status !== 'available') {
       console.error('Error: Parrot status is not available:', parrot.status);
       message.error('只有待售状态的鹦鹉才能设置为种鸟');
@@ -212,24 +218,29 @@ const ParrotListPage = () => {
 
       console.log('Age calculation:', { ageDays, ageText, hasAgeWarning });
 
-      // 使用浏览器原生的confirm代替Modal.confirm
       const confirmText = hasAgeWarning
         ? `当前鹦鹉年龄为 ${ageText}，未满1年，仍要设为种鸟吗？`
         : `确定要将 ${parrot.breed} 设为种鸟吗？`;
 
-      if (window.confirm(confirmText)) {
-        console.log('User confirmed, starting API call...');
-        try {
-          await updateStatus(parrot.id, 'breeding');
-          message.success(`${parrot.breed}已设置为种鸟`);
-          console.log('API call successful');
-        } catch (error) {
-          console.error('API call failed:', error);
-          message.error('设置失败：' + ((error as any)?.response?.data?.detail || '未知错误'));
-        }
-      } else {
-        console.log('User cancelled the operation');
-      }
+      Modal.confirm({
+        title: '确认设为种鸟',
+        icon: <ExclamationCircleOutlined />,
+        content: confirmText,
+        okText: '确定',
+        cancelText: '取消',
+        centered: true,
+        onOk: async () => {
+          console.log('User confirmed, starting API call...');
+          try {
+            await updateStatus(parrot.id, 'breeding');
+            message.success(`${parrot.breed}已设置为种鸟`);
+            console.log('API call successful');
+          } catch (error) {
+            console.error('API call failed:', error);
+            message.error('设置失败：' + ((error as any)?.response?.data?.detail || '未知错误'));
+          }
+        },
+      });
     } catch (error) {
       console.error('Error in breeding setup:', error);
       message.error('设置种鸟时出错：' + (error as Error).message);
@@ -482,7 +493,15 @@ const ParrotListPage = () => {
                 <Button type="link" size="small" icon={<ShoppingCartOutlined />} onClick={() => handleSellParrot(record)} style={{ padding: '0 4px' }}>
                   售出
                 </Button>
-                <Button type="link" size="small" icon={<HeartOutlined />} onClick={() => handleSetAsBreeding(record)} style={{ padding: '0 4px' }}>
+                <Button
+                  type="link"
+                  size="small"
+                  icon={<HeartOutlined />}
+                  onClick={() => handleSetAsBreeding(record)}
+                  style={{ padding: '0 4px' }}
+                  disabled={record.gender === '未验卡'}
+                  title={record.gender === '未验卡' ? '未验卡的鹦鹉不能设为种鸟' : ''}
+                >
                   种鸟
                 </Button>
                 <Popconfirm

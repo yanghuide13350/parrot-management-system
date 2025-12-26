@@ -65,17 +65,32 @@ const ChickManagementPage: React.FC = () => {
 
   const handleSubmitChick = async (values: any) => {
     try {
-      // 通过圈号查找父母鸟
-      const father = parrots.find(p => p.ring_number === values.fatherRingNumber);
-      const mother = parrots.find(p => p.ring_number === values.motherRingNumber);
+      // 处理"未知"选项
+      let fatherId: number | undefined;
+      let motherId: number | undefined;
+      let fatherRingNumber = values.fatherRingNumber;
+      let motherRingNumber = values.motherRingNumber;
 
-      if (!father) {
-        message.error('未找到对应圈号的公鸟');
-        return;
+      if (values.fatherRingNumber !== 'unknown') {
+        const father = parrots.find(p => p.ring_number === values.fatherRingNumber);
+        if (!father) {
+          message.error('未找到对应圈号的公鸟');
+          return;
+        }
+        fatherId = father.id;
+      } else {
+        fatherRingNumber = '未知';
       }
-      if (!mother) {
-        message.error('未找到对应圈号的母鸟');
-        return;
+
+      if (values.motherRingNumber !== 'unknown') {
+        const mother = parrots.find(p => p.ring_number === values.motherRingNumber);
+        if (!mother) {
+          message.error('未找到对应圈号的母鸟');
+          return;
+        }
+        motherId = mother.id;
+      } else {
+        motherRingNumber = '未知';
       }
 
       // 生成新的雏鸟记录
@@ -88,8 +103,8 @@ const ChickManagementPage: React.FC = () => {
         ringNumber: values.ringNumber,
         weight: values.weight,
         healthStatus: values.healthStatus,
-        parentIds: [father.id, mother.id],
-        parentRingNumbers: [values.fatherRingNumber, values.motherRingNumber],
+        parentIds: [fatherId, motherId].filter((id): id is number => id !== undefined),
+        parentRingNumbers: [fatherRingNumber, motherRingNumber],
         notes: values.notes || '',
       };
 
@@ -107,17 +122,32 @@ const ChickManagementPage: React.FC = () => {
     try {
       if (!editingChick) return;
 
-      // 通过圈号查找父母鸟
-      const father = parrots.find(p => p.ring_number === values.fatherRingNumber);
-      const mother = parrots.find(p => p.ring_number === values.motherRingNumber);
+      // 处理"未知"选项
+      let fatherId: number | undefined;
+      let motherId: number | undefined;
+      let fatherRingNumber = values.fatherRingNumber;
+      let motherRingNumber = values.motherRingNumber;
 
-      if (!father) {
-        message.error('未找到对应圈号的公鸟');
-        return;
+      if (values.fatherRingNumber !== 'unknown') {
+        const father = parrots.find(p => p.ring_number === values.fatherRingNumber);
+        if (!father) {
+          message.error('未找到对应圈号的公鸟');
+          return;
+        }
+        fatherId = father.id;
+      } else {
+        fatherRingNumber = '未知';
       }
-      if (!mother) {
-        message.error('未找到对应圈号的母鸟');
-        return;
+
+      if (values.motherRingNumber !== 'unknown') {
+        const mother = parrots.find(p => p.ring_number === values.motherRingNumber);
+        if (!mother) {
+          message.error('未找到对应圈号的母鸟');
+          return;
+        }
+        motherId = mother.id;
+      } else {
+        motherRingNumber = '未知';
       }
 
       // 更新雏鸟记录
@@ -130,8 +160,8 @@ const ChickManagementPage: React.FC = () => {
         ringNumber: values.ringNumber,
         weight: values.weight,
         healthStatus: values.healthStatus,
-        parentIds: [father.id, mother.id],
-        parentRingNumbers: [values.fatherRingNumber, values.motherRingNumber],
+        parentIds: [fatherId, motherId].filter((id): id is number => id !== undefined),
+        parentRingNumbers: [fatherRingNumber, motherRingNumber],
         notes: values.notes || '',
       };
 
@@ -153,7 +183,8 @@ const ChickManagementPage: React.FC = () => {
     fourMonthsAgo.setMonth(fourMonthsAgo.getMonth() - 4);
 
     return parrots.filter(p => {
-      if (!p.birth_date) return false;
+      // 如果没有出生日期，也允许作为父母候选
+      if (!p.birth_date) return true;
       const birthDate = new Date(p.birth_date);
       return birthDate <= fourMonthsAgo;
     });
@@ -166,6 +197,10 @@ const ChickManagementPage: React.FC = () => {
 
   const handleEditChick = (chick: any) => {
     setEditingChick(chick);
+    // 处理"未知"父母的情况
+    const fatherRingNumber = chick.parentRingNumbers?.[0] === '未知' ? 'unknown' : (chick.parentRingNumbers?.[0] || chick.parentIds?.[0]);
+    const motherRingNumber = chick.parentRingNumbers?.[1] === '未知' ? 'unknown' : (chick.parentRingNumbers?.[1] || chick.parentIds?.[1]);
+    
     form.setFieldsValue({
       breed: chick.breed,
       gender: chick.gender,
@@ -173,8 +208,8 @@ const ChickManagementPage: React.FC = () => {
       weight: chick.weight,
       healthStatus: chick.healthStatus,
       hatchDate: moment(chick.hatchDate),
-      fatherRingNumber: chick.parentRingNumbers?.[0] || chick.parentIds?.[0],
-      motherRingNumber: chick.parentRingNumbers?.[1] || chick.parentIds?.[1],
+      fatherRingNumber: fatherRingNumber,
+      motherRingNumber: motherRingNumber,
       incubationId: chick.incubationId,
       notes: chick.notes,
     });
@@ -491,6 +526,7 @@ const ChickManagementPage: React.FC = () => {
               rules={[{ required: true, message: '请选择父亲' }]}
             >
               <Select placeholder="请选择父亲" showSearch optionFilterProp="children">
+                <Option key="unknown-father" value="unknown">未知</Option>
                 {getAllParrotsAsParents()
                   .filter(p => p.gender === '公')
                   .map(parrot => (
@@ -507,6 +543,7 @@ const ChickManagementPage: React.FC = () => {
               rules={[{ required: true, message: '请选择母亲' }]}
             >
               <Select placeholder="请选择母亲" showSearch optionFilterProp="children">
+                <Option key="unknown-mother" value="unknown">未知</Option>
                 {getAllParrotsAsParents()
                   .filter(p => p.gender === '母')
                   .map(parrot => (
@@ -626,6 +663,7 @@ const ChickManagementPage: React.FC = () => {
               rules={[{ required: true, message: '请选择父亲' }]}
             >
               <Select placeholder="请选择父亲" showSearch optionFilterProp="children">
+                <Option key="unknown-father-edit" value="unknown">未知</Option>
                 {getAllParrotsAsParents()
                   .filter(p => p.gender === '公')
                   .map(parrot => (
@@ -642,6 +680,7 @@ const ChickManagementPage: React.FC = () => {
               rules={[{ required: true, message: '请选择母亲' }]}
             >
               <Select placeholder="请选择母亲" showSearch optionFilterProp="children">
+                <Option key="unknown-mother-edit" value="unknown">未知</Option>
                 {getAllParrotsAsParents()
                   .filter(p => p.gender === '母')
                   .map(parrot => (

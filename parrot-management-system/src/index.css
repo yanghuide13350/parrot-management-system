@@ -13,3 +13,24 @@ body {
 .ant-tag {
   margin-right: 0 !important;
 }
+
+/* Modal 弹框居中显示 - 使用 Ant Design 推荐的方式 */
+.ant-modal-centered {
+  text-align: center;
+}
+
+.ant-modal-centered::before {
+  display: inline-block;
+  width: 0;
+  height: 100%;
+  vertical-align: middle;
+  content: '';
+}
+
+.ant-modal-centered .ant-modal {
+  top: 0;
+  display: inline-block;
+  padding-bottom: 0;
+  text-align: left;
+  vertical-align: middle;
+}

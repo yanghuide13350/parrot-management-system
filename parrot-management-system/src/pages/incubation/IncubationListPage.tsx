@@ -96,6 +96,12 @@ const IncubationListPage: React.FC = () => {
 
   // 父亲选择后自动带出母亲圈号
   const handleFatherChange = (fatherRingNumber: string) => {
+    // 如果选择的是"未知"，则母亲也设为"未知"
+    if (fatherRingNumber === 'unknown') {
+      form.setFieldsValue({ motherRingNumber: 'unknown' });
+      return;
+    }
+
     // 根据父亲圈号查找鹦鹉对象
     const father = parrots.find(p => p.ring_number === fatherRingNumber);
 
@@ -108,10 +114,15 @@ const IncubationListPage: React.FC = () => {
       if (mother?.ring_number) {
         form.setFieldsValue({ motherRingNumber: mother.ring_number });
         message.success(`已自动填充母亲圈号: ${mother.ring_number}`);
+      } else {
+        // 找不到母亲圈号，设为未知
+        form.setFieldsValue({ motherRingNumber: 'unknown' });
+        message.info('未找到配对母亲的圈号，已设为未知');
       }
     } else {
-      // 未配对提示
-      message.warning('该父亲鹦鹉尚未配对，请手动选择母亲');
+      // 未配对，默认设置母亲为未知
+      form.setFieldsValue({ motherRingNumber: 'unknown' });
+      message.info('该父亲鹦鹉尚未配对，母亲已设为未知');
     }
   };
 
@@ -121,23 +132,32 @@ const IncubationListPage: React.FC = () => {
       const startDate = values.startDate.format('YYYY-MM-DD');
       const expectedDate = values.startDate.clone().add(21, 'days').format('YYYY-MM-DD');
 
-      // 通过圈号查找父鸟和母鸟信息
-      const father = parrots.find(p => p.ring_number === values.fatherRingNumber);
-      const mother = parrots.find(p => p.ring_number === values.motherRingNumber);
+      // 处理"未知"选项
+      let fatherId: number | undefined;
+      let motherId: number | undefined;
 
-      if (!father) {
-        message.error('未找到对应圈号的公鸟');
-        return;
+      if (values.fatherRingNumber !== 'unknown') {
+        const father = parrots.find(p => p.ring_number === values.fatherRingNumber);
+        if (!father) {
+          message.error('未找到对应圈号的公鸟');
+          return;
+        }
+        fatherId = father.id;
       }
-      if (!mother) {
-        message.error('未找到对应圈号的母鸟');
-        return;
+
+      if (values.motherRingNumber !== 'unknown') {
+        const mother = parrots.find(p => p.ring_number === values.motherRingNumber);
+        if (!mother) {
+          message.error('未找到对应圈号的母鸟');
+          return;
+        }
+        motherId = mother.id;
       }
 
       // 使用API创建孵化记录
       const recordData: IncubationRecordCreate = {
-        father_id: father.id,
-        mother_id: mother.id,
+        father_id: fatherId,
+        mother_id: motherId,
         start_date: startDate,
         expected_hatch_date: expectedDate,
         eggs_count: values.eggsCount,
@@ -169,23 +189,32 @@ const IncubationListPage: React.FC = () => {
         ? values.startDate.clone().add(21, 'days').format('YYYY-MM-DD')
         : undefined;
 
-      // 通过圈号查找父鸟和母鸟信息
-      const father = parrots.find(p => p.ring_number === values.fatherRingNumber);
-      const mother = parrots.find(p => p.ring_number === values.motherRingNumber);
+      // 处理"未知"选项
+      let fatherId: number | undefined;
+      let motherId: number | undefined;
 
-      if (!father) {
-        message.error('未找到对应圈号的公鸟');
-        return;
+      if (values.fatherRingNumber !== 'unknown') {
+        const father = parrots.find(p => p.ring_number === values.fatherRingNumber);
+        if (!father) {
+          message.error('未找到对应圈号的公鸟');
+          return;
+        }
+        fatherId = father.id;
       }
-      if (!mother) {
-        message.error('未找到对应圈号的母鸟');
-        return;
+
+      if (values.motherRingNumber !== 'unknown') {
+        const mother = parrots.find(p => p.ring_number === values.motherRingNumber);
+        if (!mother) {
+          message.error('未找到对应圈号的母鸟');
+          return;
+        }
+        motherId = mother.id;
       }
 
       // 使用API更新孵化记录
       const updateData: IncubationRecordUpdate = {
-        father_id: father.id,
-        mother_id: mother.id,
+        father_id: fatherId,
+        mother_id: motherId,
         start_date: values.startDate ? values.startDate.format('YYYY-MM-DD') : undefined,
         expected_hatch_date: expectedDate,
         actual_hatch_date: values.actualHatchDate ? values.actualHatchDate.format('YYYY-MM-DD') : undefined,
@@ -218,8 +247,8 @@ const IncubationListPage: React.FC = () => {
   const handleEditRecord = (record: IncubationRecord) => {
     setEditingRecord(record);
     form.setFieldsValue({
-      fatherRingNumber: record.father.ring_number,
-      motherRingNumber: record.mother.ring_number,
+      fatherRingNumber: record.father?.ring_number || 'unknown',
+      motherRingNumber: record.mother?.ring_number || 'unknown',
       startDate: moment(record.start_date),
       eggsCount: record.eggs_count,
       status: record.status,
@@ -250,9 +279,17 @@ const IncubationListPage: React.FC = () => {
     });
   };
 
-  // 获取已配对且状态为breeding的鹦鹉作为候选父母
-  const getPairedParrots = () => {
-    return parrots.filter(p => p.mate_id && p.status === 'breeding');
+  // 获取所有大于4个月的鹦鹉作为父母候选（与雏鸟管理保持一致）
+  const getAllParrotsAsParents = () => {
+    const fourMonthsAgo = new Date();
+    fourMonthsAgo.setMonth(fourMonthsAgo.getMonth() - 4);
+
+    return parrots.filter(p => {
+      // 如果没有出生日期，也允许作为父母候选
+      if (!p.birth_date) return true;
+      const birthDate = new Date(p.birth_date);
+      return birthDate <= fourMonthsAgo;
+    });
   };
 
   const getStatusColor = (status: string) => {
@@ -291,12 +328,12 @@ const IncubationListPage: React.FC = () => {
     {
       title: '父鸟',
       key: 'father',
-      render: (_, record) => `${record.father.breed} (圈号: ${record.father.ring_number || '无'})`,
+      render: (_, record) => record.father ? `${record.father.breed} (圈号: ${record.father.ring_number || '无'})` : '未知',
     },
     {
       title: '母鸟',
       key: 'mother',
-      render: (_, record) => `${record.mother.breed} (圈号: ${record.mother.ring_number || '无'})`,
+      render: (_, record) => record.mother ? `${record.mother.breed} (圈号: ${record.mother.ring_number || '无'})` : '未知',
     },
     {
       title: '开始日期',
@@ -510,7 +547,8 @@ const IncubationListPage: React.FC = () => {
                 loading={parrotsLoading}
                 disabled={parrotsLoading}
               >
-                {!parrotsLoading && getPairedParrots()
+                <Option key="unknown-father" value="unknown">未知</Option>
+                {!parrotsLoading && getAllParrotsAsParents()
                   .filter(p => p.gender === '公')
                   .map(parrot => (
                     <Option key={parrot.id} value={parrot.ring_number}>
@@ -532,7 +570,8 @@ const IncubationListPage: React.FC = () => {
                 loading={parrotsLoading}
                 disabled={parrotsLoading}
               >
-                {!parrotsLoading && getPairedParrots()
+                <Option key="unknown-mother" value="unknown">未知</Option>
+                {!parrotsLoading && getAllParrotsAsParents()
                   .filter(p => p.gender === '母')
                   .map(parrot => (
                     <Option key={parrot.id} value={parrot.ring_number}>
@@ -610,7 +649,8 @@ const IncubationListPage: React.FC = () => {
                 loading={parrotsLoading}
                 disabled={parrotsLoading}
               >
-                {!parrotsLoading && getPairedParrots()
+                <Option key="unknown-father-edit" value="unknown">未知</Option>
+                {!parrotsLoading && getAllParrotsAsParents()
                   .filter(p => p.gender === '公')
                   .map(parrot => (
                     <Option key={parrot.id} value={parrot.ring_number}>
@@ -632,7 +672,8 @@ const IncubationListPage: React.FC = () => {
                 loading={parrotsLoading}
                 disabled={parrotsLoading}
               >
-                {!parrotsLoading && getPairedParrots()
+                <Option key="unknown-mother-edit" value="unknown">未知</Option>
+                {!parrotsLoading && getAllParrotsAsParents()
                   .filter(p => p.gender === '母')
                   .map(parrot => (
                     <Option key={parrot.id} value={parrot.ring_number}>

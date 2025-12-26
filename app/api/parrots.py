@@ -3,7 +3,7 @@ from decimal import Decimal
 from datetime import date, datetime
 
 from fastapi import APIRouter, Depends, Query, HTTPException, status, File, UploadFile, Form
-from sqlalchemy import func, or_
+from sqlalchemy import func, or_, and_
 from sqlalchemy.orm import Session
 
 from app.models import Parrot, Photo, FollowUp, SalesHistory
@@ -59,8 +59,13 @@ def get_parrots(
 
     if status:
         if status == "paired":
-            # 筛选已配对的鹦鹉（有配偶ID的）
-            query = query.filter(Parrot.mate_id.isnot(None))
+            # 筛选已配对的鹦鹉（有配偶ID且状态为paired的）
+            query = query.filter(
+                and_(
+                    Parrot.mate_id.isnot(None),
+                    Parrot.status == "paired"
+                )
+            )
         else:
             # 其他状态按原逻辑筛选
             query = query.filter(Parrot.status == status)
@@ -456,8 +461,10 @@ def pair_parrots(pair_data: ParrotPairRequest, db: Session = Depends(get_db)):
     # 设置配对关系
     male.mate_id = female.id
     male.paired_at = datetime.utcnow()
+    male.status = "paired"  # 更新状态为配对中
     female.mate_id = male.id
     female.paired_at = datetime.utcnow()
+    female.status = "paired"  # 更新状态为配对中
 
     db.commit()
     db.refresh(male)
@@ -519,9 +526,15 @@ def unpair_parrot(parrot_id: int, db: Session = Depends(get_db)):
     if mate:
         mate.mate_id = None
         mate.paired_at = None
+        # 如果配偶状态是paired或incubating，改回breeding
+        if mate.status in ["paired", "incubating"]:
+            mate.status = "breeding"
 
     parrot.mate_id = None
     parrot.paired_at = None
+    # 如果状态是paired或incubating，改回breeding
+    if parrot.status in ["paired", "incubating"]:
+        parrot.status = "breeding"
 
     db.commit()
 

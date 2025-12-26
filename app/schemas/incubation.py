@@ -5,8 +5,8 @@ from pydantic import BaseModel, Field, field_serializer
 
 class IncubationRecordBase(BaseModel):
     """孵化记录基础模型"""
-    father_id: int = Field(..., description="父亲鹦鹉ID")
-    mother_id: int = Field(..., description="母亲鹦鹉ID")
+    father_id: Optional[int] = Field(None, description="父亲鹦鹉ID，为空表示未知")
+    mother_id: Optional[int] = Field(None, description="母亲鹦鹉ID，为空表示未知")
     start_date: date = Field(..., description="孵化开始日期")
     expected_hatch_date: date = Field(..., description="预计孵化日期")
     actual_hatch_date: Optional[date] = Field(None, description="实际孵化日期")
@@ -48,8 +48,8 @@ class ParrotInfo(BaseModel):
 class IncubationRecordResponse(BaseModel):
     """孵化记录详情响应"""
     id: int
-    father_id: int
-    mother_id: int
+    father_id: Optional[int] = None
+    mother_id: Optional[int] = None
     start_date: str
     expected_hatch_date: str
     actual_hatch_date: Optional[str] = None
@@ -59,8 +59,8 @@ class IncubationRecordResponse(BaseModel):
     notes: Optional[str] = None
     created_at: str
     updated_at: str
-    father: ParrotInfo
-    mother: ParrotInfo
+    father: Optional[ParrotInfo] = None
+    mother: Optional[ParrotInfo] = None
 
     class Config:
         from_attributes = True
