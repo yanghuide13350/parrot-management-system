@@ -109,36 +109,42 @@ const ChickManagementPage: React.FC = () => {
       dataIndex: 'id',
       key: 'id',
       width: 60,
+      align: 'center',
     },
     {
       title: '出生日期',
       dataIndex: 'hatchDate',
       key: 'hatchDate',
       width: 120,
+      align: 'center',
     },
     {
       title: '品种',
       dataIndex: 'breed',
       key: 'breed',
-      width: 100,
+      width: 120,
+      align: 'center',
     },
     {
       title: '性别',
       dataIndex: 'gender',
       key: 'gender',
       width: 80,
+      align: 'center',
     },
     {
       title: '圈号',
       dataIndex: 'ringNumber',
       key: 'ringNumber',
       width: 100,
+      align: 'center',
     },
     {
       title: '状态',
       dataIndex: 'status',
       key: 'status',
-      width: 100,
+      width: 90,
+      align: 'center',
       render: (status) => (
         <Tag color={getStatusColor(status)}>
           {getStatusText(status)}
@@ -149,24 +155,23 @@ const ChickManagementPage: React.FC = () => {
       title: '健康备注',
       dataIndex: 'healthNotes',
       key: 'healthNotes',
+      width: 200,
       ellipsis: true,
     },
     {
       title: '操作',
       key: 'action',
-      width: 100,
+      width: 80,
+      align: 'center',
       render: (_, record) => (
-        <Space size={4}>
-          <Button
-            type="link"
-            size="small"
-            icon={<EyeOutlined />}
-            onClick={() => handleViewChick(record)}
-            style={{ padding: '0 4px' }}
-          >
-            查看
-          </Button>
-        </Space>
+        <Button
+          type="link"
+          size="small"
+          icon={<EyeOutlined />}
+          onClick={() => handleViewChick(record)}
+        >
+          查看
+        </Button>
       ),
     },
   ];
@@ -221,6 +226,7 @@ const ChickManagementPage: React.FC = () => {
           dataSource={filteredChicks}
           rowKey="id"
           loading={loading}
+          scroll={{ x: 850 }}
           pagination={{
             total: filteredChicks.length,
             pageSize: 10,
