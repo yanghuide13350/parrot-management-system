@@ -1,0 +1,28 @@
+#!/usr/bin/expect -f
+set timeout 60
+set host "103.110.81.83"
+set user "root"
+set password "rQ24T4MkMViB"
+
+spawn ssh -o StrictHostKeyChecking=no $user@$host
+expect "password:"
+send "$password\r"
+expect "# "
+
+# 复制 uploads 目录内容到正确位置
+send "cp -r /var/www/parrot-management-system/uploads/* /var/www/parrot-system/uploads/\r"
+expect "# "
+
+# 检查复制结果
+send "ls -la /var/www/parrot-system/uploads/\r"
+expect "# "
+
+send "ls -la /var/www/parrot-system/uploads/parrots/\r"
+expect "# "
+
+# 测试图片是否可访问
+send "curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8000/uploads/parrots/235d598cebc64ad5b30b895013362b1e.jpg\r"
+expect "# "
+
+send "exit\r"
+expect eof

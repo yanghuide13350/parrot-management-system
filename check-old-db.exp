@@ -1,0 +1,24 @@
+#!/usr/bin/expect -f
+set timeout 60
+set host "103.110.81.83"
+set user "root"
+set password "rQ24T4MkMViB"
+
+spawn ssh -o StrictHostKeyChecking=no $user@$host
+expect "password:"
+send "$password\r"
+expect "# "
+
+send "cd /var/www/parrot-system && source venv/bin/activate\r"
+expect "# "
+
+# 检查旧数据库
+send "python3 -c \"import sqlite3; conn=sqlite3.connect('/var/www/parrot-management-system/parrot_management.db'); c=conn.cursor(); c.execute('SELECT COUNT(*) FROM parrots'); print('旧数据库鹦鹉数:', c.fetchone()); conn.close()\"\r"
+expect "# "
+
+# 查看旧数据库的鹦鹉
+send "python3 -c \"import sqlite3; conn=sqlite3.connect('/var/www/parrot-management-system/parrot_management.db'); c=conn.cursor(); c.execute('SELECT id, breed, ring_number, status FROM parrots'); rows=c.fetchall(); print('鹦鹉列表:'); [print(r) for r in rows]; conn.close()\"\r"
+expect "# "
+
+send "exit\r"
+expect eof

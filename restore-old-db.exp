@@ -1,0 +1,32 @@
+#!/usr/bin/expect -f
+set timeout 120
+set host "103.110.81.83"
+set user "root"
+set password "rQ24T4MkMViB"
+
+spawn ssh -o StrictHostKeyChecking=no $user@$host
+expect "password:"
+send "$password\r"
+expect "# "
+
+# 停止服务
+send "systemctl stop parrot-api\r"
+expect "# "
+
+# 用旧数据库恢复
+send "cp /var/www/parrot-management-system/parrot_management.db /var/www/parrot-system/parrot_management.db\r"
+expect "# "
+
+send "chmod 644 /var/www/parrot-system/parrot_management.db\r"
+expect "# "
+
+# 重启服务
+send "systemctl start parrot-api && sleep 3\r"
+expect "# "
+
+# 测试
+send "curl -s 'http://127.0.0.1:8000/api/parrots?limit=20' 2>&1 | head -500\r"
+expect "# "
+
+send "exit\r"
+expect eof

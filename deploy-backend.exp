@@ -1,0 +1,54 @@
+#!/usr/bin/expect -f
+set timeout 300
+set host "103.110.81.83"
+set user "root"
+set password "rQ24T4MkMViB"
+
+# 上传后端更新包
+spawn scp -o StrictHostKeyChecking=no backend-update.tar.gz $user@$host:/tmp/
+expect {
+    "password:" { send "$password\r"; exp_continue }
+    "100%" { }
+    eof { }
+}
+
+# SSH 登录并部署
+spawn ssh -o StrictHostKeyChecking=no $user@$host
+expect "password:"
+send "$password\r"
+expect "# "
+
+# 停止可能占用端口的进程
+send "pkill -f 'uvicorn main:app' 2>/dev/null; sleep 2\r"
+expect "# "
+
+# 进入后端目录并更新
+send "cd /var/www/parrot-management-system && tar -xzf /tmp/backend-update.tar.gz\r"
+expect "# "
+
+# 检查 share.py 是否存在
+send "ls -la /var/www/parrot-management-system/app/api/share.py\r"
+expect "# "
+
+# 检查 main.py 是否包含 share
+send "grep -i share /var/www/parrot-management-system/main.py\r"
+expect "# "
+
+# 激活虚拟环境并安装依赖
+send "cd /var/www/parrot-management-system && source venv/bin/activate && pip install -r requirements.txt -q\r"
+expect "# "
+
+# 重启后端服务
+send "systemctl restart parrot-api && sleep 3\r"
+expect "# "
+
+# 检查服务状态
+send "systemctl status parrot-api --no-pager | head -15\r"
+expect "# "
+
+# 测试 API
+send "curl -s http://127.0.0.1:8000/api/share/generate/1 -X POST 2>&1\r"
+expect "# "
+
+send "exit\r"
+expect eof

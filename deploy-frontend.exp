@@ -1,0 +1,41 @@
+#!/usr/bin/expect -f
+set timeout 120
+set host "103.110.81.83"
+set user "root"
+set password "rQ24T4MkMViB"
+
+# 上传前端包
+spawn scp -o StrictHostKeyChecking=no frontend-update.tar.gz $user@$host:/tmp/
+expect {
+    "password:" { send "$password\r"; exp_continue }
+    "100%" { }
+    eof { }
+}
+
+# SSH 登录并部署
+spawn ssh -o StrictHostKeyChecking=no $user@$host
+expect "password:"
+send "$password\r"
+expect "# "
+
+# 备份旧前端
+send "cp -r /var/www/parrot-management-system/parrot-management-system/dist /var/www/parrot-management-system/parrot-management-system/dist.bak 2>/dev/null\r"
+expect "# "
+
+# 解压新前端
+send "rm -rf /var/www/parrot-management-system/parrot-management-system/dist/*\r"
+expect "# "
+
+send "tar -xzf /tmp/frontend-update.tar.gz -C /var/www/parrot-management-system/parrot-management-system/dist/\r"
+expect "# "
+
+# 检查文件
+send "ls -la /var/www/parrot-management-system/parrot-management-system/dist/\r"
+expect "# "
+
+# 检查 SharePage 是否存在
+send "ls -la /var/www/parrot-management-system/parrot-management-system/dist/assets/ | grep -i share\r"
+expect "# "
+
+send "exit\r"
+expect eof

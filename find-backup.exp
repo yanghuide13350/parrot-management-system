@@ -1,0 +1,33 @@
+#!/usr/bin/expect -f
+set timeout 120
+set host "103.110.81.83"
+set user "root"
+set password "rQ24T4MkMViB"
+
+spawn ssh -o StrictHostKeyChecking=no $user@$host
+expect "password:"
+send "$password\r"
+expect "# "
+
+# 查找所有 .db 文件
+send "find /var/www -name '*.db*' -ls 2>/dev/null\r"
+expect "# "
+
+# 查找 /root 下的备份
+send "find /root -name '*.db*' -ls 2>/dev/null\r"
+expect "# "
+
+# 查找 /tmp 下的备份
+send "find /tmp -name '*.db*' -ls 2>/dev/null\r"
+expect "# "
+
+# 检查另一个目录
+send "ls -la /var/www/parrot-management-system/*.db* 2>/dev/null\r"
+expect "# "
+
+# 检查 uploads 目录是否有数据
+send "ls -la /var/www/parrot-system/uploads/ 2>/dev/null | head -20\r"
+expect "# "
+
+send "exit\r"
+expect eof

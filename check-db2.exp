@@ -1,0 +1,42 @@
+#!/usr/bin/expect -f
+set timeout 60
+set host "103.110.81.83"
+set user "root"
+set password "rQ24T4MkMViB"
+
+spawn ssh -o StrictHostKeyChecking=no $user@$host
+expect "password:"
+send "$password\r"
+expect "# "
+
+# 用 Python 检查数据库
+send "cd /var/www/parrot-system && source venv/bin/activate\r"
+expect "# "
+
+send "python3 << 'EOF'\r"
+expect ">"
+send "import sqlite3\r"
+expect ">"
+send "conn = sqlite3.connect('parrot_management.db')\r"
+expect ">"
+send "cursor = conn.cursor()\r"
+expect ">"
+send "cursor.execute('SELECT name FROM sqlite_master WHERE type=\"table\"')\r"
+expect ">"
+send "print('Tables:', cursor.fetchall())\r"
+expect ">"
+send "cursor.execute('SELECT COUNT(*) FROM parrots')\r"
+expect ">"
+send "print('Parrot count:', cursor.fetchone())\r"
+expect ">"
+send "cursor.execute('SELECT id, breed, status FROM parrots LIMIT 5')\r"
+expect ">"
+send "print('Parrots:', cursor.fetchall())\r"
+expect ">"
+send "conn.close()\r"
+expect ">"
+send "EOF\r"
+expect "# "
+
+send "exit\r"
+expect eof

@@ -1,0 +1,36 @@
+#!/usr/bin/expect -f
+set timeout 120
+set host "103.110.81.83"
+set user "root"
+set password "rQ24T4MkMViB"
+
+# 先上传文件
+spawn scp -o StrictHostKeyChecking=no frontend-update.tar.gz $user@$host:/tmp/
+expect {
+    "password:" { send "$password\r"; exp_continue }
+    "100%" { }
+    eof { }
+}
+
+# SSH 登录并执行部署命令
+spawn ssh -o StrictHostKeyChecking=no $user@$host
+expect "password:"
+send "$password\r"
+expect "# "
+
+# 检查当前前端文件位置
+send "find /var/www -name 'dist' -type d 2>/dev/null\r"
+expect "# "
+
+send "find /root -name 'dist' -type d 2>/dev/null\r"
+expect "# "
+
+send "find / -name 'parrot-management-system' -type d 2>/dev/null | head -5\r"
+expect "# "
+
+# 检查 Nginx 配置
+send "cat /etc/nginx/sites-enabled/* 2>/dev/null || cat /etc/nginx/nginx.conf 2>/dev/null | grep -A20 'server'\r"
+expect "# "
+
+send "exit\r"
+expect eof

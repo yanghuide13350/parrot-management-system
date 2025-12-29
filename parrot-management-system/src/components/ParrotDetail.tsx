@@ -82,11 +82,17 @@ const ParrotDetail = ({ parrot }: ParrotDetailProps) => {
     setGeneratingLink(true);
     try {
       const result = await ShareService.generateShareLink(parrot.id);
-      // 复制到剪贴板
-      await navigator.clipboard.writeText(result.url);
-      message.success('分享链接已生成并复制到剪贴板！');
       // 刷新链接列表
       await fetchShareLinks();
+      // 尝试复制到剪贴板
+      try {
+        await navigator.clipboard.writeText(result.url);
+        message.success('分享链接已生成并复制到剪贴板！');
+      } catch (clipboardError) {
+        // 复制失败，但链接已生成
+        console.warn('复制到剪贴板失败:', clipboardError);
+        message.success('分享链接已生成！请手动复制链接');
+      }
     } catch (error: any) {
       console.error('生成分享链接失败:', error);
       message.error('生成分享链接失败，请重试');

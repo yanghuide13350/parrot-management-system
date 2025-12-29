@@ -1,6 +1,2 @@
-# API 请求代理到后端
-/api/*  https://parrot-api.onrender.com/api/:splat  200
-/uploads/*  https://parrot-api.onrender.com/uploads/:splat  200
-
-# SPA 路由 - 所有其他请求返回 index.html
+# SPA 路由 - 所有非 API 和非静态文件请求返回 index.html
 /*  /index.html  200

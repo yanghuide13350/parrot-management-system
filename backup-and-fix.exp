@@ -1,0 +1,28 @@
+#!/usr/bin/expect -f
+set timeout 120
+set host "103.110.81.83"
+set user "root"
+set password "rQ24T4MkMViB"
+
+spawn ssh -o StrictHostKeyChecking=no $user@$host
+expect "password:"
+send "$password\r"
+expect "# "
+
+# 备份当前数据库
+send "cp /var/www/parrot-system/parrot_management.db /var/www/parrot-system/parrot_management.db.backup_20251229\r"
+expect "# "
+
+send "ls -la /var/www/parrot-system/*.db*\r"
+expect "# "
+
+# 测试分享链接API
+send "curl -s -X POST 'http://127.0.0.1:8000/api/share/generate/12' -H 'Referer: http://103.110.81.83/' 2>&1\r"
+expect "# "
+
+# 检查后端日志
+send "journalctl -u parrot-api --no-pager -n 30 2>&1\r"
+expect "# "
+
+send "exit\r"
+expect eof

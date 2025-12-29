@@ -1,0 +1,29 @@
+#!/usr/bin/expect -f
+set timeout 180
+set host "103.110.81.83"
+set user "root"
+set password "rQ24T4MkMViB"
+
+spawn ssh -o StrictHostKeyChecking=no $user@$host
+expect "password:"
+send "$password\r"
+expect "# "
+
+# 更新旧路径的前端文件（Nginx 实际使用的路径）
+send "cd /var/www/parrot-management-system/parrot-management-system && rm -rf dist && tar -xzf /tmp/frontend-update.tar.gz && ls -la dist/\r"
+expect "# "
+
+# 同时更新新路径
+send "cd /var/www/parrot-system/parrot-management-system && rm -rf dist && tar -xzf /tmp/frontend-update.tar.gz && ls -la dist/\r"
+expect "# "
+
+# 重启 Nginx
+send "systemctl restart nginx && echo 'Nginx restarted successfully'\r"
+expect "# "
+
+# 检查 Nginx 状态
+send "systemctl status nginx --no-pager | head -10\r"
+expect "# "
+
+send "exit\r"
+expect eof

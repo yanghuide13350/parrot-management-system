@@ -68,7 +68,9 @@ const statusColors: Record<string, string> = {
 // 获取上传文件的完整 URL
 const getUploadUrl = (filePath: string) => {
   if (import.meta.env.PROD) {
-    return `https://parrot-api.onrender.com/uploads/${filePath}`;
+    // 生产环境：使用环境变量或当前域名
+    const apiBase = import.meta.env.VITE_API_BASE || window.location.origin;
+    return `${apiBase}/uploads/${filePath}`;
   }
   return `/uploads/${filePath}`;
 };
@@ -81,9 +83,9 @@ const SharePage = () => {
   useEffect(() => {
     const fetchShareData = async () => {
       try {
-        // 生产环境使用完整的后端 URL，开发环境使用相对路径（通过 vite proxy）
+        // 生产环境使用当前域名的 API，开发环境使用相对路径
         const apiBase = import.meta.env.PROD 
-          ? (import.meta.env.VITE_API_URL || 'https://parrot-api.onrender.com/api')
+          ? (import.meta.env.VITE_API_URL || `${window.location.origin}/api`)
           : '/api';
         const response = await fetch(`${apiBase}/share/${token}`);
         const result = await response.json();

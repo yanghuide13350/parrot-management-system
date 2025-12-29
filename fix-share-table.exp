@@ -1,0 +1,64 @@
+#!/usr/bin/expect -f
+set timeout 120
+set host "103.110.81.83"
+set user "root"
+set password "rQ24T4MkMViB"
+
+spawn ssh -o StrictHostKeyChecking=no $user@$host
+expect "password:"
+send "$password\r"
+expect "# "
+
+send "cd /var/www/parrot-system && source venv/bin/activate\r"
+expect "# "
+
+# 检查 share_links 表是否存在
+send "python3 -c \"import sqlite3; conn=sqlite3.connect('parrot_management.db'); c=conn.cursor(); c.execute('SELECT name FROM sqlite_master WHERE type=\\\"table\\\"'); print(c.fetchall()); conn.close()\"\r"
+expect "# "
+
+# 创建 share_links 表（如果不存在）
+send "python3 << 'PYEOF'\r"
+expect ">"
+send "import sqlite3\r"
+expect ">"
+send "conn = sqlite3.connect('parrot_management.db')\r"
+expect ">"
+send "c = conn.cursor()\r"
+expect ">"
+send "c.execute('''CREATE TABLE IF NOT EXISTS share_links (\r"
+expect ">"
+send "    id INTEGER PRIMARY KEY,\r"
+expect ">"
+send "    parrot_id INTEGER NOT NULL,\r"
+expect ">"
+send "    token VARCHAR(64) UNIQUE NOT NULL,\r"
+expect ">"
+send "    created_at DATETIME NOT NULL,\r"
+expect ">"
+send "    expires_at DATETIME NOT NULL,\r"
+expect ">"
+send "    is_active BOOLEAN DEFAULT 1,\r"
+expect ">"
+send "    FOREIGN KEY (parrot_id) REFERENCES parrots(id) ON DELETE CASCADE\r"
+expect ">"
+send ")''')\r"
+expect ">"
+send "conn.commit()\r"
+expect ">"
+send "print('share_links table created/verified')\r"
+expect ">"
+send "conn.close()\r"
+expect ">"
+send "PYEOF\r"
+expect "# "
+
+# 重启服务
+send "systemctl restart parrot-api && sleep 2\r"
+expect "# "
+
+# 测试
+send "curl -s -X POST 'http://127.0.0.1:8000/api/share/generate/12' -H 'Referer: http://103.110.81.83/' 2>&1\r"
+expect "# "
+
+send "exit\r"
+expect eof

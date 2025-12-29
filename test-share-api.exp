@@ -1,0 +1,25 @@
+#!/usr/bin/expect -f
+set timeout 60
+set host "103.110.81.83"
+set user "root"
+set password "rQ24T4MkMViB"
+
+spawn ssh -o StrictHostKeyChecking=no $user@$host
+expect "password:"
+send "$password\r"
+expect "# "
+
+# 测试获取鹦鹉列表
+send "curl -s http://127.0.0.1:8000/api/parrots?limit=3 2>&1 | head -200\r"
+expect "# "
+
+# 用鹦鹉ID 2 测试生成分享链接
+send "curl -s -X POST 'http://127.0.0.1:8000/api/share/generate/2' -H 'Referer: http://103.110.81.83/' 2>&1\r"
+expect "# "
+
+# 用鹦鹉ID 3 测试生成分享链接
+send "curl -s -X POST 'http://127.0.0.1:8000/api/share/generate/3' -H 'Referer: http://103.110.81.83/' 2>&1\r"
+expect "# "
+
+send "exit\r"
+expect eof

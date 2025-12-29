@@ -2,9 +2,9 @@ import axios, { type AxiosInstance } from 'axios';
 
 // 根据环境自动选择 API 地址
 const getBaseURL = () => {
-  // 生产环境使用环境变量或默认的 Render 地址
+  // 生产环境使用环境变量或当前域名
   if (import.meta.env.PROD) {
-    return import.meta.env.VITE_API_URL || 'https://parrot-api.onrender.com/api';
+    return import.meta.env.VITE_API_URL || `${window.location.origin}/api`;
   }
   // 开发环境使用本地地址
   return 'http://localhost:8000/api';

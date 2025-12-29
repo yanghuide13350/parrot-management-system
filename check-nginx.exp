@@ -1,0 +1,26 @@
+#!/usr/bin/expect -f
+set timeout 60
+set host "103.110.81.83"
+set user "root"
+set password "rQ24T4MkMViB"
+
+spawn ssh -o StrictHostKeyChecking=no $user@$host
+expect "password:"
+send "$password\r"
+expect "# "
+
+# 查找 nginx 配置
+send "ls -la /etc/nginx/\r"
+expect "# "
+
+send "ls -la /etc/nginx/conf.d/\r"
+expect "# "
+
+send "cat /etc/nginx/nginx.conf | head -80\r"
+expect "# "
+
+send "cat /etc/nginx/conf.d/*.conf 2>&1\r"
+expect "# "
+
+send "exit\r"
+expect eof

@@ -1,0 +1,33 @@
+#!/usr/bin/expect -f
+set timeout 60
+set host "103.110.81.83"
+set user "root"
+set password "rQ24T4MkMViB"
+
+spawn ssh -o StrictHostKeyChecking=no $user@$host
+expect "password:"
+send "$password\r"
+expect "# "
+
+# 检查数据库文件
+send "ls -la /var/www/parrot-system/*.db 2>&1\r"
+expect "# "
+
+# 检查数据库配置
+send "cat /var/www/parrot-system/app/core/database.py 2>&1\r"
+expect "# "
+
+# 检查 share_links 表是否存在
+send "sqlite3 /var/www/parrot-system/parrot_management.db '.tables' 2>&1\r"
+expect "# "
+
+# 查看鹦鹉数量
+send "sqlite3 /var/www/parrot-system/parrot_management.db 'SELECT COUNT(*) FROM parrots' 2>&1\r"
+expect "# "
+
+# 查看前几条鹦鹉数据
+send "sqlite3 /var/www/parrot-system/parrot_management.db 'SELECT id, breed, status FROM parrots LIMIT 5' 2>&1\r"
+expect "# "
+
+send "exit\r"
+expect eof

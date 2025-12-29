@@ -1,0 +1,50 @@
+#!/usr/bin/expect -f
+set timeout 120
+set host "103.110.81.83"
+set user "root"
+set password "rQ24T4MkMViB"
+
+# 上传本地数据库文件
+spawn scp -o StrictHostKeyChecking=no parrot_management.db $user@$host:/tmp/
+expect {
+    "password:" { send "$password\r"; exp_continue }
+    "100%" { }
+    eof { }
+}
+
+# SSH 登录并恢复数据库
+spawn ssh -o StrictHostKeyChecking=no $user@$host
+expect "password:"
+send "$password\r"
+expect "# "
+
+# 备份服务器上的旧数据库（以防万一）
+send "cp /var/www/parrot-system/parrot_management.db /var/www/parrot-system/parrot_management.db.bak 2>/dev/null\r"
+expect "# "
+
+# 停止后端服务
+send "systemctl stop parrot-api\r"
+expect "# "
+
+# 复制新数据库
+send "cp /tmp/parrot_management.db /var/www/parrot-system/parrot_management.db\r"
+expect "# "
+
+# 设置权限
+send "chmod 644 /var/www/parrot-system/parrot_management.db\r"
+expect "# "
+
+# 重启后端服务
+send "systemctl start parrot-api && sleep 2\r"
+expect "# "
+
+# 检查服务状态
+send "systemctl status parrot-api --no-pager | head -10\r"
+expect "# "
+
+# 测试 API
+send "curl -s http://127.0.0.1:8000/api/parrots?limit=5 2>&1\r"
+expect "# "
+
+send "exit\r"
+expect eof

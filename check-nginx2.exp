@@ -1,0 +1,17 @@
+#!/usr/bin/expect -f
+set timeout 60
+set host "103.110.81.83"
+set user "root"
+set password "rQ24T4MkMViB"
+
+spawn ssh -o StrictHostKeyChecking=no $user@$host
+expect "password:"
+send "$password\r"
+expect "# "
+
+# 查看 sites-enabled 配置
+send "cat /etc/nginx/sites-enabled/*\r"
+expect "# "
+
+send "exit\r"
+expect eof
