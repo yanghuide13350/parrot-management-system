@@ -3,5 +3,6 @@ from app.models.photo import Photo
 from app.models.follow_up import FollowUp
 from app.models.sales_history import SalesHistory
 from app.models.incubation_record import IncubationRecord
+from app.models.share_link import ShareLink
 
-__all__ = ["Parrot", "Photo", "FollowUp", "SalesHistory", "IncubationRecord"]
+__all__ = ["Parrot", "Photo", "FollowUp", "SalesHistory", "IncubationRecord", "ShareLink"]

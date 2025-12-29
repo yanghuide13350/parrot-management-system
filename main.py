@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from app.api import parrots, photos, statistics, incubation, sales
+from app.api import parrots, photos, statistics, incubation, sales, share
 from app.core.database import engine, Base
 from app.core.exceptions import exception_handler
 from app.core.exceptions import ParrotManagementException
@@ -71,6 +71,7 @@ app.include_router(photos.router, tags=["照片管理"])
 app.include_router(statistics.router, tags=["统计数据"])
 app.include_router(incubation.router, tags=["孵化管理"])
 app.include_router(sales.router, tags=["销售管理"])
+app.include_router(share.router, tags=["分享管理"])
 
 @app.get("/")
 def read_root():

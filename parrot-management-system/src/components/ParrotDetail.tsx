@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Descriptions, Tag, Image, Empty, Upload, Button, message, Timeline, Popconfirm } from 'antd';
-import { UploadOutlined, CopyOutlined, DownloadOutlined, Html5Outlined, HeartOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Descriptions, Tag, Image, Empty, Upload, Button, message, Timeline, Popconfirm, List, Space, Tooltip } from 'antd';
+import { UploadOutlined, CopyOutlined, DownloadOutlined, ShareAltOutlined, HeartOutlined, DeleteOutlined, LinkOutlined } from '@ant-design/icons';
 import type { Parrot, Photo } from '../types/parrot';
 import { useParrot } from '../context/ParrotContext';
 import { ParrotService } from '../services/parrotService';
+import { ShareService, type ShareLink } from '../services/shareService';
 import { calculateAge } from '../utils/dateUtils';
 import { api } from '../services/api';
 
@@ -37,6 +38,9 @@ const ParrotDetail = ({ parrot }: ParrotDetailProps) => {
   const [saleInfo, setSaleInfo] = useState<any>(null);
   const [salesTimeline, setSalesTimeline] = useState<any[]>([]);
   const [loadingTimeline, setLoadingTimeline] = useState(false);
+  const [shareLinks, setShareLinks] = useState<ShareLink[]>([]);
+  const [loadingShareLinks, setLoadingShareLinks] = useState(false);
+  const [generatingLink, setGeneratingLink] = useState(false);
 
   const statusMap: Record<string, string> = {
     'available': '待售',
@@ -55,11 +59,61 @@ const ParrotDetail = ({ parrot }: ParrotDetailProps) => {
   useEffect(() => {
     fetchPhotos();
     fetchMateInfo();
+    fetchShareLinks();
     if (parrot.status === 'sold' || parrot.status === 'returned') {
       fetchSaleInfo();
     }
     fetchSalesTimeline();
   }, [parrot.id]);
+
+  const fetchShareLinks = async () => {
+    setLoadingShareLinks(true);
+    try {
+      const response = await ShareService.getShareLinks(parrot.id);
+      setShareLinks(response.items || []);
+    } catch (error) {
+      console.error('获取分享链接失败:', error);
+    } finally {
+      setLoadingShareLinks(false);
+    }
+  };
+
+  const handleGenerateShareLink = async () => {
+    setGeneratingLink(true);
+    try {
+      const result = await ShareService.generateShareLink(parrot.id);
+      // 复制到剪贴板
+      await navigator.clipboard.writeText(result.url);
+      message.success('分享链接已生成并复制到剪贴板！');
+      // 刷新链接列表
+      await fetchShareLinks();
+    } catch (error: any) {
+      console.error('生成分享链接失败:', error);
+      message.error('生成分享链接失败，请重试');
+    } finally {
+      setGeneratingLink(false);
+    }
+  };
+
+  const handleCopyShareLink = async (url: string) => {
+    try {
+      await navigator.clipboard.writeText(url);
+      message.success('链接已复制到剪贴板');
+    } catch (error) {
+      message.error('复制失败，请手动复制');
+    }
+  };
+
+  const handleDeleteShareLink = async (token: string) => {
+    try {
+      await ShareService.deleteShareLink(token);
+      message.success('分享链接已删除');
+      await fetchShareLinks();
+    } catch (error) {
+      console.error('删除分享链接失败:', error);
+      message.error('删除失败，请重试');
+    }
+  };
 
   const fetchMateInfo = async () => {
     try {
@@ -258,263 +312,6 @@ const ParrotDetail = ({ parrot }: ParrotDetailProps) => {
   //   URL.revokeObjectURL(url);
   // };
 
-  // 生成HTML展示页面（包含图片和视频的完整展示）
-  const handleExportHTML = async () => {
-    const statusText = statusMap[parrot.status] || parrot.status;
-    const baseUrl = window.location.origin;
-
-    // 将图片转换为Base64以便离线查看
-    const convertToBase64 = async (url: string): Promise<string> => {
-      try {
-        const response = await fetch(url);
-        const blob = await response.blob();
-        return new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result as string);
-          reader.readAsDataURL(blob);
-        });
-      } catch {
-        return url; // 如果转换失败，返回原URL
-      }
-    };
-
-    message.loading('正在生成HTML文件，请稍候...', 0);
-
-    // 转换所有图片为Base64
-    const mediaItems = await Promise.all(
-      photos.map(async (photo) => {
-        const url = `${baseUrl}/uploads/${photo.file_path}`;
-        if (photo.file_type === 'image') {
-          const base64 = await convertToBase64(url);
-          return { ...photo, base64, originalUrl: url };
-        }
-        return { ...photo, base64: null, originalUrl: url };
-      })
-    );
-
-    message.destroy();
-
-    const htmlContent = `<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${parrot.breed} - 鹦鹉详情</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            overflow: hidden;
-        }
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-        .header h1 { font-size: 28px; margin-bottom: 10px; }
-        .header .price { font-size: 32px; font-weight: bold; }
-        .info-section {
-            padding: 30px;
-        }
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        .info-item {
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-        }
-        .info-item label {
-            display: block;
-            font-size: 12px;
-            color: #666;
-            margin-bottom: 5px;
-        }
-        .info-item value {
-            display: block;
-            font-size: 16px;
-            font-weight: 500;
-            color: #333;
-        }
-        .status-tag {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 4px;
-            font-size: 14px;
-            font-weight: 500;
-        }
-        .status-available { background: #e6f7ff; color: #1890ff; }
-        .status-sold { background: #f6ffed; color: #52c41a; }
-        .status-breeding { background: #f9f0ff; color: #722ed1; }
-        .status-returned { background: #fff2f0; color: #ff4d4f; }
-        .media-section {
-            padding: 0 30px 30px;
-        }
-        .media-section h2 {
-            font-size: 18px;
-            margin-bottom: 20px;
-            color: #333;
-        }
-        .media-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
-        }
-        .media-item {
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        .media-item img {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-            display: block;
-        }
-        .media-item video {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-            display: block;
-            background: #000;
-        }
-        .footer {
-            text-align: center;
-            padding: 20px;
-            background: #f8f9fa;
-            color: #999;
-            font-size: 12px;
-        }
-        .notes {
-            padding: 15px;
-            background: #fffbe6;
-            border-radius: 8px;
-            margin-top: 20px;
-        }
-        .notes label {
-            font-size: 12px;
-            color: #666;
-        }
-        .notes p {
-            margin-top: 5px;
-            color: #333;
-        }
-        .tip {
-            background: #e6f7ff;
-            border: 1px solid #91d5ff;
-            border-radius: 8px;
-            padding: 15px;
-            margin: 20px 30px;
-            font-size: 14px;
-            color: #1890ff;
-        }
-        @media (max-width: 600px) {
-            .info-grid { grid-template-columns: 1fr; }
-            .media-grid { grid-template-columns: repeat(2, 1fr); }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>${parrot.breed}</h1>
-            <div class="price">¥${Number(parrot.price).toFixed(2)}</div>
-        </div>
-
-        <div class="info-section">
-            <div class="info-grid">
-                <div class="info-item">
-                    <label>圈号</label>
-                    <value>${parrot.ring_number || '-'}</value>
-                </div>
-                <div class="info-item">
-                    <label>性别</label>
-                    <value>${parrot.gender}</value>
-                </div>
-                <div class="info-item">
-                    <label>年龄</label>
-                    <value>${calculateAge(parrot.birth_date)}</value>
-                </div>
-                <div class="info-item">
-                    <label>出生日期</label>
-                    <value>${parrot.birth_date || '-'}</value>
-                </div>
-                <div class="info-item">
-                    <label>状态</label>
-                    <value><span class="status-tag status-${parrot.status}">${statusText}</span></value>
-                </div>
-                <div class="info-item">
-                    <label>媒体数量</label>
-                    <value>${photos.length} 个</value>
-                </div>
-            </div>
-
-            ${parrot.health_notes ? `
-            <div class="notes">
-                <label>健康备注</label>
-                <p>${parrot.health_notes}</p>
-            </div>
-            ` : ''}
-        </div>
-
-        <div class="tip">
-            💡 提示：长按图片可以保存到手机相册，方便发送到微信、闲鱼、小红书等平台
-        </div>
-
-        ${mediaItems.length > 0 ? `
-        <div class="media-section">
-            <h2>照片和视频 (${mediaItems.length})</h2>
-            <div class="media-grid">
-                ${mediaItems.map((item, index) =>
-                    item.file_type === 'video'
-                        ? `<div class="media-item">
-                            <video controls src="${item.originalUrl}">
-                                您的浏览器不支持视频播放
-                            </video>
-                           </div>`
-                        : `<div class="media-item">
-                            <img src="${item.base64 || item.originalUrl}" alt="照片 ${index + 1}" />
-                           </div>`
-                ).join('')}
-            </div>
-        </div>
-        ` : ''}
-
-        <div class="footer">
-            生成时间：${formatDateTime(new Date().toISOString())}
-        </div>
-    </div>
-</body>
-</html>`;
-
-    // 下载HTML文件
-    const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `鹦鹉展示_${parrot.breed}_${parrot.ring_number || parrot.id}.html`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-
-    message.success('HTML展示页面已生成！用浏览器打开后可长按图片保存');
-  };
-
   // 打包下载所有文件
   const handleDownloadAll = async () => {
     if (photos.length === 0) {
@@ -558,13 +355,82 @@ const ParrotDetail = ({ parrot }: ParrotDetailProps) => {
         <Button icon={<CopyOutlined />} onClick={handleCopyInfo}>
           复制文字
         </Button>
-        <Button icon={<Html5Outlined />} onClick={handleExportHTML} type="primary">
-          生成展示页
+        <Button 
+          icon={<ShareAltOutlined />} 
+          onClick={handleGenerateShareLink} 
+          type="primary"
+          loading={generatingLink}
+        >
+          生成分享链接
         </Button>
         <Button icon={<DownloadOutlined />} onClick={handleDownloadAll}>
           下载全部文件
         </Button>
       </div>
+
+      {/* 分享链接列表 */}
+      {shareLinks.length > 0 && (
+        <div style={{ 
+          marginBottom: '16px', 
+          padding: '12px', 
+          background: '#f6ffed', 
+          border: '1px solid #b7eb8f',
+          borderRadius: '8px' 
+        }}>
+          <div style={{ marginBottom: '8px', fontWeight: 500, color: '#52c41a' }}>
+            <LinkOutlined /> 已生成的分享链接 ({shareLinks.length})
+          </div>
+          <List
+            size="small"
+            dataSource={shareLinks}
+            loading={loadingShareLinks}
+            renderItem={(link) => (
+              <List.Item
+                actions={[
+                  <Tooltip title="复制链接" key="copy">
+                    <Button 
+                      type="link" 
+                      size="small" 
+                      icon={<CopyOutlined />}
+                      onClick={() => handleCopyShareLink(link.url)}
+                    />
+                  </Tooltip>,
+                  <Popconfirm
+                    key="delete"
+                    title="确认删除"
+                    description="删除后该链接将无法访问"
+                    onConfirm={() => handleDeleteShareLink(link.token)}
+                    okText="确认"
+                    cancelText="取消"
+                  >
+                    <Tooltip title="删除链接">
+                      <Button 
+                        type="link" 
+                        size="small" 
+                        danger
+                        icon={<DeleteOutlined />}
+                      />
+                    </Tooltip>
+                  </Popconfirm>
+                ]}
+              >
+                <Space direction="vertical" size={0} style={{ flex: 1 }}>
+                  <span style={{ 
+                    fontSize: '12px', 
+                    color: '#666',
+                    wordBreak: 'break-all'
+                  }}>
+                    {link.url}
+                  </span>
+                  <span style={{ fontSize: '11px', color: '#999' }}>
+                    剩余 {link.remaining_days} 天有效
+                  </span>
+                </Space>
+              </List.Item>
+            )}
+          />
+        </div>
+      )}
 
       <Descriptions bordered column={2}>
         <Descriptions.Item label="圈号">{parrot.ring_number || '-'}</Descriptions.Item>

@@ -48,3 +48,5 @@ class Parrot(Base):
     father_incubation_records = relationship("IncubationRecord", foreign_keys="IncubationRecord.father_id", back_populates="father", cascade="all, delete-orphan")
     # 关联孵化记录（作为母亲）
     mother_incubation_records = relationship("IncubationRecord", foreign_keys="IncubationRecord.mother_id", back_populates="mother", cascade="all, delete-orphan")
+    # 关联分享链接
+    share_links = relationship("ShareLink", back_populates="parrot", cascade="all, delete-orphan")
