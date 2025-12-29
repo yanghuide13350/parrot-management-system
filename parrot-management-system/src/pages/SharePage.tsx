@@ -65,6 +65,14 @@ const statusColors: Record<string, string> = {
   'paired': '#eb2f96',
 };
 
+// 获取上传文件的完整 URL
+const getUploadUrl = (filePath: string) => {
+  if (import.meta.env.PROD) {
+    return `https://parrot-api.onrender.com/uploads/${filePath}`;
+  }
+  return `/uploads/${filePath}`;
+};
+
 const SharePage = () => {
   const { token } = useParams<{ token: string }>();
   const [loading, setLoading] = useState(true);
@@ -73,7 +81,11 @@ const SharePage = () => {
   useEffect(() => {
     const fetchShareData = async () => {
       try {
-        const response = await fetch(`/api/share/${token}`);
+        // 生产环境使用完整的后端 URL，开发环境使用相对路径（通过 vite proxy）
+        const apiBase = import.meta.env.PROD 
+          ? (import.meta.env.VITE_API_URL || 'https://parrot-api.onrender.com/api')
+          : '/api';
+        const response = await fetch(`${apiBase}/share/${token}`);
         const result = await response.json();
         setData(result);
       } catch (error) {
@@ -263,13 +275,13 @@ const SharePage = () => {
                           display: 'block',
                           background: '#000'
                         }}
-                        src={`/uploads/${photo.file_path}`}
+                        src={getUploadUrl(photo.file_path)}
                       >
                         您的浏览器不支持视频播放
                       </video>
                     ) : (
                       <Image
-                        src={`/uploads/${photo.file_path}`}
+                        src={getUploadUrl(photo.file_path)}
                         alt={photo.file_name}
                         style={{
                           width: '100%',
