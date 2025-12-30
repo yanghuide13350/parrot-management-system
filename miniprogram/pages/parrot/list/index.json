@@ -1,0 +1,9 @@
+{
+  "navigationBarTitleText": "鹦鹉列表",
+  "enablePullDownRefresh": true,
+  "usingComponents": {
+    "parrot-card": "/components/parrot-card/index",
+    "filter-drawer": "/components/filter-drawer/index",
+    "empty-state": "/components/empty-state/index"
+  }
+}

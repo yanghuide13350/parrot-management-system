@@ -1,0 +1,43 @@
+<view class="container">
+  <view class="header-card">
+    <view class="header-label">总销售额</view>
+    <view class="header-value">¥{{stats.total_revenue}}</view>
+  </view>
+  
+  <view class="stats-grid">
+    <view class="stat-item" bindtap="goToList" data-status="">
+      <view class="stat-value primary">{{stats.total_parrots}}</view>
+      <view class="stat-label">总数量</view>
+    </view>
+    <view class="stat-item" bindtap="goToList" data-status="available">
+      <view class="stat-value mint">{{stats.available_parrots}}</view>
+      <view class="stat-label">待售</view>
+    </view>
+    <view class="stat-item" bindtap="goToList" data-status="sold">
+      <view class="stat-value coral">{{stats.sold_parrots}}</view>
+      <view class="stat-label">已售</view>
+    </view>
+    <view class="stat-item" bindtap="goToList" data-status="returned">
+      <view class="stat-value amber">{{stats.returned_parrots}}</view>
+      <view class="stat-label">退货</view>
+    </view>
+  </view>
+
+  <!-- 月度销售趋势图表 -->
+  <line-chart title="月度销售趋势" data="{{monthlySales}}" wx:if="{{monthlySales.length}}"></line-chart>
+
+  <!-- 品种分布柱形图 -->
+  <view class="section-card">
+    <view class="section-title">品种分布</view>
+    <view class="bar-chart" wx:if="{{breedCounts.length}}">
+      <view class="bar-item" wx:for="{{breedCounts}}" wx:key="name" bindtap="goToBreed" data-breed="{{item.name}}">
+        <view class="bar-label">{{item.name}}</view>
+        <view class="bar-track">
+          <view class="bar-fill" style="width: {{item.percent}}%"></view>
+        </view>
+        <view class="bar-value">{{item.count}}</view>
+      </view>
+    </view>
+    <view class="empty-text" wx:else>暂无数据</view>
+  </view>
+</view>

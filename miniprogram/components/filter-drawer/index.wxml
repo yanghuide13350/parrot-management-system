@@ -1,0 +1,56 @@
+<view class="filter-drawer {{visible ? 'show' : ''}}" catchtouchmove="preventMove">
+  <view class="mask" bindtap="onClose"></view>
+  <view class="drawer-content">
+    <view class="drawer-header">
+      <text class="title">筛选</text>
+      <text class="reset" bindtap="onReset">重置</text>
+    </view>
+    
+    <view class="filter-section">
+      <view class="section-title">品种</view>
+      <view class="tag-list">
+        <view 
+          wx:for="{{breeds}}" 
+          wx:key="*this" 
+          class="tag {{localFilters.breed === item ? 'active' : ''}}"
+          data-field="breed"
+          data-value="{{item}}"
+          bindtap="onTagTap"
+        >{{item}}</view>
+      </view>
+    </view>
+    
+    <view class="filter-section">
+      <view class="section-title">性别</view>
+      <view class="tag-list">
+        <view 
+          wx:for="{{genders}}" 
+          wx:key="*this" 
+          class="tag {{localFilters.gender === item ? 'active' : ''}}"
+          data-field="gender"
+          data-value="{{item}}"
+          bindtap="onTagTap"
+        >{{item}}</view>
+      </view>
+    </view>
+    
+    <view class="filter-section">
+      <view class="section-title">状态</view>
+      <view class="tag-list">
+        <view 
+          wx:for="{{statuses}}" 
+          wx:key="value" 
+          class="tag {{localFilters.status === item.value ? 'active' : ''}}"
+          data-field="status"
+          data-value="{{item.value}}"
+          bindtap="onTagTap"
+        >{{item.label}}</view>
+      </view>
+    </view>
+    
+    <view class="drawer-footer">
+      <button class="btn-outline" bindtap="onClose">取消</button>
+      <button class="btn-primary" bindtap="onConfirm">确定</button>
+    </view>
+  </view>
+</view>

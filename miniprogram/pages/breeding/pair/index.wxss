@@ -1,0 +1,39 @@
+.page {
+  min-height: 100vh;
+  padding: 24rpx;
+}
+
+.tip {
+  text-align: center;
+  color: #64748b;
+  font-size: 28rpx;
+  margin-bottom: 32rpx;
+}
+
+.female-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 32rpx;
+  margin-bottom: 16rpx;
+}
+
+.breed {
+  font-size: 32rpx;
+  font-weight: 500;
+  color: #1e293b;
+  margin-bottom: 8rpx;
+}
+
+.meta {
+  font-size: 26rpx;
+  color: #64748b;
+}
+
+.select-btn {
+  padding: 12rpx 32rpx;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  font-size: 26rpx;
+  border-radius: 32rpx;
+}

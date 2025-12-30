@@ -1,0 +1,46 @@
+<view class="page" wx:if="{{parrot}}">
+  <swiper class="photo-swiper" indicator-dots circular wx:if="{{photos.length}}">
+    <swiper-item wx:for="{{photos}}" wx:key="id">
+      <image src="{{item.url}}" mode="aspectFill" data-url="{{item.url}}" bindtap="previewImage" />
+    </swiper-item>
+  </swiper>
+  <view class="no-photo" wx:else>
+    <view class="camera-icon">
+      <view class="camera-body"></view>
+      <view class="camera-lens"></view>
+    </view>
+  </view>
+  
+  <view class="info-card glass-card">
+    <view class="info-header">
+      <view class="breed">{{parrot.breed}}</view>
+      <view class="status-tag status-{{parrot.status}}">{{parrot.statusText}}</view>
+    </view>
+    <view class="info-row">
+      <text class="label">性别</text>
+      <text class="value">{{parrot.gender}}</text>
+    </view>
+    <view class="info-row" wx:if="{{parrot.age}}">
+      <text class="label">年龄</text>
+      <text class="value">{{parrot.age}}</text>
+    </view>
+    <view class="info-row">
+      <text class="label">价格</text>
+      <text class="value price">{{parrot.priceText}}</text>
+    </view>
+    <view class="info-row" wx:if="{{parrot.health_notes}}">
+      <text class="label">备注</text>
+      <text class="value">{{parrot.health_notes}}</text>
+    </view>
+  </view>
+  
+  <button class="share-btn" open-type="share">分享给朋友</button>
+</view>
+
+<view class="error-page" wx:elif="{{error}}">
+  <view class="error-icon-wrap">
+    <view class="error-circle"></view>
+    <view class="error-x">×</view>
+  </view>
+  <text class="error-text">链接已失效或不存在</text>
+</view>

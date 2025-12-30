@@ -1,0 +1,137 @@
+<view class="page" wx:if="{{parrot}}">
+  <swiper class="photo-swiper" indicator-dots circular wx:if="{{photos.length}}">
+    <swiper-item wx:for="{{photos}}" wx:key="id">
+      <image src="{{item.url}}" mode="aspectFill" data-url="{{item.url}}" bindtap="previewImage" />
+    </swiper-item>
+  </swiper>
+  <view class="no-photo" wx:else>
+    <view class="camera-icon">
+      <view class="camera-body"></view>
+      <view class="camera-lens"></view>
+    </view>
+  </view>
+  
+  <view class="info-card glass-card">
+    <view class="info-header">
+      <view class="breed">{{parrot.breed}}</view>
+      <view class="status-tag status-{{parrot.status}}">{{parrot.statusText}}</view>
+    </view>
+    <view class="info-row">
+      <text class="label">性别</text>
+      <text class="value">{{parrot.gender}}</text>
+    </view>
+    <view class="info-row" wx:if="{{parrot.ring_number}}">
+      <text class="label">圈号</text>
+      <text class="value">{{parrot.ring_number}}</text>
+    </view>
+    <view class="info-row" wx:if="{{parrot.age}}">
+      <text class="label">年龄</text>
+      <text class="value">{{parrot.age}}</text>
+    </view>
+    <view class="info-row">
+      <text class="label">价格</text>
+      <text class="value price">{{parrot.priceText}}</text>
+    </view>
+    <view class="info-row" wx:if="{{parrot.health_notes}}">
+      <text class="label">备注</text>
+      <text class="value">{{parrot.health_notes}}</text>
+    </view>
+    <view class="info-row" wx:if="{{parrot.status === 'sold'}}">
+      <text class="label">回访</text>
+      <text class="value">{{parrot.followUpText || '待回访'}}</text>
+    </view>
+  </view>
+  
+  <view class="section" wx:if="{{timeline.length}}">
+    <view class="section-title">销售时间线</view>
+    <view class="timeline">
+      <view class="timeline-item" wx:for="{{timeline}}" wx:key="index">
+        <view class="timeline-dot {{item.type}}"></view>
+        <view class="timeline-content">
+          <view class="timeline-title">{{item.title}}</view>
+          <view class="timeline-desc" wx:if="{{item.description}}">{{item.description}}</view>
+          <view class="timeline-date">{{item.dateText}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+  
+  <view class="action-bar">
+    <button class="btn-outline" bindtap="goEdit">编辑</button>
+    <button class="btn-outline" bindtap="onShare">分享</button>
+    <block wx:if="{{parrot.status === 'available'}}">
+      <button class="btn-primary" bindtap="showSale">售出</button>
+      <button class="btn-outline" bindtap="setBreeding">设为种鸟</button>
+    </block>
+    <block wx:elif="{{parrot.status === 'sold'}}">
+      <button class="btn-primary" bindtap="showFollowUp">回访</button>
+      <button class="btn-outline" bindtap="showReturn">退货</button>
+    </block>
+    <block wx:elif="{{parrot.status === 'breeding'}}">
+      <button class="btn-primary" bindtap="goPair">配对</button>
+    </block>
+    <block wx:elif="{{parrot.status === 'paired'}}">
+      <button class="btn-outline" bindtap="unpair">取消配对</button>
+    </block>
+  </view>
+</view>
+
+<view class="modal {{showSaleModal ? 'show' : ''}}" catchtouchmove="true">
+  <view class="modal-mask" bindtap="hideSale"></view>
+  <view class="modal-content">
+    <view class="modal-title">销售信息</view>
+    <view class="form-item">
+      <text class="form-label">售卖人</text>
+      <input placeholder="请输入" data-field="seller" bindinput="onSaleInput" />
+    </view>
+    <view class="form-item">
+      <text class="form-label">购买者 *</text>
+      <input placeholder="请输入" data-field="buyer_name" bindinput="onSaleInput" />
+    </view>
+    <view class="form-item">
+      <text class="form-label">价格 *</text>
+      <input type="digit" placeholder="请输入" data-field="sale_price" bindinput="onSaleInput" />
+    </view>
+    <view class="form-item">
+      <text class="form-label">联系方式</text>
+      <input placeholder="请输入" data-field="contact" bindinput="onSaleInput" />
+    </view>
+    <view class="modal-footer">
+      <button class="btn-outline" bindtap="hideSale">取消</button>
+      <button class="btn-primary" bindtap="submitSale">确定</button>
+    </view>
+  </view>
+</view>
+
+<view class="modal {{showReturnModal ? 'show' : ''}}" catchtouchmove="true">
+  <view class="modal-mask" bindtap="hideReturn"></view>
+  <view class="modal-content">
+    <view class="modal-title">退货原因</view>
+    <textarea placeholder="请输入退货原因" bindinput="onReturnInput" value="{{returnReason}}" />
+    <view class="modal-footer">
+      <button class="btn-outline" bindtap="hideReturn">取消</button>
+      <button class="btn-primary" bindtap="submitReturn">确定</button>
+    </view>
+  </view>
+</view>
+
+<view class="modal {{showFollowUpModal ? 'show' : ''}}" catchtouchmove="true">
+  <view class="modal-mask" bindtap="hideFollowUp"></view>
+  <view class="modal-content">
+    <view class="modal-title">回访记录</view>
+    <view class="form-item">
+      <text class="form-label">状态</text>
+      <picker mode="selector" range="{{['已回访', '待回访', '无法联系']}}" range-key="label" bindchange="onFollowUpStatus">
+        <view class="picker-value">{{followUpForm.status === 'completed' ? '已回访' : followUpForm.status === 'pending' ? '待回访' : '无法联系'}}</view>
+      </picker>
+    </view>
+    <view class="form-item">
+      <text class="form-label">备注</text>
+      <textarea placeholder="请输入" bindinput="onFollowUpNotes" value="{{followUpForm.notes}}" />
+    </view>
+    <view class="modal-footer">
+      <button class="btn-outline" bindtap="hideFollowUp">取消</button>
+      <button class="btn-primary" bindtap="submitFollowUp">确定</button>
+    </view>
+  </view>
+</view>

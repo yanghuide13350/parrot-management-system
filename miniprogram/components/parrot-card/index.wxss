@@ -1,0 +1,121 @@
+.parrot-card {
+  overflow: hidden;
+  margin-bottom: 16rpx;
+  border-radius: 16rpx;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
+}
+
+.card-image {
+  position: relative;
+  width: 100%;
+  height: 200rpx;
+  background: #f1f5f9;
+}
+
+.card-image image {
+  width: 100%;
+  height: 100%;
+}
+
+.no-image {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.camera-icon {
+  position: relative;
+  width: 48rpx;
+  height: 38rpx;
+}
+
+.camera-body {
+  width: 48rpx;
+  height: 32rpx;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 6rpx;
+  position: absolute;
+  bottom: 0;
+}
+
+.camera-lens {
+  width: 18rpx;
+  height: 18rpx;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  position: absolute;
+  bottom: 7rpx;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.status-tag {
+  position: absolute;
+  top: 10rpx;
+  left: 10rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 16rpx;
+  font-size: 20rpx;
+  color: #fff;
+  font-weight: 500;
+}
+
+.status-available {
+  background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+}
+.status-sold {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%);
+}
+.status-breeding {
+  background: linear-gradient(135deg, #ffb347 0%, #ffcc33 100%);
+}
+.status-paired {
+  background: linear-gradient(135deg, #74b9ff 0%, #5b9bd5 100%);
+}
+.status-incubating {
+  background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
+}
+
+.card-info {
+  padding: 12rpx 14rpx;
+}
+
+.card-title {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 4rpx;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-meta {
+  font-size: 22rpx;
+  color: #64748b;
+  margin-bottom: 4rpx;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-meta .gender {
+  margin-right: 12rpx;
+}
+
+.card-meta .ring {
+  color: #94a3b8;
+}
+
+.card-price {
+  font-size: 24rpx;
+  font-weight: 600;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}

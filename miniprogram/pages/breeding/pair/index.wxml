@@ -1,0 +1,21 @@
+<view class="page">
+  <view class="tip">选择一只母鸟进行配对</view>
+  
+  <view class="list">
+    <view 
+      class="female-card glass-card" 
+      wx:for="{{females}}" 
+      wx:key="id"
+      data-id="{{item.id}}"
+      bindtap="selectFemale"
+    >
+      <view class="card-info">
+        <view class="breed">{{item.breed}}</view>
+        <view class="meta">{{item.ring_number || '无圈号'}}</view>
+      </view>
+      <view class="select-btn">选择</view>
+    </view>
+    
+    <empty-state wx:if="{{!females.length && !loading}}" text="暂无可配对母鸟" />
+  </view>
+</view>

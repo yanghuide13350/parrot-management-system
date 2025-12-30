@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "孵化记录",
+  "enablePullDownRefresh": true,
+  "usingComponents": {
+    "empty-state": "/components/empty-state/index"
+  }
+}

@@ -1,0 +1,91 @@
+.page {
+  min-height: 100vh;
+  padding: 24rpx;
+  padding-bottom: 160rpx;
+}
+
+.incubation-card {
+  padding: 24rpx;
+  margin-bottom: 16rpx;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.status-tag {
+  padding: 8rpx 20rpx;
+  border-radius: 24rpx;
+  font-size: 24rpx;
+  color: #fff;
+}
+
+.status-incubating {
+  background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
+}
+.status-hatched {
+  background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+}
+.status-failed {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%);
+}
+
+.date {
+  font-size: 24rpx;
+  color: #94a3b8;
+}
+
+.card-body {
+  margin-bottom: 16rpx;
+}
+
+.parents {
+  display: flex;
+  gap: 24rpx;
+  font-size: 28rpx;
+  color: #1e293b;
+  margin-bottom: 8rpx;
+}
+
+.eggs {
+  display: flex;
+  gap: 24rpx;
+  font-size: 26rpx;
+  color: #64748b;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.update-btn {
+  padding: 8rpx 24rpx;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  font-size: 24rpx;
+  border-radius: 24rpx;
+  border: none;
+}
+
+.fab {
+  position: fixed;
+  right: 32rpx;
+  bottom: 200rpx;
+  width: 100rpx;
+  height: 100rpx;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 32rpx rgba(102, 126, 234, 0.4);
+}
+
+.fab text {
+  font-size: 56rpx;
+  color: #fff;
+}

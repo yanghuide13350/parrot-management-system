@@ -1,0 +1,29 @@
+<view class="page">
+  <view class="list">
+    <view class="incubation-card glass-card" wx:for="{{list}}" wx:key="id">
+      <view class="card-header">
+        <view class="status-tag status-{{item.status}}">{{item.statusText}}</view>
+        <view class="date">{{item.startDateText}}</view>
+      </view>
+      <view class="card-body">
+        <view class="parents">
+          <text>父: {{item.father_breed || '未知'}}</text>
+          <text>母: {{item.mother_breed || '未知'}}</text>
+        </view>
+        <view class="eggs">
+          <text>蛋数: {{item.eggs_count}}</text>
+          <text wx:if="{{item.hatched_count}}">孵化: {{item.hatched_count}}</text>
+        </view>
+      </view>
+      <view class="card-footer" wx:if="{{item.status === 'incubating'}}">
+        <button class="update-btn" data-id="{{item.id}}" bindtap="goEdit">更新</button>
+      </view>
+    </view>
+    
+    <empty-state wx:if="{{!list.length && !loading}}" icon="🥚" text="暂无孵化记录" />
+  </view>
+  
+  <view class="fab" bindtap="goAdd">
+    <text>+</text>
+  </view>
+</view>

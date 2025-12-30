@@ -1,0 +1,57 @@
+.page {
+  min-height: 100vh;
+  padding: 24rpx;
+}
+
+.breeding-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 32rpx;
+  margin-bottom: 16rpx;
+}
+
+.breed {
+  font-size: 32rpx;
+  font-weight: 500;
+  color: #1e293b;
+  margin-bottom: 8rpx;
+}
+
+.meta {
+  font-size: 26rpx;
+  color: #64748b;
+}
+
+.card-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12rpx;
+}
+
+.status-tag {
+  padding: 8rpx 20rpx;
+  border-radius: 24rpx;
+  font-size: 24rpx;
+  color: #fff;
+}
+
+.status-breeding {
+  background: linear-gradient(135deg, #ffb347 0%, #ffcc33 100%);
+}
+.status-paired {
+  background: linear-gradient(135deg, #74b9ff 0%, #5b9bd5 100%);
+}
+.status-incubating {
+  background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
+}
+
+.pair-btn {
+  padding: 8rpx 24rpx;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  font-size: 24rpx;
+  border-radius: 24rpx;
+  border: none;
+}

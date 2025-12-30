@@ -1,0 +1,20 @@
+<view class="parrot-card glass-card" bindtap="onTap">
+  <view class="card-image">
+    <image wx:if="{{parrot.photo_url}}" src="{{parrot.photo_url}}" mode="aspectFill" />
+    <view wx:else class="no-image">
+      <view class="camera-icon">
+        <view class="camera-body"></view>
+        <view class="camera-lens"></view>
+      </view>
+    </view>
+    <view class="status-tag status-{{parrot.status}}">{{statusText}}</view>
+  </view>
+  <view class="card-info">
+    <view class="card-title">{{parrot.breed}}</view>
+    <view class="card-meta">
+      <text class="gender">{{parrot.gender}}</text>
+      <text wx:if="{{parrot.ring_number}}" class="ring">{{parrot.ring_number}}</text>
+    </view>
+    <view class="card-price" wx:if="{{priceText}}">{{priceText}}</view>
+  </view>
+</view>

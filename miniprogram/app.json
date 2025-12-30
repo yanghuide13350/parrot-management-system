@@ -1,0 +1,35 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/parrot/list/index",
+    "pages/parrot/detail/index",
+    "pages/parrot/add/index",
+    "pages/parrot/edit/index",
+    "pages/sales/list/index",
+    "pages/breeding/list/index",
+    "pages/breeding/pair/index",
+    "pages/incubation/list/index",
+    "pages/incubation/add/index",
+    "pages/share/index",
+    "pages/profile/index"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#667eea",
+    "navigationBarTitleText": "鹦鹉管理",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f8fafc"
+  },
+  "tabBar": {
+    "color": "#94A3B8",
+    "selectedColor": "#667eea",
+    "backgroundColor": "#ffffff",
+    "list": [
+      { "pagePath": "pages/index/index", "text": "首页" },
+      { "pagePath": "pages/parrot/list/index", "text": "鹦鹉" },
+      { "pagePath": "pages/sales/list/index", "text": "销售" },
+      { "pagePath": "pages/profile/index", "text": "我的" }
+    ]
+  },
+  "sitemapLocation": "sitemap.json"
+}

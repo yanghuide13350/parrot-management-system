@@ -1,0 +1,10 @@
+<view class="chart-container">
+  <view class="chart-header">
+    <view class="chart-title">{{title}}</view>
+    <view class="chart-tabs">
+      <view class="tab {{activeTab === 'amount' ? 'active' : ''}}" bindtap="switchTab" data-tab="amount">销售额</view>
+      <view class="tab {{activeTab === 'count' ? 'active' : ''}}" bindtap="switchTab" data-tab="count">销售量</view>
+    </view>
+  </view>
+  <canvas type="2d" id="lineChart" class="chart-canvas"></canvas>
+</view>

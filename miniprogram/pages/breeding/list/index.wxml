@@ -1,0 +1,27 @@
+<view class="page">
+  <view class="list">
+    <view 
+      class="breeding-card glass-card" 
+      wx:for="{{list}}" 
+      wx:key="id"
+      data-id="{{item.id}}"
+      bindtap="goDetail"
+    >
+      <view class="card-left">
+        <view class="breed">{{item.breed}}</view>
+        <view class="meta">{{item.gender}} · {{item.ring_number || '无圈号'}}</view>
+      </view>
+      <view class="card-right">
+        <view class="status-tag status-{{item.status}}">{{item.statusText}}</view>
+        <button 
+          wx:if="{{item.status === 'breeding' && item.gender === '公'}}"
+          class="pair-btn"
+          catchtap="goPair"
+          data-id="{{item.id}}"
+        >配对</button>
+      </view>
+    </view>
+    
+    <empty-state wx:if="{{!list.length && !loading}}" text="暂无种鸟" />
+  </view>
+</view>

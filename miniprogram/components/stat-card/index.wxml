@@ -1,0 +1,5 @@
+<view class="stat-card glass-card" bindtap="onTap">
+  <view class="stat-icon {{iconClass}}"></view>
+  <view class="stat-value">{{value}}</view>
+  <view class="stat-label">{{label}}</view>
+</view>

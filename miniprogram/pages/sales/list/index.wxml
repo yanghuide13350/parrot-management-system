@@ -1,0 +1,62 @@
+<view class="page">
+  <view class="stats-row">
+    <view class="stat-item glass-card">
+      <view class="value">{{stats.total}}</view>
+      <view class="label">已售数量</view>
+    </view>
+    <view class="stat-item glass-card">
+      <view class="value">¥{{stats.revenue}}</view>
+      <view class="label">总销售额</view>
+    </view>
+    <view class="stat-item glass-card">
+      <view class="value">{{stats.returnRate}}%</view>
+      <view class="label">退货率</view>
+    </view>
+  </view>
+  
+  <view class="search-bar">
+    <view class="search-input glass-card">
+      <view class="search-icon-wrap">
+        <view class="search-circle"></view>
+        <view class="search-handle"></view>
+      </view>
+      <input placeholder="搜索客户或圈号" bindinput="onSearch" />
+    </view>
+  </view>
+  
+  <scroll-view 
+    class="list"
+    scroll-y
+    bindscrolltolower="loadMore"
+  >
+    <view 
+      class="sale-card glass-card" 
+      wx:for="{{list}}" 
+      wx:key="id"
+      data-id="{{item.id}}"
+      bindtap="goDetail"
+    >
+      <view class="sale-photo">
+        <image wx:if="{{item.photo_url}}" src="{{item.photo_url}}" mode="aspectFill" />
+        <view wx:else class="no-photo">
+          <view class="camera-icon">
+            <view class="camera-body"></view>
+            <view class="camera-lens"></view>
+          </view>
+        </view>
+      </view>
+      <view class="sale-info">
+        <view class="sale-title">{{item.breed}}</view>
+        <view class="sale-meta">{{item.gender}} · {{item.ring_number || '无圈号'}}</view>
+        <view class="sale-buyer">{{item.buyer_name}} · {{item.soldDate}}</view>
+      </view>
+      <view class="sale-right">
+        <view class="sale-price">¥{{item.sale_price}}</view>
+        <view class="follow-up-tag {{item.follow_up_status}}">{{item.followUpText}}</view>
+      </view>
+    </view>
+    
+    <empty-state wx:if="{{!list.length && !loading}}" text="暂无销售记录" />
+    <view class="load-more" wx:if="{{hasMore && list.length}}">加载中...</view>
+  </scroll-view>
+</view>

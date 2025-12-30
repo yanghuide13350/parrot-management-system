@@ -1,0 +1,6 @@
+{
+  "usingComponents": {
+    "line-chart": "/components/line-chart/index"
+  },
+  "enablePullDownRefresh": true
+}

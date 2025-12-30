@@ -1,0 +1,44 @@
+page {
+  --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --primary-color: #667eea;
+  --primary-light: #818cf8;
+  --primary-dark: #4f46e5;
+
+  --accent-coral: #ff6b6b;
+  --accent-mint: #4ecdc4;
+  --accent-amber: #ffb347;
+  --accent-sky: #74b9ff;
+
+  --bg-primary: #f8fafc;
+  --bg-secondary: #f1f5f9;
+  --bg-card: rgba(255, 255, 255, 0.8);
+  --bg-glass: rgba(255, 255, 255, 0.6);
+
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --text-hint: #94a3b8;
+  --text-white: #ffffff;
+
+  --status-available: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+  --status-sold: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%);
+  --status-breeding: linear-gradient(135deg, #ffb347 0%, #ffcc33 100%);
+  --status-paired: linear-gradient(135deg, #74b9ff 0%, #5b9bd5 100%);
+  --status-incubating: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
+
+  --shadow-sm: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 8rpx 24rpx rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 16rpx 48rpx rgba(0, 0, 0, 0.12);
+  --shadow-glow: 0 0 40rpx rgba(102, 126, 234, 0.3);
+
+  --spacing-xs: 8rpx;
+  --spacing-sm: 16rpx;
+  --spacing-md: 24rpx;
+  --spacing-lg: 32rpx;
+  --spacing-xl: 48rpx;
+
+  --radius-sm: 12rpx;
+  --radius-md: 20rpx;
+  --radius-lg: 32rpx;
+  --radius-xl: 48rpx;
+  --radius-full: 9999rpx;
+}
