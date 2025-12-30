@@ -4,7 +4,12 @@
       <text class="form-label"><text class="required">*</text> 品种</text>
       <input placeholder="请输入品种" data-field="breed" bindinput="onInput" value="{{form.breed}}" />
     </view>
-    
+
+    <view class="form-item">
+      <text class="form-label"><text class="required">*</text> 圈号</text>
+      <input placeholder="请输入圈号" data-field="ring_number" bindinput="onInput" value="{{form.ring_number}}" />
+    </view>
+
     <view class="form-item">
       <text class="form-label"><text class="required">*</text> 性别</text>
       <picker mode="selector" range="{{genders}}" bindchange="onGenderChange">
@@ -13,30 +18,21 @@
         </view>
       </picker>
     </view>
-    
+
     <view class="form-item">
-      <text class="form-label">出生日期</text>
+      <text class="form-label"><text class="required">*</text> 出生日期</text>
       <picker mode="date" bindchange="onDateChange">
         <view class="picker-value {{form.birth_date ? '' : 'placeholder'}}">
           {{form.birth_date || '请选择日期'}}
         </view>
       </picker>
     </view>
-    
+
     <view class="form-item">
-      <text class="form-label">圈号</text>
-      <input placeholder="请输入圈号" data-field="ring_number" bindinput="onInput" value="{{form.ring_number}}" />
+      <text class="form-label"><text class="required">*</text> 价格</text>
+      <input type="digit" placeholder="请输入价格" data-field="price" bindinput="onInput" value="{{form.price}}" />
     </view>
-    
-    <view class="form-item">
-      <text class="form-label">价格区间</text>
-      <view class="price-row">
-        <input type="digit" placeholder="最低价" data-field="min_price" bindinput="onInput" value="{{form.min_price}}" />
-        <text>-</text>
-        <input type="digit" placeholder="最高价" data-field="max_price" bindinput="onInput" value="{{form.max_price}}" />
-      </view>
-    </view>
-    
+
     <view class="form-item">
       <text class="form-label">健康备注</text>
       <textarea placeholder="请输入备注" data-field="health_notes" bindinput="onInput" value="{{form.health_notes}}" />

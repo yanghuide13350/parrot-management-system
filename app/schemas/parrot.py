@@ -94,6 +94,7 @@ class ParrotResponse(ParrotBase):
     created_at: str
     updated_at: str
     photo_count: int
+    photo_url: Optional[str] = None
 
     class Config:
         from_attributes = True

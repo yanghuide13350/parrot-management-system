@@ -20,6 +20,12 @@ Page({
     this.setData({ id: options.id })
     this.loadData()
   },
+  onShow() {
+    // 页面显示时刷新数据（从编辑页返回时触发）
+    if (this.data.id) {
+      this.loadData()
+    }
+  },
   async loadData() {
     this.setData({ loading: true })
     try {
@@ -33,6 +39,16 @@ Page({
         api.getSalesTimeline(this.data.id).catch(() => [])
       ])
       const photos = Array.isArray(photosRes) ? photosRes : (photosRes?.items || [])
+      // 构建完整的图片URL并判断文件类型
+      const photosWithUrl = photos.map(p => {
+        const url = `http://127.0.0.1:8000/uploads/${p.file_path}`
+        const isVideo = p.file_name && (p.file_name.endsWith('.mov') || p.file_name.endsWith('.mp4') || p.file_name.endsWith('.avi'))
+        return {
+          ...p,
+          url,
+          isVideo
+        }
+      })
       const timeline = Array.isArray(timelineRes) ? timelineRes : (timelineRes?.items || timelineRes?.timeline || [])
       this.setData({
         parrot: {
@@ -42,7 +58,7 @@ Page({
           priceText: this.formatPrice(parrot),
           followUpText: FOLLOW_UP_STATUS[parrot.follow_up_status] || ''
         },
-        photos: photos,
+        photos: photosWithUrl,
         timeline: timeline.map(t => ({
           ...t,
           title: t.event || t.title,

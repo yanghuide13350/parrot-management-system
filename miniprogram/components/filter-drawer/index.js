@@ -28,6 +28,26 @@ Component({
       localFilters[field] = localFilters[field] === value ? '' : value
       this.setData({ localFilters })
     },
+    onPriceInput(e) {
+      const { field } = e.currentTarget.dataset
+      let { value } = e.detail
+
+      // 转换为数字，空字符串转为undefined
+      value = value === '' ? undefined : Number(value)
+
+      // 验证是否为有效数字
+      if (value !== undefined && (isNaN(value) || value < 0)) {
+        value = 0
+      }
+
+      const localFilters = { ...this.data.localFilters }
+      if (value === undefined || value === 0) {
+        delete localFilters[field]
+      } else {
+        localFilters[field] = value
+      }
+      this.setData({ localFilters })
+    },
     onReset() {
       this.setData({ localFilters: {} })
     },

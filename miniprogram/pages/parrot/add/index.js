@@ -8,8 +8,7 @@ Page({
       gender: '',
       birth_date: '',
       ring_number: '',
-      min_price: '',
-      max_price: '',
+      price: '',
       health_notes: ''
     },
     genders: ['公', '母', '未验卡'],
@@ -60,20 +59,25 @@ Page({
     const { form } = this.data
     if (!form.breed) return wx.showToast({ title: '请输入品种', icon: 'none' })
     if (!form.gender) return wx.showToast({ title: '请选择性别', icon: 'none' })
+    if (!form.ring_number) return wx.showToast({ title: '请输入圈号', icon: 'none' })
+    if (!form.birth_date) return wx.showToast({ title: '请选择出生日期', icon: 'none' })
+    if (!form.price) return wx.showToast({ title: '请输入价格', icon: 'none' })
 
-    if (form.ring_number) {
-      try {
-        const exists = await api.checkRingNumber(form.ring_number)
-        if (exists) return wx.showToast({ title: '圈号已存在', icon: 'none' })
-      } catch (e) { }
-    }
+    try {
+      const result = await api.checkRingNumber(form.ring_number)
+      if (result.exists) return wx.showToast({ title: '圈号已存在', icon: 'none' })
+    } catch (e) { }
 
     this.setData({ submitting: true })
     try {
       const data = { ...form }
-      if (data.min_price) data.min_price = Number(data.min_price)
-      if (data.max_price) data.max_price = Number(data.max_price)
-      Object.keys(data).forEach(k => !data[k] && delete data[k])
+      if (data.price) data.price = Number(data.price)
+      // 删除空字符串字段，避免后端验证错误
+      Object.keys(data).forEach(k => {
+        if (data[k] === '' || data[k] === undefined || data[k] === null) {
+          delete data[k]
+        }
+      })
 
       const parrot = await api.createParrot(data)
 

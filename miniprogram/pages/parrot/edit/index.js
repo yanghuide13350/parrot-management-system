@@ -27,13 +27,12 @@ Page({
           gender: parrot.gender,
           birth_date: parrot.birth_date || '',
           ring_number: parrot.ring_number || '',
-          min_price: parrot.min_price || '',
-          max_price: parrot.max_price || '',
+          price: parrot.price || '',
           health_notes: parrot.health_notes || ''
         },
         genderIndex,
         originalRingNumber: parrot.ring_number || '',
-        photos: photos.map(p => ({ ...p, uploaded: true }))
+        photos: photos.map(p => ({ ...p, uploaded: true, url: `http://127.0.0.1:8000/uploads/${p.file_path}` }))
       })
     } catch (e) {
       wx.showToast({ title: '加载失败', icon: 'none' })
@@ -70,19 +69,27 @@ Page({
     const { form, originalRingNumber } = this.data
     if (!form.breed) return wx.showToast({ title: '请输入品种', icon: 'none' })
     if (!form.gender) return wx.showToast({ title: '请选择性别', icon: 'none' })
+    if (!form.ring_number) return wx.showToast({ title: '请输入圈号', icon: 'none' })
+    if (!form.birth_date) return wx.showToast({ title: '请选择出生日期', icon: 'none' })
+    if (!form.price) return wx.showToast({ title: '请输入价格', icon: 'none' })
 
-    if (form.ring_number && form.ring_number !== originalRingNumber) {
+    if (form.ring_number !== originalRingNumber) {
       try {
-        const exists = await api.checkRingNumber(form.ring_number)
-        if (exists) return wx.showToast({ title: '圈号已存在', icon: 'none' })
+        const result = await api.checkRingNumber(form.ring_number)
+        if (result.exists) return wx.showToast({ title: '圈号已存在', icon: 'none' })
       } catch (e) { }
     }
 
     this.setData({ submitting: true })
     try {
       const data = { ...form }
-      if (data.min_price) data.min_price = Number(data.min_price)
-      if (data.max_price) data.max_price = Number(data.max_price)
+      if (data.price) data.price = Number(data.price)
+      // 删除空字符串字段，后端不需要这些字段
+      Object.keys(data).forEach(k => {
+        if (data[k] === '' || data[k] === undefined || data[k] === null) {
+          delete data[k]
+        }
+      })
 
       await api.updateParrot(this.data.id, data)
 

@@ -82,13 +82,16 @@
 
 .card-info {
   padding: 12rpx 14rpx;
+  height: 100rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .card-title {
   font-size: 26rpx;
   font-weight: 600;
   color: #1e293b;
-  margin-bottom: 4rpx;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -97,7 +100,6 @@
 .card-meta {
   font-size: 22rpx;
   color: #64748b;
-  margin-bottom: 4rpx;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -118,4 +120,5 @@
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  min-height: 28rpx;
 }

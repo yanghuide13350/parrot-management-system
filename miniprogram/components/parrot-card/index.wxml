@@ -15,6 +15,6 @@
       <text class="gender">{{parrot.gender}}</text>
       <text wx:if="{{parrot.ring_number}}" class="ring">{{parrot.ring_number}}</text>
     </view>
-    <view class="card-price" wx:if="{{priceText}}">{{priceText}}</view>
+    <view class="card-price">{{priceText || ' '}}</view>
   </view>
 </view>

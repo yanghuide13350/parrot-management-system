@@ -53,7 +53,12 @@ Page({
       Object.keys(params).forEach(k => params[k] === undefined && delete params[k])
       const res = await api.getParrots(params)
       const items = res.items || res || []
-      const list = append ? [...this.data.list, ...items] : items
+      // 构建完整的图片URL
+      const listWithPhotos = items.map(item => ({
+        ...item,
+        photo_url: item.photo_url ? `http://127.0.0.1:8000${item.photo_url}` : null
+      }))
+      const list = append ? [...this.data.list, ...listWithPhotos] : listWithPhotos
       this.setData({
         list,
         hasMore: items.length === this.data.pageSize,
@@ -101,7 +106,10 @@ Page({
     this.loadData()
   },
   updateFilterCount() {
-    const count = Object.values(this.data.filters).filter(v => v).length
+    const count = Object.values(this.data.filters).filter(v => {
+      if (v === undefined || v === null || v === '') return false
+      return true
+    }).length
     this.setData({ filterCount: count })
   },
   goDetail(e) {

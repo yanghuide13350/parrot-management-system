@@ -103,6 +103,9 @@ def get_parrots(
     items = []
     for parrot in parrots:
         photo_count = db.query(Photo).filter(Photo.parrot_id == parrot.id).count()
+        # 获取第一张照片作为缩略图
+        first_photo = db.query(Photo).filter(Photo.parrot_id == parrot.id).order_by(Photo.sort_order.desc(), Photo.created_at.asc()).first()
+        photo_url = f"/uploads/{first_photo.file_path}" if first_photo else None
 
         # 转换datetime为字符串
         created_at_str = parrot.created_at.isoformat() if parrot.created_at else None
@@ -121,6 +124,7 @@ def get_parrots(
                 created_at=created_at_str,
                 updated_at=updated_at_str,
                 photo_count=photo_count,
+                photo_url=photo_url,
                 mate_id=parrot.mate_id,
                 paired_at=parrot.paired_at.isoformat() if parrot.paired_at else None,
             )
@@ -137,6 +141,9 @@ def get_parrot(parrot_id: int, db: Session = Depends(get_db)):
         raise NotFoundException(f"未找到ID为 {parrot_id} 的鹦鹉")
 
     photo_count = db.query(Photo).filter(Photo.parrot_id == parrot.id).count()
+    # 获取第一张照片作为缩略图
+    first_photo = db.query(Photo).filter(Photo.parrot_id == parrot.id).order_by(Photo.sort_order.desc(), Photo.created_at.asc()).first()
+    photo_url = f"/uploads/{first_photo.file_path}" if first_photo else None
 
     # 转换datetime为字符串
     created_at_str = parrot.created_at.isoformat() if parrot.created_at else None
@@ -154,6 +161,7 @@ def get_parrot(parrot_id: int, db: Session = Depends(get_db)):
         created_at=created_at_str,
         updated_at=updated_at_str,
         photo_count=photo_count,
+        photo_url=photo_url,
         mate_id=parrot.mate_id,
         paired_at=parrot.paired_at.isoformat() if parrot.paired_at else None,
     )

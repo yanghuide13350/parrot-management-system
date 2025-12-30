@@ -37,9 +37,9 @@
     <view class="filter-section">
       <view class="section-title">状态</view>
       <view class="tag-list">
-        <view 
-          wx:for="{{statuses}}" 
-          wx:key="value" 
+        <view
+          wx:for="{{statuses}}"
+          wx:key="value"
           class="tag {{localFilters.status === item.value ? 'active' : ''}}"
           data-field="status"
           data-value="{{item.value}}"
@@ -47,7 +47,30 @@
         >{{item.label}}</view>
       </view>
     </view>
-    
+
+    <view class="filter-section">
+      <view class="section-title">价格区间</view>
+      <view class="price-input-row">
+        <input
+          class="price-input"
+          type="digit"
+          placeholder="最低价"
+          value="{{localFilters.min_price}}"
+          data-field="min_price"
+          bindinput="onPriceInput"
+        />
+        <text class="price-separator">-</text>
+        <input
+          class="price-input"
+          type="digit"
+          placeholder="最高价"
+          value="{{localFilters.max_price}}"
+          data-field="max_price"
+          bindinput="onPriceInput"
+        />
+      </view>
+    </view>
+
     <view class="drawer-footer">
       <button class="btn-outline" bindtap="onClose">取消</button>
       <button class="btn-primary" bindtap="onConfirm">确定</button>
