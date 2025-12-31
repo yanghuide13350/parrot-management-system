@@ -8,25 +8,31 @@ Page({
     parrot: null,
     photos: [],
     timeline: [],
+    shareLinks: [],
     loading: true,
     showSaleModal: false,
     showReturnModal: false,
     showFollowUpModal: false,
-    saleForm: { seller: '', buyer_name: '', sale_price: '', contact: '' },
+    saleForm: { seller: '', buyer_name: '', sale_price: '', contact: '', follow_up_status: 'pending' },
+    sellerOptions: ['杨慧德', '杨慧艳', '贾号号'],
     returnReason: '',
     followUpForm: { status: 'completed', notes: '' }
   },
   onLoad(options) {
-    this.setData({ id: options.id })
-    this.loadData()
-  },
-  onShow() {
-    // 页面显示时刷新数据（从编辑页返回时触发）
-    if (this.data.id) {
+    if (this) {
+      this.setData({ id: options.id })
       this.loadData()
     }
   },
+  onShow() {
+    // 页面显示时刷新数据（从编辑页返回时触发）
+    if (this && this.data && this.data.id) {
+      this.loadData()
+    }
+  },
+  // ... (omitted loadData and stats methods) ...
   async loadData() {
+    if (!this) return
     this.setData({ loading: true })
     try {
       const parrot = await api.getParrot(this.data.id)
@@ -34,9 +40,10 @@ Page({
         wx.showToast({ title: '鹦鹉不存在', icon: 'none' })
         return
       }
-      const [photosRes, timelineRes] = await Promise.all([
+      const [photosRes, timelineRes, shareLinksRes] = await Promise.all([
         api.getPhotos(this.data.id).catch(() => []),
-        api.getSalesTimeline(this.data.id).catch(() => [])
+        api.getSalesTimeline(this.data.id).catch(() => []),
+        api.getShareLinks(this.data.id).catch(() => [])
       ])
       const photos = Array.isArray(photosRes) ? photosRes : (photosRes?.items || [])
       // 构建完整的图片URL并判断文件类型
@@ -50,6 +57,9 @@ Page({
         }
       })
       const timeline = Array.isArray(timelineRes) ? timelineRes : (timelineRes?.items || timelineRes?.timeline || [])
+      const allShareLinks = Array.isArray(shareLinksRes) ? shareLinksRes : (shareLinksRes?.items || [])
+      // 只显示最新的一个分享链接
+      const shareLinks = allShareLinks.length > 0 ? [allShareLinks[0]] : []
       this.setData({
         parrot: {
           ...parrot,
@@ -64,6 +74,7 @@ Page({
           title: t.event || t.title,
           dateText: formatDate(t.date || t.created_at, 'MM-DD HH:mm')
         })),
+        shareLinks,
         loading: false
       })
     } catch (e) {
@@ -82,7 +93,10 @@ Page({
     wx.navigateTo({ url: `/pages/parrot/edit/index?id=${this.data.id}` })
   },
   showSale() {
-    this.setData({ showSaleModal: true })
+    this.setData({
+      showSaleModal: true,
+      'saleForm.follow_up_status': 'pending'
+    })
   },
   hideSale() {
     this.setData({ showSaleModal: false })
@@ -91,10 +105,27 @@ Page({
     const { field } = e.currentTarget.dataset
     this.setData({ [`saleForm.${field}`]: e.detail.value })
   },
+  onSellerTagTap(e) {
+    const { value } = e.currentTarget.dataset
+    this.setData({ 'saleForm.seller': value })
+  },
+  onSaleFollowUpStatusChange(e) {
+    const statusMap = ['pending', 'completed', 'no_contact']
+    this.setData({ 'saleForm.follow_up_status': statusMap[e.detail.value] })
+  },
   async submitSale() {
     const { saleForm } = this.data
-    if (!saleForm.buyer_name || !saleForm.sale_price) {
-      return wx.showToast({ title: '请填写购买者和价格', icon: 'none' })
+    if (!saleForm.seller) {
+      return wx.showToast({ title: '请选择售卖人', icon: 'none' })
+    }
+    if (!saleForm.buyer_name) {
+      return wx.showToast({ title: '请填写购买者', icon: 'none' })
+    }
+    if (!saleForm.sale_price) {
+      return wx.showToast({ title: '请填写价格', icon: 'none' })
+    }
+    if (!saleForm.contact) {
+      return wx.showToast({ title: '请填写联系方式', icon: 'none' })
     }
     try {
       await api.updateSaleInfo(this.data.id, {
@@ -105,7 +136,9 @@ Page({
       wx.showToast({ title: '售出成功', icon: 'success' })
       this.setData({ showSaleModal: false })
       this.loadData()
-    } catch (e) { }
+    } catch (e) {
+      console.error(e) // Log error to see if backend rejects it
+    }
   },
   showReturn() {
     this.setData({ showReturnModal: true })
@@ -131,14 +164,22 @@ Page({
     this.setData({ showFollowUpModal: false })
   },
   onFollowUpStatus(e) {
-    this.setData({ 'followUpForm.status': e.detail.value })
+    const statusMap = ['completed', 'pending', 'no_contact']
+    const index = e.detail.value
+    this.setData({ 'followUpForm.status': statusMap[index] })
   },
   onFollowUpNotes(e) {
     this.setData({ 'followUpForm.notes': e.detail.value })
   },
   async submitFollowUp() {
     try {
-      await api.createFollowUp(this.data.id, this.data.followUpForm)
+      const { followUpForm } = this.data
+      // 将 status 字段转换为 follow_up_status
+      const data = {
+        follow_up_status: followUpForm.status,
+        notes: followUpForm.notes
+      }
+      await api.createFollowUp(this.data.id, data)
       wx.showToast({ title: '回访成功', icon: 'success' })
       this.setData({ showFollowUpModal: false, followUpForm: { status: 'completed', notes: '' } })
       this.loadData()
@@ -178,10 +219,53 @@ Page({
   },
   async onShare() {
     try {
+      // 先删除所有旧的分享链接
+      const oldLinks = this.data.shareLinks
+      if (oldLinks && oldLinks.length > 0) {
+        await Promise.all(oldLinks.map(link => api.deleteShareLink(link.token).catch(() => { })))
+      }
+
+      // 生成新的分享链接
       const res = await api.createShareLink(this.data.id, { expires_in_days: 7 })
-      wx.setClipboardData({ data: res.share_url })
-      wx.showToast({ title: '链接已复制', icon: 'success' })
-    } catch (e) { }
+      wx.setClipboardData({ data: res.url })
+      wx.showToast({ title: '新分享链接已生成并复制', icon: 'success' })
+
+      // 只显示新生成的链接
+      this.setData({ shareLinks: [res] })
+    } catch (e) {
+      console.error('分享失败:', e)
+      wx.showToast({ title: '分享失败', icon: 'none' })
+    }
+  },
+  copyShareUrl(e) {
+    const url = e.currentTarget.dataset.url
+    wx.setClipboardData({
+      data: url,
+      success: () => {
+        wx.showToast({ title: '链接已复制', icon: 'success' })
+      }
+    })
+  },
+  onDelete() {
+    wx.showModal({
+      title: '确认删除',
+      content: '确定要删除这只鹦鹉吗？删除后无法恢复。',
+      confirmText: '删除',
+      confirmColor: '#ff4d4f',
+      success: async (res) => {
+        if (res.confirm) {
+          try {
+            await api.deleteParrot(this.data.id)
+            wx.showToast({ title: '删除成功', icon: 'success' })
+            setTimeout(() => {
+              wx.navigateBack()
+            }, 1500)
+          } catch (e) {
+            wx.showToast({ title: '删除失败', icon: 'none' })
+          }
+        }
+      }
+    })
   },
   onShareAppMessage() {
     const { parrot } = this.data

@@ -1,7 +1,12 @@
 <view class="page" wx:if="{{parrot}}">
   <swiper class="photo-swiper" indicator-dots circular wx:if="{{photos.length}}">
     <swiper-item wx:for="{{photos}}" wx:key="id">
-      <image src="{{item.url}}" mode="aspectFill" data-url="{{item.url}}" bindtap="previewImage" />
+      <block wx:if="{{item.file_type === 'video'}}">
+        <video src="{{item.url}}" controls />
+      </block>
+      <block wx:else>
+        <image src="{{item.url}}" mode="aspectFill" data-url="{{item.url}}" bindtap="previewImage" />
+      </block>
     </swiper-item>
   </swiper>
   <view class="no-photo" wx:else>

@@ -2,7 +2,26 @@
   <view class="form-card glass-card">
     <view class="form-item">
       <text class="form-label"><text class="required">*</text> 品种</text>
-      <input placeholder="请输入品种" data-field="breed" bindinput="onInput" value="{{form.breed}}" />
+      <view class="breed-input-wrapper">
+        <input
+          class="breed-input {{showBreedList && filteredBreeds.length ? 'has-list' : ''}}"
+          placeholder="请输入或选择品种"
+          data-field="breed"
+          bindinput="onBreedInput"
+          value="{{form.breed}}"
+          bindfocus="onBreedFocus"
+          bindblur="onBreedBlur"
+        />
+        <view class="breed-list {{showBreedList && filteredBreeds.length ? 'show' : ''}}">
+          <view
+            class="breed-item"
+            wx:for="{{filteredBreeds}}"
+            wx:key="*this"
+            data-value="{{item}}"
+            bindtap="selectBreed"
+          >{{item}}</view>
+        </view>
+      </view>
     </view>
 
     <view class="form-item">
@@ -40,15 +59,23 @@
   </view>
   
   <view class="photo-section">
-    <text class="form-label">照片</text>
+    <text class="form-label">照片/视频</text>
     <view class="photo-grid">
       <view class="photo-item" wx:for="{{photos}}" wx:key="path">
-        <image src="{{item.path}}" mode="aspectFill" />
+        <block wx:if="{{item.isVideo}}">
+          <video src="{{item.path}}" mode="aspectFill" />
+          <view class="video-play-icon">
+            <view class="play-btn"></view>
+          </view>
+        </block>
+        <block wx:else>
+          <image src="{{item.path}}" mode="aspectFill" />
+        </block>
         <view class="photo-remove" data-index="{{index}}" bindtap="removePhoto">×</view>
       </view>
       <view class="photo-add" bindtap="choosePhoto" wx:if="{{photos.length < 9}}">
         <text>+</text>
-        <text>添加照片</text>
+        <text>添加照片/视频</text>
       </view>
     </view>
   </view>

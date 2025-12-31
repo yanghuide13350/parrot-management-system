@@ -6,12 +6,17 @@ Page({
     baseUrl: ''
   },
   onLoad() {
-    const app = getApp()
-    this.setData({ baseUrl: app.globalData.baseUrl })
+    if (this) {
+      const app = getApp()
+      this.setData({ baseUrl: app.globalData.baseUrl })
+    }
   },
   onShow() {
-    if (typeof this.getTabBar === 'function') {
-      this.getTabBar().setData({ selected: 3 })
+    if (this && typeof this.getTabBar === 'function') {
+      const tabBar = this.getTabBar()
+      if (tabBar && typeof tabBar.setData === 'function') {
+        tabBar.setData({ selected: 3 })
+      }
     }
   },
   goBreeding() {

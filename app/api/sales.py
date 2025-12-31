@@ -84,6 +84,10 @@ def get_sales_records(
     # 构建响应
     items = []
     for parrot in parrots:
+        # Get first photo
+        first_photo = db.query(Photo).filter(Photo.parrot_id == parrot.id).order_by(Photo.sort_order.desc(), Photo.created_at.asc()).first()
+        photo_url = f"/uploads/{first_photo.file_path}" if first_photo else None
+
         items.append(SaleRecordResponse(
             id=parrot.id,
             parrot_id=parrot.id,
@@ -95,6 +99,7 @@ def get_sales_records(
             sale_notes=parrot.sale_notes,
             sale_date=parrot.sold_at.isoformat() if parrot.sold_at else None,
             payment_method=None,  # TODO: 需要在Parrot表添加payment_method字段
+            photo_url=photo_url,
             created_at=parrot.created_at.isoformat() if parrot.created_at else None,
             updated_at=parrot.updated_at.isoformat() if parrot.updated_at else None,
             parrot={

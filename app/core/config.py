@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     # CORS配置
     CORS_ORIGINS: list = ["*"]
 
+    # 前端地址配置 (用于生成分享链接)
+    FRONTEND_URL: str = "http://localhost:5173"
+
     # 分页配置
     DEFAULT_PAGE_SIZE: int = 20
     MAX_PAGE_SIZE: int = 100

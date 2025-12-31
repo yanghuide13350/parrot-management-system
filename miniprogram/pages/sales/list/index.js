@@ -13,19 +13,20 @@ Page({
     loading: false
   },
   onLoad() {
-    this.loadStats()
-    this.loadData()
+    if (this) {
+      this.loadStats()
+      this.loadData()
+    }
   },
   onShow() {
-    if (typeof this.getTabBar === 'function') {
-      this.getTabBar().setData({ selected: 2 })
-    }
+    // Native tab bar handles selection automatically
   },
   onPullDownRefresh() {
     this.setData({ page: 1 })
     Promise.all([this.loadStats(), this.loadData()]).then(() => wx.stopPullDownRefresh())
   },
   async loadStats() {
+    if (!this) return
     try {
       const [sales, returns] = await Promise.all([
         api.getSalesStatistics(),
@@ -33,7 +34,7 @@ Page({
       ])
       this.setData({
         stats: {
-          total: sales.total_sold || 0,
+          total: sales.total_sales || 0,
           revenue: sales.total_revenue || 0,
           returnRate: returns.return_rate ? (returns.return_rate * 100).toFixed(1) : 0
         }
@@ -41,26 +42,36 @@ Page({
     } catch (e) { }
   },
   async loadData(append = false) {
+    if (!this) return
     if (this.data.loading) return
     this.setData({ loading: true })
     try {
       const params = {
-        skip: (this.data.page - 1) * this.data.pageSize,
-        limit: this.data.pageSize,
-        search: this.data.keyword || undefined
+        page: this.data.page, // Use page, not skip
+        size: this.data.pageSize // Use size, not limit
+      }
+      if (this.data.keyword) {
+        params.keyword = this.data.keyword
       }
       const res = await api.getSalesRecords(params)
-      const list = res.map(item => ({
+      // Flatten the structure: backend returns nested parrot object
+      const list = (res.items || []).map(item => ({
         ...item,
+        breed: item.parrot ? item.parrot.breed : '',
+        gender: item.parrot ? item.parrot.gender : '',
+        ring_number: item.parrot ? item.parrot.ring_number : '',
+        photo_url: item.photo_url ? `http://127.0.0.1:8000${item.photo_url}` : '',
         followUpText: FOLLOW_UP_STATUS[item.follow_up_status] || '待回访',
-        soldDate: formatDate(item.sold_at, 'MM-DD')
+        soldDate: formatDate(item.sale_date, 'MM-DD')
       }))
       this.setData({
         list: append ? [...this.data.list, ...list] : list,
-        hasMore: res.length === this.data.pageSize,
+        hasMore: list.length === this.data.pageSize,
         loading: false
       })
     } catch (e) {
+      console.error('加载销售记录失败:', e)
+      wx.showToast({ title: '加载失败: ' + e.message, icon: 'none' })
       this.setData({ loading: false })
     }
   },

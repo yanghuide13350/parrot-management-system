@@ -1,29 +1,82 @@
 <view class="page">
+  <view class="filter-bar">
+    <view class="filter-item" bindtap="toggleFilter">
+      <text class="filter-text">筛选</text>
+      <text class="filter-icon">▼</text>
+    </view>
+    <view class="quick-filters">
+      <view class="quick-filter-item" bindtap="resetFilter">全部</view>
+    </view>
+  </view>
+
+  <view class="filter-drawer {{showFilter ? 'show' : ''}}">
+    <view class="filter-content">
+      <view class="filter-group">
+        <view class="filter-label">状态</view>
+        <picker mode="selector" range="{{statusList}}" range-key="label" value="0" bindchange="onStatusChange">
+          <view class="filter-value">{{statusLabel}}</view>
+        </picker>
+      </view>
+
+      <view class="filter-group">
+        <view class="filter-label">开始日期从</view>
+        <picker mode="date" bindchange="onStartDateFromChange">
+          <view class="filter-value">{{filters.startDateFrom || '请选择'}}</view>
+        </picker>
+      </view>
+
+      <view class="filter-group">
+        <view class="filter-label">开始日期到</view>
+        <picker mode="date" bindchange="onStartDateToChange">
+          <view class="filter-value">{{filters.startDateTo || '请选择'}}</view>
+        </picker>
+      </view>
+
+      <view class="filter-group">
+        <view class="filter-label">搜索</view>
+        <input class="filter-input" placeholder="搜索父母鸟圈号" value="{{filters.search}}" bindinput="onSearchInput" />
+      </view>
+
+      <view class="filter-actions">
+        <button class="filter-btn reset" bindtap="resetFilter">重置</button>
+        <button class="filter-btn apply" bindtap="applyFilter">应用</button>
+      </view>
+    </view>
+  </view>
+
   <view class="list">
     <view class="incubation-card glass-card" wx:for="{{list}}" wx:key="id">
       <view class="card-header">
-        <view class="status-tag status-{{item.status}}">{{item.statusText}}</view>
-        <view class="date">{{item.startDateText}}</view>
+        <view class="status-badge status-{{item.status}}">{{item.statusText}}</view>
+        <view class="start-date">{{item.startDateText}}</view>
+        <view class="incubation-days" wx:if="{{item.incubationDays}}">{{item.incubationDays}}</view>
       </view>
       <view class="card-body">
         <view class="parents">
-          <text>父: {{item.father_breed || '未知'}}</text>
-          <text>母: {{item.mother_breed || '未知'}}</text>
+          <view class="parent-item">
+            <text class="parent-label">父:</text>
+            <text class="parent-value">{{item.father ? (item.father.ring_number || item.father.breed) : '未知'}}</text>
+          </view>
+          <view class="parent-item">
+            <text class="parent-label">母:</text>
+            <text class="parent-value">{{item.mother ? (item.mother.ring_number || item.mother.breed) : '未知'}}</text>
+          </view>
         </view>
-        <view class="eggs">
-          <text>蛋数: {{item.eggs_count}}</text>
-          <text wx:if="{{item.hatched_count}}">孵化: {{item.hatched_count}}</text>
+        <view class="eggs-info">
+          <text class="eggs-count">{{item.eggs_count}}枚蛋</text>
+          <text class="hatched-count">已孵化 {{item.hatched_count}}只</text>
+          <text class="hatch-rate" wx:if="{{item.hatchRate}}">孵化率 {{item.hatchRate}}</text>
         </view>
       </view>
       <view class="card-footer" wx:if="{{item.status === 'incubating'}}">
         <button class="update-btn" data-id="{{item.id}}" bindtap="goEdit">更新</button>
       </view>
     </view>
-    
+
     <empty-state wx:if="{{!list.length && !loading}}" icon="🥚" text="暂无孵化记录" />
   </view>
-  
+
   <view class="fab" bindtap="goAdd">
-    <text>+</text>
+    <text class="fab-icon">+</text>
   </view>
 </view>

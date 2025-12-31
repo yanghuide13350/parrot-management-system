@@ -63,6 +63,7 @@
   
   <view class="action-bar">
     <button class="btn-outline" bindtap="goEdit">编辑</button>
+    <button class="btn-outline danger" bindtap="onDelete">删除</button>
     <button class="btn-outline" bindtap="onShare">分享</button>
     <block wx:if="{{parrot.status === 'available'}}">
       <button class="btn-primary" bindtap="showSale">售出</button>
@@ -79,6 +80,22 @@
       <button class="btn-outline" bindtap="unpair">取消配对</button>
     </block>
   </view>
+
+  <view class="share-section" wx:if="{{shareLinks.length}}">
+    <view class="section-title">分享链接</view>
+    <view class="share-list">
+      <view class="share-item" wx:for="{{shareLinks}}" wx:key="token">
+        <view class="share-info">
+          <view class="share-date">创建于 {{item.created_at}}</view>
+          <view class="share-expires">剩余 {{item.remaining_days}} 天</view>
+        </view>
+        <view class="share-url">{{item.url}}</view>
+        <view class="share-actions">
+          <button class="copy-btn" data-url="{{item.url}}" bindtap="copyShareUrl">复制</button>
+        </view>
+      </view>
+    </view>
+  </view>
 </view>
 
 <view class="modal {{showSaleModal ? 'show' : ''}}" catchtouchmove="true">
@@ -87,7 +104,16 @@
     <view class="modal-title">销售信息</view>
     <view class="form-item">
       <text class="form-label">售卖人</text>
-      <input placeholder="请输入" data-field="seller" bindinput="onSaleInput" />
+      <view class="seller-tags">
+        <view 
+          class="seller-tag {{saleForm.seller === item ? 'active' : ''}}" 
+          wx:for="{{sellerOptions}}" 
+          wx:key="*this"
+          data-value="{{item}}"
+          bindtap="onSellerTagTap"
+        >{{item}}</view>
+      </view>
+      <input placeholder="请输入" data-field="seller" bindinput="onSaleInput" value="{{saleForm.seller}}" />
     </view>
     <view class="form-item">
       <text class="form-label">购买者 *</text>
@@ -98,8 +124,14 @@
       <input type="digit" placeholder="请输入" data-field="sale_price" bindinput="onSaleInput" />
     </view>
     <view class="form-item">
-      <text class="form-label">联系方式</text>
-      <input placeholder="请输入" data-field="contact" bindinput="onSaleInput" />
+      <text class="form-label">联系方式 *</text>
+      <input placeholder="请输入" data-field="contact" bindinput="onSaleInput" value="{{saleForm.contact}}" />
+    </view>
+    <view class="form-item">
+      <text class="form-label">回访状态</text>
+      <picker mode="selector" range="{{['待回访', '已回访', '无法联系']}}" bindchange="onSaleFollowUpStatusChange">
+        <view class="picker-value">{{saleForm.follow_up_status === 'completed' ? '已回访' : saleForm.follow_up_status === 'no_contact' ? '无法联系' : '待回访'}}</view>
+      </picker>
     </view>
     <view class="modal-footer">
       <button class="btn-outline" bindtap="hideSale">取消</button>
@@ -126,8 +158,8 @@
     <view class="modal-title">回访记录</view>
     <view class="form-item">
       <text class="form-label">状态</text>
-      <picker mode="selector" range="{{['已回访', '待回访', '无法联系']}}" range-key="label" bindchange="onFollowUpStatus">
-        <view class="picker-value">{{followUpForm.status === 'completed' ? '已回访' : followUpForm.status === 'pending' ? '待回访' : '无法联系'}}</view>
+      <picker mode="selector" range="{{['已回访', '待回访', '无法联系']}}" bindchange="onFollowUpStatus">
+        <view class="picker-value">{{followUpForm.status === 'completed' ? '已回访' : followUpForm.status === 'pending' ? '待回访' : followUpForm.status === 'no_contact' ? '无法联系' : ''}}</view>
       </picker>
     </view>
     <view class="form-item">

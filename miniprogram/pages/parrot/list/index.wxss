@@ -89,7 +89,7 @@
 .list-container {
   flex: 1;
   padding: 0 20rpx;
-  padding-top: 88rpx;
+  padding-top: 120rpx;
   box-sizing: border-box;
   width: 100%;
 }
@@ -117,7 +117,7 @@
 .fab {
   position: fixed;
   right: 32rpx;
-  bottom: 200rpx;
+  bottom: 120rpx;
   width: 100rpx;
   height: 100rpx;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);

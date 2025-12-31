@@ -518,6 +518,38 @@ def get_eligible_females(male_id: int, db: Session = Depends(get_db)):
     ]
 
 
+@router.get("/eligible-males/{female_id}", summary="获取指定母鹦鹉的可配对公鹦鹉")
+def get_eligible_males(female_id: int, db: Session = Depends(get_db)):
+    """获取指定母鹦鹉的所有可配对公鹦鹉（不局限于同品种）"""
+    female = db.query(Parrot).filter(Parrot.id == female_id).first()
+
+    if not female:
+        raise NotFoundException(f"未找到ID为 {female_id} 的鹦鹉")
+
+    if female.gender != "母":
+        raise BadRequestException("只能为母鹦鹉查找可配对的公鹦鹉")
+
+    # 获取所有未配对的种鸟公鹦鹉（不局限于同品种）
+    eligible_males = db.query(Parrot).filter(
+        Parrot.gender == "公",
+        Parrot.status == "breeding",
+        Parrot.mate_id.is_(None),
+        Parrot.id != female_id,
+    ).all()
+
+    return [
+        {
+            "id": m.id,
+            "breed": m.breed,
+            "gender": m.gender,
+            "ring_number": m.ring_number,
+            "birth_date": m.birth_date.isoformat() if m.birth_date else None,
+            "health_notes": m.health_notes,
+        }
+        for m in eligible_males
+    ]
+
+
 @router.post("/unpair/{parrot_id}", summary="取消配对")
 def unpair_parrot(parrot_id: int, db: Session = Depends(get_db)):
     """取消鹦鹉的配对关系"""

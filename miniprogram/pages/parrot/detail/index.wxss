@@ -243,6 +243,11 @@
   border-radius: 48rpx;
 }
 
+.btn-outline.danger {
+  color: #ff4d4f;
+  border: 2rpx solid #ff4d4f;
+}
+
 .btn-primary {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: #fff;
@@ -318,7 +323,8 @@
 .form-item input,
 .form-item textarea {
   width: 100%;
-  padding: 20rpx;
+  height: 84rpx;
+  padding: 0 24rpx;
   background: #f8fafc;
   border-radius: 16rpx;
   font-size: 28rpx;
@@ -327,6 +333,8 @@
 
 .form-item textarea {
   height: 160rpx;
+  padding: 20rpx;
+  width: 100%;
 }
 
 .picker-value {
@@ -344,4 +352,96 @@
 
 .modal-footer button {
   flex: 1;
+}
+
+.share-section {
+  margin: 24rpx;
+  padding: 24rpx;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(20rpx);
+  border-radius: 24rpx;
+  box-shadow: 0 4rpx 24rpx rgba(0, 0, 0, 0.06);
+}
+
+.share-section .section-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 20rpx;
+  padding-bottom: 16rpx;
+  border-bottom: 1rpx solid rgba(0, 0, 0, 0.05);
+}
+
+.share-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.share-item {
+  padding: 20rpx;
+  background: #f8fafc;
+  border-radius: 16rpx;
+  border: 1rpx solid #e2e8f0;
+}
+
+.share-info {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12rpx;
+}
+
+.share-date {
+  font-size: 24rpx;
+  color: #64748b;
+}
+
+.share-expires {
+  font-size: 24rpx;
+  color: #667eea;
+  font-weight: 500;
+}
+
+.share-url {
+  font-size: 22rpx;
+  color: #94a3b8;
+  word-break: break-all;
+  margin-bottom: 12rpx;
+}
+
+.share-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.copy-btn {
+  padding: 12rpx 24rpx;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  border: none;
+  border-radius: 32rpx;
+  font-size: 24rpx;
+}
+
+.seller-tags {
+  display: flex;
+  gap: 16rpx;
+  margin-bottom: 16rpx;
+}
+
+.seller-tag {
+  padding: 8rpx 24rpx;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 24rpx;
+  border-radius: 32rpx;
+  border: 2rpx solid transparent;
+  transition: all 0.3s;
+}
+
+.seller-tag.active {
+  background: #eef2ff;
+  color: #667eea;
+  border-color: #667eea;
+  font-weight: 500;
 }

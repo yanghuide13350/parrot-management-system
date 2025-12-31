@@ -26,25 +26,74 @@ Page({
       { value: 'failed', label: '失败' }
     ],
     statusLabel: '孵化中',
-    submitting: false
+    submitting: false,
+    allParrots: []
   },
   onLoad(options) {
-    if (options.id) {
-      this.setData({ id: options.id, isEdit: true })
-      this.loadRecord()
-    } else {
-      this.loadParents()
+    if (this) {
+      if (options.id) {
+        this.setData({ id: options.id, isEdit: true })
+        this.loadRecord()
+      } else {
+        this.loadParents()
+      }
+
+      if (options.father_id) {
+        this.setData({ 'form.father_id': Number(options.father_id) })
+        this.loadParents()
+      }
     }
   },
   async loadParents() {
+    if (!this) return
     try {
-      const res = await api.getParrots({ status: 'paired,incubating' })
-      const males = res.filter(p => p.gender === '公').map(p => ({ id: p.id, label: `${p.breed} (${p.ring_number || '无圈号'})` }))
-      const females = res.filter(p => p.gender === '母').map(p => ({ id: p.id, label: `${p.breed} (${p.ring_number || '无圈号'})` }))
-      this.setData({ males, females })
+      const [paired, incubating] = await Promise.all([
+        api.getParrots({ status: 'paired' }),
+        api.getParrots({ status: 'incubating' })
+      ])
+      const pairedData = Array.isArray(paired) ? paired : (paired.items || [])
+      const incubatingData = Array.isArray(incubating) ? incubating : (incubating.items || [])
+      const res = [...pairedData, ...incubatingData]
+
+      const now = new Date()
+      const fourMonthsAgo = new Date(now.getTime() - 120 * 24 * 60 * 60 * 1000)
+
+      const validMales = res.filter(p => {
+        if (p.gender !== '公') return false
+        if (!p.birth_date) return true
+        return new Date(p.birth_date) <= fourMonthsAgo
+      }).map(p => ({ id: p.id, label: `${p.breed} (${p.ring_number || '无圈号'})`, birth_date: p.birth_date }))
+
+      const validFemales = res.filter(p => {
+        if (p.gender !== '母') return false
+        if (!p.birth_date) return true
+        return new Date(p.birth_date) <= fourMonthsAgo
+      }).map(p => ({ id: p.id, label: `${p.breed} (${p.ring_number || '无圈号'})`, birth_date: p.birth_date }))
+
+      this.setData({
+        males: validMales,
+        females: validFemales,
+        allParrots: res
+      })
+
+      if (this.data.form.father_id) {
+        const father = validMales.find(m => m.id === this.data.form.father_id)
+        if (father) {
+          this.setData({ fatherLabel: father.label })
+          this.autoFillMother(father.id)
+        }
+      }
+
+      if (this.data.form.mother_id) {
+        const mother = validFemales.find(f => f.id === this.data.form.mother_id)
+        if (mother) {
+          this.setData({ motherLabel: mother.label })
+        }
+      }
     } catch (e) { }
   },
   async loadRecord() {
+    if (!this) return
     try {
       const records = await api.getIncubationRecords({})
       const record = records.find(r => r.id == this.data.id)
@@ -70,16 +119,52 @@ Page({
     const { field } = e.currentTarget.dataset
     this.setData({ [`form.${field}`]: e.detail.value })
   },
-  onFatherChange(e) {
+  async onFatherChange(e) {
     const male = this.data.males[e.detail.value]
     this.setData({ 'form.father_id': male.id, fatherLabel: male.label })
+    await this.autoFillMother(male.id)
   },
-  onMotherChange(e) {
+  async onMotherChange(e) {
     const female = this.data.females[e.detail.value]
     this.setData({ 'form.mother_id': female.id, motherLabel: female.label })
+    await this.autoFillFather(female.id)
+  },
+  async autoFillMother(fatherId) {
+    try {
+      const mateInfo = await api.getMate(fatherId)
+      if (mateInfo.has_mate && mateInfo.mate) {
+        const mother = this.data.females.find(f => f.id === mateInfo.mate.id)
+        if (mother) {
+          this.setData({
+            'form.mother_id': mother.id,
+            motherLabel: mother.label
+          })
+        }
+      }
+    } catch (e) { }
+  },
+  async autoFillFather(motherId) {
+    try {
+      const mateInfo = await api.getMate(motherId)
+      if (mateInfo.has_mate && mateInfo.mate) {
+        const father = this.data.males.find(m => m.id === mateInfo.mate.id)
+        if (father) {
+          this.setData({
+            'form.father_id': father.id,
+            fatherLabel: father.label
+          })
+        }
+      }
+    } catch (e) { }
   },
   onStartDateChange(e) {
-    this.setData({ 'form.start_date': e.detail.value })
+    const startDate = e.detail.value
+    this.setData({ 'form.start_date': startDate })
+
+    const expectedDate = new Date(startDate)
+    expectedDate.setDate(expectedDate.getDate() + 21)
+    const expectedDateStr = expectedDate.toISOString().split('T')[0]
+    this.setData({ 'form.expected_hatch_date': expectedDateStr })
   },
   onExpectedDateChange(e) {
     this.setData({ 'form.expected_hatch_date': e.detail.value })
@@ -98,6 +183,20 @@ Page({
     }
     if (!form.start_date || !form.eggs_count) {
       return wx.showToast({ title: '请填写必填项', icon: 'none' })
+    }
+
+    if (form.expected_hatch_date && form.start_date) {
+      const expected = new Date(form.expected_hatch_date)
+      const start = new Date(form.start_date)
+      if (expected < start) {
+        return wx.showToast({ title: '预期孵化日期不能早于开始日期', icon: 'none' })
+      }
+    }
+
+    if (form.hatched_count && form.eggs_count) {
+      if (Number(form.hatched_count) > Number(form.eggs_count)) {
+        return wx.showToast({ title: '孵化数量不能超过蛋数量', icon: 'none' })
+      }
     }
 
     this.setData({ submitting: true })

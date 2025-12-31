@@ -10,15 +10,27 @@ Page({
     error: false
   },
   onLoad(options) {
-    if (options.token) {
-      this.loadShareInfo(options.token)
-    } else if (options.id) {
-      this.loadParrot(options.id)
+    if (this) {
+      if (options.token) {
+        this.loadShareInfo(options.token)
+      } else if (options.id) {
+        this.loadParrot(options.id)
+      }
     }
   },
   async loadShareInfo(token) {
+    if (!this) return
     try {
       const data = await api.getShareInfo(token)
+      if (data.status !== 'valid') {
+        this.setData({ loading: false, error: true })
+        return
+      }
+      // 构建完整的图片URL
+      const photosWithUrl = (data.photos || []).map(p => ({
+        ...p,
+        url: `http://127.0.0.1:8000/uploads/${p.file_path}`
+      }))
       this.setData({
         parrot: {
           ...data.parrot,
@@ -26,14 +38,16 @@ Page({
           age: calcAge(data.parrot.birth_date),
           priceText: this.formatPrice(data.parrot)
         },
-        photos: data.photos || [],
+        photos: photosWithUrl,
         loading: false
       })
     } catch (e) {
+      console.error('加载分享信息失败:', e)
       this.setData({ loading: false, error: true })
     }
   },
   async loadParrot(id) {
+    if (!this) return
     try {
       const [parrot, photos] = await Promise.all([
         api.getParrot(id),
@@ -61,7 +75,13 @@ Page({
   },
   previewImage(e) {
     const { url } = e.currentTarget.dataset
-    wx.previewImage({ current: url, urls: this.data.photos.map(p => p.url) })
+    // 只预览图片，不包含视频
+    const imageUrls = this.data.photos
+      .filter(p => p.file_type !== 'video')
+      .map(p => p.url)
+    if (imageUrls.length > 0) {
+      wx.previewImage({ current: url, urls: imageUrls })
+    }
   },
   onShareAppMessage() {
     const { parrot } = this.data

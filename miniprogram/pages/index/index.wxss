@@ -65,6 +65,88 @@
   color: #64748b;
 }
 
+.quick-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20rpx;
+  margin-bottom: 24rpx;
+}
+
+.action-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20rpx;
+  padding: 32rpx;
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+}
+
+.action-card.breeding {
+  border-left: 8rpx solid #667eea;
+}
+
+.action-card.incubation {
+  border-left: 8rpx solid #f59e0b;
+}
+
+.action-icon {
+  font-size: 48rpx;
+}
+
+.action-content {
+  flex: 1;
+}
+
+.action-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 8rpx;
+}
+
+.action-desc {
+  font-size: 24rpx;
+  color: #64748b;
+}
+
+.incubation-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16rpx;
+}
+
+.incubation-stat-item {
+  text-align: center;
+  padding: 24rpx 16rpx;
+  background: #f8fafc;
+  border-radius: 16rpx;
+}
+
+.incubation-stat-value {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #1e293b;
+  margin-bottom: 8rpx;
+}
+
+.incubation-stat-value.incubating {
+  color: #3b82f6;
+}
+
+.incubation-stat-value.hatched {
+  color: #10b981;
+}
+
+.incubation-stat-value.rate {
+  color: #f59e0b;
+}
+
+.incubation-stat-label {
+  font-size: 24rpx;
+  color: #64748b;
+}
+
 .section-card {
   background: rgba(255, 255, 255, 0.95);
   border-radius: 20rpx;

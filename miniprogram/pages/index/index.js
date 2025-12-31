@@ -11,15 +11,26 @@ Page({
     },
     breedCounts: [],
     monthlySales: [],
+    incubationStats: {
+      total_records: 0,
+      incubating_count: 0,
+      hatched_count: 0,
+      failed_count: 0,
+      hatch_rate: 0
+    },
     loading: true
   },
 
   onLoad() {
-    this.loadData()
+    if (this) {
+      this.loadData()
+    }
   },
 
   onShow() {
-    this.loadData()
+    if (this) {
+      this.loadData()
+    }
   },
 
   onPullDownRefresh() {
@@ -29,6 +40,7 @@ Page({
   },
 
   async loadData() {
+    if (!this) return
     this.setData({ loading: true })
     try {
       const [statsRes, monthlyRes] = await Promise.all([
@@ -59,10 +71,27 @@ Page({
         }))
       }
 
+      let incubationStats = this.data.incubationStats
+      try {
+        const incubationRes = await api.getIncubationStatistics()
+        if (incubationRes) {
+          incubationStats = {
+            total_records: incubationRes.total_records || 0,
+            incubating_count: incubationRes.incubating_count || 0,
+            hatched_count: incubationRes.hatched_count || 0,
+            failed_count: incubationRes.failed_count || 0,
+            hatch_rate: incubationRes.hatch_rate ? Math.round(incubationRes.hatch_rate * 100) : 0
+          }
+        }
+      } catch (e) {
+        console.log('孵化统计加载失败:', e)
+      }
+
       this.setData({
         stats: statsRes || this.data.stats,
         breedCounts,
         monthlySales,
+        incubationStats,
         loading: false
       })
     } catch (err) {
@@ -76,6 +105,10 @@ Page({
   },
 
   goToBreed() {
-    wx.switchTab({ url: '/pages/parrot/list/index' })
+    wx.navigateTo({ url: '/pages/breeding/list/index' })
+  },
+
+  goToIncubation() {
+    wx.navigateTo({ url: '/pages/incubation/list/index' })
   }
 })

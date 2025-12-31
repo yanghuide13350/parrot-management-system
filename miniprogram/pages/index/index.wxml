@@ -3,7 +3,7 @@
     <view class="header-label">总销售额</view>
     <view class="header-value">¥{{stats.total_revenue}}</view>
   </view>
-  
+
   <view class="stats-grid">
     <view class="stat-item" bindtap="goToList" data-status="">
       <view class="stat-value primary">{{stats.total_parrots}}</view>
@@ -23,10 +23,47 @@
     </view>
   </view>
 
-  <!-- 月度销售趋势图表 -->
+  <view class="quick-actions">
+    <view class="action-card breeding" bindtap="goToBreed">
+      <view class="action-icon">🕊️</view>
+      <view class="action-content">
+        <view class="action-title">育种管理</view>
+        <view class="action-desc">配对、种鸟管理</view>
+      </view>
+    </view>
+    <view class="action-card incubation" bindtap="goToIncubation">
+      <view class="action-icon">🥚</view>
+      <view class="action-content">
+        <view class="action-title">孵化记录</view>
+        <view class="action-desc">孵化跟踪、统计</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="section-card">
+    <view class="section-title">孵化统计</view>
+    <view class="incubation-stats">
+      <view class="incubation-stat-item">
+        <view class="incubation-stat-value">{{incubationStats.total_records}}</view>
+        <view class="incubation-stat-label">总记录</view>
+      </view>
+      <view class="incubation-stat-item">
+        <view class="incubation-stat-value incubating">{{incubationStats.incubating_count}}</view>
+        <view class="incubation-stat-label">孵化中</view>
+      </view>
+      <view class="incubation-stat-item">
+        <view class="incubation-stat-value hatched">{{incubationStats.hatched_count}}</view>
+        <view class="incubation-stat-label">已孵化</view>
+      </view>
+      <view class="incubation-stat-item">
+        <view class="incubation-stat-value rate">{{incubationStats.hatch_rate}}%</view>
+        <view class="incubation-stat-label">孵化率</view>
+      </view>
+    </view>
+  </view>
+
   <line-chart title="月度销售趋势" data="{{monthlySales}}" wx:if="{{monthlySales.length}}"></line-chart>
 
-  <!-- 品种分布柱形图 -->
   <view class="section-card">
     <view class="section-title">品种分布</view>
     <view class="bar-chart" wx:if="{{breedCounts.length}}">

@@ -22,11 +22,13 @@ module.exports = {
   pairParrots: (data) => request({ url: '/parrots/pair', method: 'POST', data }),
   unpairParrot: (id) => request({ url: `/parrots/unpair/${id}`, method: 'POST' }),
   getEligibleFemales: (maleId) => request({ url: `/parrots/eligible-females/${maleId}` }),
+  getEligibleMales: (femaleId) => request({ url: `/parrots/eligible-males/${femaleId}` }),
   getMate: (id) => request({ url: `/parrots/${id}/mate` }),
 
   getIncubationRecords: (params) => request({ url: '/incubation', data: params }),
   createIncubation: (data) => request({ url: '/incubation', method: 'POST', data }),
   updateIncubation: (id, data) => request({ url: `/incubation/${id}`, method: 'PUT', data }),
+  getIncubationStatistics: () => request({ url: '/incubation/statistics/summary' }),
 
   getStatistics: () => request({ url: '/statistics' }),
   getSalesStatistics: () => request({ url: '/statistics/sales' }),
@@ -36,6 +38,8 @@ module.exports = {
   getPhotos: (id) => request({ url: `/parrots/${id}/photos` }),
   uploadPhoto: (id, filePath) => uploadFile(`/parrots/${id}/photos`, filePath),
 
-  createShareLink: (id, data) => request({ url: `/share/parrots/${id}`, method: 'POST', data }),
-  getShareInfo: (token) => request({ url: `/share/${token}` })
+  createShareLink: (id, data) => request({ url: `/share/generate/${id}`, method: 'POST', data }),
+  getShareInfo: (token) => request({ url: `/share/${token}` }),
+  getShareLinks: (id) => request({ url: `/share/list/${id}` }),
+  deleteShareLink: (token) => request({ url: `/share/${token}`, method: 'DELETE' })
 }

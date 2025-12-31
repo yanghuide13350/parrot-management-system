@@ -81,17 +81,9 @@ def generate_share_link(
     db.commit()
     db.refresh(share_link)
 
-    # 构建完整URL - 使用前端URL而不是后端API URL
-    # 从请求头获取前端origin，或使用referer
-    referer = request.headers.get("referer", "")
-    if referer:
-        # 从referer提取前端base URL (例如 http://localhost:5173)
-        from urllib.parse import urlparse
-        parsed = urlparse(referer)
-        frontend_base = f"{parsed.scheme}://{parsed.netloc}"
-    else:
-        # 默认使用后端URL的同域（生产环境通常前后端同域）
-        frontend_base = str(request.base_url).rstrip('/')
+    # 构建完整URL - 使用配置的前端URL
+    from app.core.config import settings
+    frontend_base = settings.FRONTEND_URL.rstrip('/')
     
     share_url = f"{frontend_base}/share/{token}"
 
@@ -180,7 +172,6 @@ def get_share_data(token: str, db: Session = Depends(get_db)):
 @router.get("/list/{parrot_id}", response_model=ShareLinkListResponse, summary="获取分享链接列表")
 def get_share_links(
     parrot_id: int,
-    request: Request,
     db: Session = Depends(get_db)
 ):
     """
@@ -199,14 +190,8 @@ def get_share_links(
         ShareLink.expires_at > now
     ).order_by(ShareLink.created_at.desc()).all()
 
-    # 构建前端URL
-    referer = request.headers.get("referer", "")
-    if referer:
-        from urllib.parse import urlparse
-        parsed = urlparse(referer)
-        frontend_base = f"{parsed.scheme}://{parsed.netloc}"
-    else:
-        frontend_base = str(request.base_url).rstrip('/')
+    from app.core.config import settings
+    frontend_base = settings.FRONTEND_URL.rstrip('/')
 
     items = [
         ShareLinkResponse(

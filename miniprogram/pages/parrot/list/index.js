@@ -17,15 +17,17 @@ Page({
     showFilterDrawer: false
   },
   onLoad(options) {
-    if (options.status) this.setData({ filters: { status: options.status } })
-    if (options.breed) this.setData({ filters: { breed: options.breed } })
-    this.updateFilterCount()
-    this.loadBreeds()
-    this.loadData()
+    if (this) {
+      if (options.status) this.setData({ filters: { status: options.status } })
+      if (options.breed) this.setData({ filters: { breed: options.breed } })
+      this.updateFilterCount()
+      this.loadBreeds()
+      this.loadData()
+    }
   },
   onShow() {
     // 刷新数据
-    if (this.data.list.length > 0) {
+    if (this && this.data && this.data.list && this.data.list.length > 0) {
       this.loadData()
     }
   },
@@ -33,6 +35,7 @@ Page({
     this.onRefresh()
   },
   async loadBreeds() {
+    if (!this) return
     try {
       const stats = await api.getStatistics()
       if (stats.breed_counts) {
@@ -41,6 +44,7 @@ Page({
     } catch (e) { }
   },
   async loadData(append = false) {
+    if (!this) return
     if (this.data.loading) return
     this.setData({ loading: true })
     try {

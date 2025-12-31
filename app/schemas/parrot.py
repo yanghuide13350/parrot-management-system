@@ -51,7 +51,7 @@ class ParrotSaleUpdate(BaseModel):
     seller: str = Field(..., min_length=1, max_length=100, description="售卖人")
     buyer_name: str = Field(..., min_length=1, max_length=100, description="购买者姓名")
     sale_price: Decimal = Field(..., ge=0, description="销售价格")
-    contact: str = Field(..., min_length=6, max_length=100, description="联系方式（微信号或电话）")
+    contact: str = Field(..., min_length=1, max_length=100, description="联系方式（微信号或电话）")
     follow_up_status: str = Field(default="pending", pattern="^(pending|completed|no_contact)$", description="回访状态")
     notes: Optional[str] = Field(None, description="备注")
 
@@ -116,7 +116,6 @@ class ParrotList(BaseModel):
 
 class FollowUpCreate(BaseModel):
     """创建回访记录请求"""
-    parrot_id: int = Field(..., description="鹦鹉ID")
     follow_up_status: str = Field(..., pattern="^(pending|completed|no_contact)$", description="回访状态")
     notes: Optional[str] = Field(None, description="回访备注")
 
@@ -160,6 +159,7 @@ class SaleRecordResponse(BaseModel):
     sale_notes: Optional[str] = None
     sale_date: Optional[str] = None  # sold_at
     payment_method: Optional[str] = None
+    photo_url: Optional[str] = None
     created_at: str
     updated_at: str
     parrot: Optional[dict] = None  # 包含breed, ring_number, gender

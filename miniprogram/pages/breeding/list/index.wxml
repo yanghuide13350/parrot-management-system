@@ -1,27 +1,107 @@
 <view class="page">
+  <view class="filter-bar">
+    <view class="filter-item" bindtap="toggleFilter">
+      <text class="filter-text">筛选</text>
+      <text class="filter-icon">▼</text>
+    </view>
+    <view class="quick-filters">
+      <view class="quick-filter-item" bindtap="resetFilter">全部</view>
+    </view>
+  </view>
+
+  <view class="filter-drawer {{showFilter ? 'show' : ''}}">
+    <view class="filter-content">
+      <view class="filter-group">
+        <view class="filter-label">配对状态</view>
+        <picker mode="selector" range="{{pairingStatusList}}" range-key="label" value="0" bindchange="onPairingStatusChange">
+          <view class="filter-value">{{pairingStatusLabel}}</view>
+        </picker>
+      </view>
+
+      <view class="filter-group">
+        <view class="filter-label">品种</view>
+        <picker mode="selector" range="{{breedList}}" range-key="label" value="0" bindchange="onBreedChange">
+          <view class="filter-value">{{breedLabel}}</view>
+        </picker>
+      </view>
+
+      <view class="filter-group">
+        <view class="filter-label">性别</view>
+        <picker mode="selector" range="{{genderList}}" range-key="label" value="0" bindchange="onGenderChange">
+          <view class="filter-value">{{genderLabel}}</view>
+        </picker>
+      </view>
+
+      <view class="filter-group">
+        <view class="filter-label">搜索</view>
+        <input class="filter-input" placeholder="搜索圈号或品种" value="{{filters.search}}" bindinput="onSearchInput" />
+      </view>
+
+      <view class="filter-actions">
+        <button class="filter-btn reset" bindtap="resetFilter">重置</button>
+        <button class="filter-btn apply" bindtap="applyFilter">应用</button>
+      </view>
+    </view>
+  </view>
+
   <view class="list">
-    <view 
-      class="breeding-card glass-card" 
-      wx:for="{{list}}" 
+    <view
+      class="breeding-card status-{{item.status}}"
+      wx:for="{{list}}"
       wx:key="id"
       data-id="{{item.id}}"
       bindtap="goDetail"
     >
+      <view class="status-tag status-{{item.status}}">
+        <text>{{item.status === 'breeding' ? '●' : item.status === 'paired' ? '♥' : '🐣'}}</text>
+        <text>{{item.statusText}}</text>
+      </view>
       <view class="card-left">
         <view class="breed">{{item.breed}}</view>
         <view class="meta">{{item.gender}} · {{item.ring_number || '无圈号'}}</view>
+        <view class="mate-info" wx:if="{{item.mateInfo}}">
+          <text class="mate-icon">♥</text>
+          <text class="mate-text">{{item.mateInfo.breed}} ({{item.mateInfo.ring_number || '无圈号'}})</text>
+          <text class="mate-duration">{{item.pairingDuration}}</text>
+        </view>
       </view>
       <view class="card-right">
-        <view class="status-tag status-{{item.status}}">{{item.statusText}}</view>
-        <button 
-          wx:if="{{item.status === 'breeding' && item.gender === '公'}}"
-          class="pair-btn"
-          catchtap="goPair"
-          data-id="{{item.id}}"
-        >配对</button>
+        <view class="action-buttons">
+          <button
+            wx:if="{{item.status === 'breeding' && item.gender === '公'}}"
+            class="action-btn pair"
+            catchtap="goPair"
+            data-id="{{item.id}}"
+          >配对</button>
+          <button
+            wx:if="{{item.status === 'breeding' && item.gender === '母'}}"
+            class="action-btn pair"
+            catchtap="goPair"
+            data-id="{{item.id}}"
+          >配对</button>
+          <button
+            wx:if="{{item.status === 'paired'}}"
+            class="action-btn unpair"
+            catchtap="unpairParrot"
+            data-id="{{item.id}}"
+          >取消配对</button>
+          <button
+            wx:if="{{item.status === 'paired'}}"
+            class="action-btn incubation"
+            catchtap="goIncubation"
+            data-id="{{item.id}}"
+          >开始孵化</button>
+          <button
+            wx:if="{{item.status === 'incubating'}}"
+            class="action-btn view-incubation"
+            catchtap="goIncubationList"
+          >查看孵化</button>
+        </view>
       </view>
     </view>
-    
-    <empty-state wx:if="{{!list.length && !loading}}" text="暂无种鸟" />
+
+    <view class="empty-state" wx:if="{{!list.length && !loading}}">
+      <text class="empty-text">暂无种鸟</text>
+    </view>
   </view>
 </view>

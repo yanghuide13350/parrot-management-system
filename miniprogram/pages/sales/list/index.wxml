@@ -24,9 +24,11 @@
     </view>
   </view>
   
-  <scroll-view 
+  <scroll-view
     class="list"
     scroll-y
+    enhanced="{{true}}"
+    show-scrollbar="{{false}}"
     bindscrolltolower="loadMore"
   >
     <view 
