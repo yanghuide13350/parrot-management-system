@@ -1,16 +1,13 @@
-import { lazy } from 'react';
 import type { RouteObject } from 'react-router-dom';
-
-// 懒加载页面组件
-const Dashboard = lazy(() => import('../pages/Dashboard'));
-const ParrotListPage = lazy(() => import('../pages/ParrotListPage'));
-const AddParrotPage = lazy(() => import('../pages/parrots/AddParrotPage'));
-const BreedingManagementPage = lazy(() => import('../pages/BreedingManagementPage'));
-const IncubationListPage = lazy(() => import('../pages/incubation/IncubationListPage'));
-const ChickManagementPage = lazy(() => import('../pages/incubation/ChickManagementPage'));
-const SalesRecordsPage = lazy(() => import('../pages/sales/SalesRecordsPage'));
-const ReturnManagementPage = lazy(() => import('../pages/sales/ReturnManagementPage'));
-const UserManagementPage = lazy(() => import('../pages/settings/UserManagementPage'));
+import Dashboard from '../pages/Dashboard';
+import ParrotListPage from '../pages/ParrotListPage';
+import AddParrotPage from '../pages/parrots/AddParrotPage';
+import BreedingManagementPage from '../pages/BreedingManagementPage';
+import IncubationListPage from '../pages/incubation/IncubationListPage';
+import ChickManagementPage from '../pages/incubation/ChickManagementPage';
+import SalesRecordsPage from '../pages/sales/SalesRecordsPage';
+import ReturnManagementPage from '../pages/sales/ReturnManagementPage';
+import UserManagementPage from '../pages/settings/UserManagementPage';
 
 export const routes: RouteObject[] = [
   {
