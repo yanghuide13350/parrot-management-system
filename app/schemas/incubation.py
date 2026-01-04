@@ -12,7 +12,7 @@ class IncubationRecordBase(BaseModel):
     actual_hatch_date: Optional[date] = Field(None, description="实际孵化日期")
     eggs_count: int = Field(default=0, ge=0, description="蛋的数量")
     hatched_count: int = Field(default=0, ge=0, description="成功孵化数量")
-    status: str = Field(default="incubating", pattern="^(incubating|hatched|failed)$", description="孵化状态")
+    status: str = Field(default="incubating", pattern="^(incubating|hatched|completed|failed)$", description="孵化状态")
     notes: Optional[str] = Field(None, description="备注信息")
 
 
@@ -30,7 +30,7 @@ class IncubationRecordUpdate(BaseModel):
     actual_hatch_date: Optional[date] = Field(None, description="实际孵化日期")
     eggs_count: Optional[int] = Field(None, ge=0, description="蛋的数量")
     hatched_count: Optional[int] = Field(None, ge=0, description="成功孵化数量")
-    status: Optional[str] = Field(None, pattern="^(incubating|hatched|failed)$", description="孵化状态")
+    status: Optional[str] = Field(None, pattern="^(incubating|hatched|completed|failed)$", description="孵化状态")
     notes: Optional[str] = Field(None, description="备注信息")
 
 
@@ -76,7 +76,7 @@ class IncubationRecordList(BaseModel):
 
 class IncubationRecordFilter(BaseModel):
     """孵化记录筛选参数"""
-    status: Optional[str] = Field(None, pattern="^(incubating|hatched|failed)$", description="孵化状态")
+    status: Optional[str] = Field(None, pattern="^(incubating|hatched|completed|failed)$", description="孵化状态")
     start_date_from: Optional[date] = Field(None, description="开始日期起始")
     start_date_to: Optional[date] = Field(None, description="开始日期结束")
     father_ring_number: Optional[str] = Field(None, description="父亲圈号")
@@ -90,6 +90,7 @@ class IncubationStatistics(BaseModel):
     total_records: int
     incubating_count: int
     hatched_count: int
+    completed_count: int
     failed_count: int
     total_eggs: int
     total_hatched: int

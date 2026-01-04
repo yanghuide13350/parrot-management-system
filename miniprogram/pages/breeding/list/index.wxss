@@ -276,3 +276,72 @@
   color: #94a3b8;
   text-align: center;
 }
+
+.incubation-dialog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+}
+
+.dialog-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.dialog-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600rpx;
+  background: #fff;
+  border-radius: 24rpx;
+  overflow: hidden;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.2);
+}
+
+.dialog-header {
+  padding: 32rpx;
+  border-bottom: 2rpx solid #f1f5f9;
+  text-align: center;
+}
+
+.dialog-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.dialog-body {
+  padding: 32rpx;
+}
+
+.dialog-footer {
+  display: flex;
+  border-top: 2rpx solid #f1f5f9;
+}
+
+.dialog-btn {
+  flex: 1;
+  padding: 32rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  border: none;
+  background: transparent;
+}
+
+.dialog-btn.cancel {
+  color: #64748b;
+  border-right: 2rpx solid #f1f5f9;
+}
+
+.dialog-btn.confirm {
+  color: #667eea;
+}

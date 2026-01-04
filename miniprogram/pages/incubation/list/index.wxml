@@ -68,8 +68,12 @@
           <text class="hatch-rate" wx:if="{{item.hatchRate}}">孵化率 {{item.hatchRate}}</text>
         </view>
       </view>
-      <view class="card-footer" wx:if="{{item.status === 'incubating'}}">
-        <button class="update-btn" data-id="{{item.id}}" bindtap="goEdit">更新</button>
+      <view class="card-footer" wx:if="{{item.status !== 'completed'}}">
+        <button class="action-btn {{item.eggs_count > (item.hatched_count || 0) ? 'edit-btn' : 'complete-btn'}}" data-id="{{item.id}}" data-eggs="{{item.eggs_count}}" data-hatched="{{item.hatched_count}}" bindtap="showUpdateDialog">{{item.eggs_count > (item.hatched_count || 0) ? '更新' : '完成'}}</button>
+        <button class="action-btn delete-btn" data-id="{{item.id}}" bindtap="deleteRecord">删除</button>
+      </view>
+      <view class="card-footer" wx:if="{{item.status === 'completed'}}">
+        <button class="action-btn delete-btn" data-id="{{item.id}}" bindtap="deleteRecord">删除</button>
       </view>
     </view>
 
@@ -79,4 +83,25 @@
   <view class="fab" bindtap="goAdd">
     <text class="fab-icon">+</text>
   </view>
+
+  <view class="update-dialog" wx:if="{{showUpdateDialog}}">
+    <view class="dialog-mask" bindtap="hideUpdateDialog"></view>
+    <view class="dialog-content">
+      <view class="dialog-header">
+        <text class="dialog-title">更新孵化记录</text>
+      </view>
+      <view class="dialog-body">
+        <view class="form-item">
+          <text class="form-label"><text class="required">*</text> 本次孵化数量</text>
+          <input type="number" placeholder="请输入数量" value="{{updateHatchedCount}}" bindinput="onUpdateHatchedInput" />
+        </view>
+        <view class="hint-text">剩余蛋数：{{remainingEggs}}枚</view>
+      </view>
+      <view class="dialog-footer">
+        <button class="dialog-btn cancel" bindtap="hideUpdateDialog">取消</button>
+        <button class="dialog-btn confirm" bindtap="confirmUpdate">确定</button>
+      </view>
+    </view>
+  </view>
+
 </view>

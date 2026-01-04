@@ -14,7 +14,7 @@ class IncubationRecord(Base):
     actual_hatch_date = Column(Date, nullable=True, comment="实际孵化日期")
     eggs_count = Column(Integer, default=0, comment="蛋的数量")
     hatched_count = Column(Integer, default=0, comment="成功孵化数量")
-    status = Column(String(50), default="incubating", comment="孵化状态：incubating孵化中/hatched已孵化/failed失败")
+    status = Column(String(50), default="incubating", comment="孵化状态：incubating孵化中/hatched已孵化/completed已完成/failed失败")
     notes = Column(Text, nullable=True, comment="备注信息")
     created_at = Column(DateTime, default=datetime.utcnow, comment="创建时间")
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment="更新时间")

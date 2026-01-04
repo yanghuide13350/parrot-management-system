@@ -46,14 +46,14 @@
 
   <view class="list">
     <view
-      class="breeding-card status-{{item.status}}"
+      class="breeding-card status-{{item.isPaired ? 'paired' : (item.status === 'incubating' ? 'incubating' : 'breeding')}}"
       wx:for="{{list}}"
       wx:key="id"
       data-id="{{item.id}}"
       bindtap="goDetail"
     >
-      <view class="status-tag status-{{item.status}}">
-        <text>{{item.status === 'breeding' ? '●' : item.status === 'paired' ? '♥' : '🐣'}}</text>
+      <view class="status-tag status-{{item.isPaired ? 'paired' : (item.status === 'incubating' ? 'incubating' : 'breeding')}}">
+        <text>{{item.isPaired ? '♥' : (item.status === 'incubating' ? '🐣' : '●')}}</text>
         <text>{{item.statusText}}</text>
       </view>
       <view class="card-left">
@@ -68,27 +68,27 @@
       <view class="card-right">
         <view class="action-buttons">
           <button
-            wx:if="{{item.status === 'breeding' && item.gender === '公'}}"
+            wx:if="{{!item.isPaired && item.gender === '公'}}"
             class="action-btn pair"
             catchtap="goPair"
             data-id="{{item.id}}"
           >配对</button>
           <button
-            wx:if="{{item.status === 'breeding' && item.gender === '母'}}"
+            wx:if="{{!item.isPaired && item.gender === '母'}}"
             class="action-btn pair"
             catchtap="goPair"
             data-id="{{item.id}}"
           >配对</button>
           <button
-            wx:if="{{item.status === 'paired'}}"
+            wx:if="{{item.isPaired && item.status !== 'incubating'}}"
             class="action-btn unpair"
             catchtap="unpairParrot"
             data-id="{{item.id}}"
           >取消配对</button>
           <button
-            wx:if="{{item.status === 'paired'}}"
+            wx:if="{{item.isPaired && item.status !== 'incubating'}}"
             class="action-btn incubation"
-            catchtap="goIncubation"
+            catchtap="showIncubationDialog"
             data-id="{{item.id}}"
           >开始孵化</button>
           <button
@@ -102,6 +102,25 @@
 
     <view class="empty-state" wx:if="{{!list.length && !loading}}">
       <text class="empty-text">暂无种鸟</text>
+    </view>
+  </view>
+
+  <view class="incubation-dialog" wx:if="{{showIncubationDialog}}">
+    <view class="dialog-mask" bindtap="hideIncubationDialog"></view>
+    <view class="dialog-content">
+      <view class="dialog-header">
+        <text class="dialog-title">开始孵化</text>
+      </view>
+      <view class="dialog-body">
+        <view class="form-item">
+          <text class="form-label"><text class="required">*</text> 蛋数</text>
+          <input type="number" placeholder="请输入蛋数" value="{{incubationEggsCount}}" bindinput="onIncubationEggsInput" />
+        </view>
+      </view>
+      <view class="dialog-footer">
+        <button class="dialog-btn cancel" bindtap="hideIncubationDialog">取消</button>
+        <button class="dialog-btn confirm" bindtap="confirmIncubation">确定</button>
+      </view>
     </view>
   </view>
 </view>

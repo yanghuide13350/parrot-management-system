@@ -338,6 +338,7 @@ def get_incubation_statistics(db: Session = Depends(get_db)):
     total_records = db.query(IncubationRecord).count()
     incubating_count = db.query(IncubationRecord).filter(IncubationRecord.status == "incubating").count()
     hatched_count = db.query(IncubationRecord).filter(IncubationRecord.status == "hatched").count()
+    completed_count = db.query(IncubationRecord).filter(IncubationRecord.status == "completed").count()
     failed_count = db.query(IncubationRecord).filter(IncubationRecord.status == "failed").count()
 
     # 统计蛋的数量和孵化数量
@@ -351,6 +352,7 @@ def get_incubation_statistics(db: Session = Depends(get_db)):
         total_records=total_records,
         incubating_count=incubating_count,
         hatched_count=hatched_count,
+        completed_count=completed_count,
         failed_count=failed_count,
         total_eggs=total_eggs,
         total_hatched=total_hatched,

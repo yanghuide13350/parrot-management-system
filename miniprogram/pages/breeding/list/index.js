@@ -12,6 +12,9 @@ Page({
       gender: 'all',
       search: ''
     },
+    showIncubationDialog: false,
+    incubationEggsCount: '',
+    incubationParrotId: null,
     pairingStatusList: [
       { value: 'all', label: '全部' },
       { value: 'unpaired', label: '未配对' },
@@ -96,11 +99,22 @@ Page({
           pairingDuration = `配对 ${days} 天`
         }
 
+        // 根据是否有配偶动态调整显示状态，与Web端一致
+        let displayStatus = p.status
+        if (mateInfo.has_mate) {
+          displayStatus = 'paired'
+        } else if (p.status === 'incubating') {
+          displayStatus = 'incubating'
+        } else {
+          displayStatus = 'breeding'
+        }
+
         listWithMate.push({
           ...p,
-          statusText: STATUS_MAP[p.status] || p.status,
+          statusText: STATUS_MAP[displayStatus] || displayStatus,
           mateInfo: mateInfo.has_mate ? mateInfo.mate : null,
-          pairingDuration
+          pairingDuration,
+          isPaired: mateInfo.has_mate
         })
       }
 
@@ -175,7 +189,6 @@ Page({
     this.loadData()
   },
   async unpairParrot(e) {
-    e.stopPropagation()
     const { id } = e.currentTarget.dataset
 
     wx.showModal({
@@ -184,23 +197,82 @@ Page({
       success: async (res) => {
         if (res.confirm) {
           try {
+            console.log('开始取消配对，ID:', id)
             await api.unpairParrot(id)
+            console.log('取消配对成功')
             wx.showToast({ title: '取消配对成功', icon: 'success' })
             this.loadData()
-          } catch (e) {
-            wx.showToast({ title: '操作失败', icon: 'none' })
+          } catch (err) {
+            console.error('取消配对失败:', err)
+            const msg = err?.detail || err?.message || '操作失败'
+            wx.showToast({ title: msg, icon: 'none' })
           }
         }
       }
     })
   },
   goIncubation(e) {
-    e.stopPropagation()
     const { id } = e.currentTarget.dataset
     wx.navigateTo({ url: `/pages/incubation/add/index?father_id=${id}` })
   },
   goIncubationList(e) {
-    e.stopPropagation()
     wx.navigateTo({ url: '/pages/incubation/list/index' })
+  },
+  showIncubationDialog(e) {
+    const { id } = e.currentTarget.dataset
+    this.setData({
+      showIncubationDialog: true,
+      incubationParrotId: id,
+      incubationEggsCount: ''
+    })
+  },
+  hideIncubationDialog() {
+    this.setData({
+      showIncubationDialog: false,
+      incubationEggsCount: '',
+      incubationParrotId: null
+    })
+  },
+  onIncubationEggsInput(e) {
+    this.setData({
+      incubationEggsCount: e.detail.value
+    })
+  },
+  async confirmIncubation() {
+    const { incubationParrotId, incubationEggsCount } = this.data
+
+    if (!incubationEggsCount) {
+      return wx.showToast({ title: '请输入蛋数', icon: 'none' })
+    }
+
+    try {
+      const mateInfo = await api.getMate(incubationParrotId)
+      if (!mateInfo.has_mate) {
+        return wx.showToast({ title: '该鹦鹉未配对', icon: 'none' })
+      }
+
+      const fatherId = mateInfo.mate.gender === '公' ? mateInfo.mate.id : incubationParrotId
+      const motherId = mateInfo.mate.gender === '母' ? mateInfo.mate.id : incubationParrotId
+
+      const startDate = new Date().toISOString().split('T')[0]
+      const expectedDate = new Date(startDate)
+      expectedDate.setDate(expectedDate.getDate() + 21)
+      const expectedDateStr = expectedDate.toISOString().split('T')[0]
+
+      await api.createIncubation({
+        father_id: fatherId,
+        mother_id: motherId,
+        start_date: startDate,
+        expected_hatch_date: expectedDateStr,
+        eggs_count: Number(incubationEggsCount),
+        status: 'incubating'
+      })
+
+      wx.showToast({ title: '孵化记录创建成功', icon: 'success' })
+      this.hideIncubationDialog()
+      this.loadData()
+    } catch (err) {
+      wx.showToast({ title: '创建失败', icon: 'none' })
+    }
   }
 })

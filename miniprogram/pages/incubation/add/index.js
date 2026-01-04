@@ -178,36 +178,35 @@ Page({
   },
   async submit() {
     const { form, isEdit, id } = this.data
-    if (!isEdit && (!form.father_id || !form.mother_id)) {
-      return wx.showToast({ title: '请选择父母鸟', icon: 'none' })
-    }
-    if (!form.start_date || !form.eggs_count) {
-      return wx.showToast({ title: '请填写必填项', icon: 'none' })
-    }
 
-    if (form.expected_hatch_date && form.start_date) {
-      const expected = new Date(form.expected_hatch_date)
-      const start = new Date(form.start_date)
-      if (expected < start) {
-        return wx.showToast({ title: '预期孵化日期不能早于开始日期', icon: 'none' })
+    if (!isEdit) {
+      if (!form.father_id || !form.mother_id) {
+        return wx.showToast({ title: '请选择父母鸟', icon: 'none' })
       }
-    }
-
-    if (form.hatched_count && form.eggs_count) {
-      if (Number(form.hatched_count) > Number(form.eggs_count)) {
-        return wx.showToast({ title: '孵化数量不能超过蛋数量', icon: 'none' })
+      if (!form.start_date || !form.eggs_count) {
+        return wx.showToast({ title: '请填写必填项', icon: 'none' })
       }
     }
 
     this.setData({ submitting: true })
     try {
-      const data = { ...form, eggs_count: Number(form.eggs_count) }
-      if (data.hatched_count) data.hatched_count = Number(data.hatched_count)
-      Object.keys(data).forEach(k => !data[k] && delete data[k])
+      const data = {}
 
       if (isEdit) {
+        if (form.actual_hatch_date) data.actual_hatch_date = form.actual_hatch_date
+        if (form.hatched_count) data.hatched_count = Number(form.hatched_count)
         await api.updateIncubation(id, data)
       } else {
+        const data = {
+          father_id: form.father_id,
+          mother_id: form.mother_id,
+          start_date: form.start_date,
+          eggs_count: Number(form.eggs_count),
+          status: 'incubating'
+        }
+        const expectedDate = new Date(form.start_date)
+        expectedDate.setDate(expectedDate.getDate() + 21)
+        data.expected_hatch_date = expectedDate.toISOString().split('T')[0]
         await api.createIncubation(data)
       }
 

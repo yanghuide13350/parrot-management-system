@@ -95,6 +95,7 @@ cd miniprogram
 4. Frontend proxies API requests to backend automatically via Vite proxy
 
 **Important**:
+
 - Frontend requires Node.js 20.19+ or 22.12+. Use `nvm use 20` if you have nvm installed.
 - For miniprogram local development, enable "Do not verify valid domain names" in DevTools
 
@@ -175,12 +176,14 @@ parrot-management-system2/
 This project supports three frontend interfaces:
 
 1. **React Web Frontend** (`parrot-management-system/`)
+
    - Full-featured web application
    - Desktop and mobile responsive
    - Built with React 19 + TypeScript + Ant Design
    - Production build served via Nginx
 
 2. **WeChat Miniprogram** (`miniprogram/`)
+
    - Mobile-first native app experience
    - Tab-based navigation (首页, 鹦鹉, 销售, 我的)
    - Built with native WeChat Miniprogram framework
@@ -192,7 +195,8 @@ This project supports three frontend interfaces:
    - No authentication required
    - Shareable via QR code or link
    - Supports photo/video viewing
-```
+
+````
 
 ### Technology Stack
 
@@ -363,7 +367,7 @@ This project supports three frontend interfaces:
 
    # Initialize database
    python init_database.py
-   ```
+````
 
 2. **Frontend Setup**:
 
@@ -407,6 +411,7 @@ This project supports three frontend interfaces:
    - After pairing, both parrots show mate info with pairing duration
 
 6. **File Uploads**:
+
    - Stored in `/uploads` directory
    - Served at `http://localhost:8000/uploads/{filename}`
    - Vite proxy forwards `/uploads` requests to backend
@@ -414,16 +419,19 @@ This project supports three frontend interfaces:
    - Miniprogram: Auto-constructs full URLs from file_path
 
 7. **Miniprogram API Address Bug**:
+
    - Issue: Miniprogram had incorrect API address (localhost:16888)
    - Solution: Added validation in app.js to clear wrong stored addresses
    - Only accepts addresses containing `:8000/`
 
 8. **Form Validation Errors**:
+
    - Issue: Empty strings caused Pydantic validation failures
    - Solution: Remove empty string fields before API calls
    - Pattern: `Object.keys(data).forEach(k => { if (data[k] === '' || data[k] === undefined || data[k] === null) { delete data[k] } })`
 
 9. **Input Text Alignment**:
+
    - Issue: Input box text not vertically centered
    - Solution: Set `line-height: 80rpx` matching input height
    - Apply to both input and picker-value elements
@@ -487,6 +495,7 @@ This allows frontend to use relative URLs without CORS issues.
 ```
 
 This script will:
+
 - Create Python virtual environment
 - Install dependencies
 - Initialize database
@@ -507,11 +516,13 @@ See `DEPLOYMENT.md` for comprehensive production deployment guide including:
 ### WeChat Miniprogram Production
 
 1. **Upload via WeChat DevTools**:
+
    - Open project in WeChat Developer Tools
    - Click "Upload" button
    - Fill version number and project description
 
 2. **Submit for Review**:
+
    - Go to WeChat Mini Program Admin Console
    - Submit for review (usually 1-7 days)
    - Once approved, publish to production
@@ -524,6 +535,7 @@ See `DEPLOYMENT.md` for comprehensive production deployment guide including:
 ### Environment Configuration
 
 **Backend (.env)**:
+
 ```env
 DATABASE_URL=mysql+pymysql://user:pass@localhost:3306/parrot_mgmt
 DEBUG=false
@@ -533,6 +545,7 @@ MAX_FILE_SIZE=524288000
 ```
 
 **Miniprogram (app.js)**:
+
 ```javascript
 globalData: {
   baseUrl: 'https://api.yourdomain.com/api',  // Production API
@@ -614,16 +627,18 @@ npm run preview
 ### Miniprogram Testing
 
 1. **In WeChat DevTools**:
+
    - Use "Console" tab to view logs
    - Use "Network" tab to monitor API requests
    - Use "Storage" tab to check local storage
    - Use "Simulator" for different device testing
 
 2. **Common Debug Commands**:
+
 ```javascript
 // In miniprogram console
-console.log(getApp().globalData.baseUrl)  // Check API base URL
-wx.getStorageSync('baseUrl')              // Check stored API URL
+console.log(getApp().globalData.baseUrl); // Check API base URL
+wx.getStorageSync("baseUrl"); // Check stored API URL
 ```
 
 3. **Clear Miniprogram Storage**:
@@ -674,23 +689,27 @@ tail -f backend.log
 ### Code Patterns
 
 1. **Empty Field Removal** (Miniprogram):
+
 ```javascript
 // Remove empty fields before API calls
-Object.keys(data).forEach(k => {
-  if (data[k] === '' || data[k] === undefined || data[k] === null) {
-    delete data[k]
+Object.keys(data).forEach((k) => {
+  if (data[k] === "" || data[k] === undefined || data[k] === null) {
+    delete data[k];
   }
-})
+});
 ```
 
 2. **Photo URL Construction** (Miniprogram):
+
 ```javascript
 // Construct full URLs from file_path
-const url = `http://127.0.0.1:8000/uploads/${p.file_path}`
-const isVideo = p.file_name && (p.file_name.endsWith('.mov') || p.file_name.endsWith('.mp4'))
+const url = `http://127.0.0.1:8000/uploads/${p.file_path}`;
+const isVideo =
+  p.file_name && (p.file_name.endsWith(".mov") || p.file_name.endsWith(".mp4"));
 ```
 
 3. **Price Range Filtering** (Backend):
+
 ```python
 if min_price is not None:
     query = query.filter(Parrot.price >= min_price)
@@ -742,6 +761,20 @@ if max_price is not None:
 -  我要什么就给什么，多一个字都不要
 -  代码能跑就行，别整花里胡哨的
 -  如果只需要修改某个函数，只给这个函数，不要输出整个文件
+
+4）**git 提交信息**
+-  我询问“git 提交信息”，你就获取 git 暂存的更改代码生成 git 的提交信息
+-  信息要准确直接，别单简单也别太繁琐，要突出重点
+-  信息要根据 router/index.js 获取页面名称，写明哪个页面进行修改了什么信息
+-  只是生成 git 提交信息给到我，不需要帮我提交
+-  示例："feat(页面名称): 修改内容
+修改内容明细 1
+修改内容明细 2
+修改内容明细 3"
+-  不要给我填写以下内容
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
 
 ## 行为准则
 

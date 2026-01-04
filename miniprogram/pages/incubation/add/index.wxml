@@ -1,4 +1,7 @@
 <view class="page">
+  <view class="page-header">
+    <text class="page-title">{{isEdit ? '更新孵化记录' : '添加孵化记录'}}</text>
+  </view>
   <view class="form-card glass-card">
     <view class="form-item" wx:if="{{!isEdit}}">
       <text class="form-label"><text class="required">*</text> 父鸟</text>
@@ -8,7 +11,7 @@
         </view>
       </picker>
     </view>
-    
+
     <view class="form-item" wx:if="{{!isEdit}}">
       <text class="form-label"><text class="required">*</text> 母鸟</text>
       <picker mode="selector" range="{{females}}" range-key="label" bindchange="onMotherChange">
@@ -17,8 +20,8 @@
         </view>
       </picker>
     </view>
-    
-    <view class="form-item">
+
+    <view class="form-item" wx:if="{{!isEdit}}">
       <text class="form-label"><text class="required">*</text> 开始日期</text>
       <picker mode="date" value="{{form.start_date}}" bindchange="onStartDateChange">
         <view class="picker-value {{form.start_date ? '' : 'placeholder'}}">
@@ -26,21 +29,16 @@
         </view>
       </picker>
     </view>
-    
-    <view class="form-item">
-      <text class="form-label">预计孵化日期</text>
-      <picker mode="date" value="{{form.expected_hatch_date}}" bindchange="onExpectedDateChange">
-        <view class="picker-value {{form.expected_hatch_date ? '' : 'placeholder'}}">
-          {{form.expected_hatch_date || '请选择日期'}}
-        </view>
-      </picker>
+
+    <view class="form-item auto-hint" wx:if="{{form.start_date && !isEdit}}">
+      <text class="hint-text">系统将自动计算预计孵化日期（开始日期+21天）</text>
     </view>
-    
-    <view class="form-item">
+
+    <view class="form-item" wx:if="{{!isEdit}}">
       <text class="form-label"><text class="required">*</text> 蛋数</text>
       <input type="number" placeholder="请输入蛋数" data-field="eggs_count" bindinput="onInput" value="{{form.eggs_count}}" />
     </view>
-    
+
     <block wx:if="{{isEdit}}">
       <view class="form-item">
         <text class="form-label">实际孵化日期</text>
@@ -50,26 +48,14 @@
           </view>
         </picker>
       </view>
-      
+
       <view class="form-item">
         <text class="form-label">孵化数量</text>
         <input type="number" placeholder="请输入" data-field="hatched_count" bindinput="onInput" value="{{form.hatched_count}}" />
       </view>
-      
-      <view class="form-item">
-        <text class="form-label">状态</text>
-        <picker mode="selector" range="{{statuses}}" range-key="label" bindchange="onStatusChange">
-          <view class="picker-value">{{statusLabel}}</view>
-        </picker>
-      </view>
     </block>
-    
-    <view class="form-item">
-      <text class="form-label">备注</text>
-      <textarea placeholder="请输入备注" data-field="notes" bindinput="onInput" value="{{form.notes}}" />
-    </view>
   </view>
-  
+
   <view class="submit-bar">
     <button bindtap="submit" disabled="{{submitting}}">{{submitting ? '提交中...' : '保存'}}</button>
   </view>

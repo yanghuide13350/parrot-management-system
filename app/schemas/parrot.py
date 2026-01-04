@@ -43,7 +43,7 @@ class ParrotUpdate(BaseModel):
 
 class ParrotStatusUpdate(BaseModel):
     """更新鹦鹉状态请求"""
-    status: str = Field(..., pattern="^(available|sold|returned|breeding|incubating)$", description="状态: available/sold/returned/breeding/incubating")
+    status: str = Field(..., pattern="^(available|sold|returned|breeding|incubating|paired)$", description="状态: available/sold/returned/breeding/incubating/paired")
 
 
 class ParrotSaleUpdate(BaseModel):

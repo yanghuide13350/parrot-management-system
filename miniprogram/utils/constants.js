@@ -20,6 +20,7 @@ module.exports = {
   INCUBATION_STATUS: {
     incubating: '孵化中',
     hatched: '已孵化',
-    failed: '失败'
+    failed: '失败',
+    completed: '已完成'
   }
 }

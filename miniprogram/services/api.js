@@ -28,6 +28,7 @@ module.exports = {
   getIncubationRecords: (params) => request({ url: '/incubation', data: params }),
   createIncubation: (data) => request({ url: '/incubation', method: 'POST', data }),
   updateIncubation: (id, data) => request({ url: `/incubation/${id}`, method: 'PUT', data }),
+  deleteIncubation: (id) => request({ url: `/incubation/${id}`, method: 'DELETE' }),
   getIncubationStatistics: () => request({ url: '/incubation/statistics/summary' }),
 
   getStatistics: () => request({ url: '/statistics' }),
@@ -37,6 +38,7 @@ module.exports = {
 
   getPhotos: (id) => request({ url: `/parrots/${id}/photos` }),
   uploadPhoto: (id, filePath) => uploadFile(`/parrots/${id}/photos`, filePath),
+  deletePhoto: (id) => request({ url: `/photos/${id}`, method: 'DELETE' }),
 
   createShareLink: (id, data) => request({ url: `/share/generate/${id}`, method: 'POST', data }),
   getShareInfo: (token) => request({ url: `/share/${token}` }),

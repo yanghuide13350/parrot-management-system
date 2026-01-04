@@ -11,6 +11,7 @@ Page({
     filteredBreeds: [],
     showBreedList: false,
     photos: [],
+    deletedPhotoIds: [],
     originalRingNumber: '',
     submitting: false
   },
@@ -134,11 +135,15 @@ Page({
   removePhoto(e) {
     const { index } = e.currentTarget.dataset
     const photos = [...this.data.photos]
+    const deletedPhoto = photos[index]
+    if (deletedPhoto && deletedPhoto.uploaded && deletedPhoto.id) {
+      this.setData({ deletedPhotoIds: [...this.data.deletedPhotoIds, deletedPhoto.id] })
+    }
     photos.splice(index, 1)
     this.setData({ photos })
   },
   async submit() {
-    const { form, originalRingNumber } = this.data
+    const { form, originalRingNumber, deletedPhotoIds } = this.data
     if (!form.breed) return wx.showToast({ title: '请输入品种', icon: 'none' })
     if (!form.gender) return wx.showToast({ title: '请选择性别', icon: 'none' })
     if (!form.ring_number) return wx.showToast({ title: '请输入圈号', icon: 'none' })
@@ -156,7 +161,6 @@ Page({
     try {
       const data = { ...form }
       if (data.price) data.price = Number(data.price)
-      // 删除空字符串字段，后端不需要这些字段
       Object.keys(data).forEach(k => {
         if (data[k] === '' || data[k] === undefined || data[k] === null) {
           delete data[k]
@@ -169,6 +173,10 @@ Page({
         if (!photo.uploaded) {
           await api.uploadPhoto(this.data.id, photo.path)
         }
+      }
+
+      for (const photoId of deletedPhotoIds) {
+        await api.deletePhoto(photoId)
       }
 
       wx.showToast({ title: '保存成功', icon: 'success' })
