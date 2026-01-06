@@ -30,7 +30,7 @@ from sqlalchemy.exc import IntegrityError
 router = APIRouter(prefix="/api/parrots", tags=["鹦鹉管理"])
 
 
-@router.get("", response_model=ParrotList, summary="获取鹦鹉列表")
+@router.get("", summary="获取鹦鹉列表")
 def get_parrots(
     db: Session = Depends(get_db),
     page: int = Query(1, ge=1, description="页码"),
@@ -43,6 +43,7 @@ def get_parrots(
     min_price: Optional[float] = Query(None, ge=0, description="最低价格"),
     max_price: Optional[float] = Query(None, ge=0, description="最高价格"),
     keyword: Optional[str] = Query(None, description="搜索关键词(品种/圈号)"),
+    include_mate: bool = Query(False, description="是否包含配偶详细信息"),
 ):
     """
     获取鹦鹉列表，支持筛选和分页
@@ -110,27 +111,44 @@ def get_parrots(
         # 转换datetime为字符串
         created_at_str = parrot.created_at.isoformat() if parrot.created_at else None
         updated_at_str = parrot.updated_at.isoformat() if parrot.updated_at else None
+        paired_at_str = parrot.paired_at.isoformat() if parrot.paired_at else None
 
-        items.append(
-            ParrotResponse(
-                id=parrot.id,
-                breed=parrot.breed,
-                price=parrot.price,
-                gender=parrot.gender,
-                birth_date=parrot.birth_date,
-                ring_number=parrot.ring_number,
-                status=parrot.status,
-                health_notes=parrot.health_notes,
-                created_at=created_at_str,
-                updated_at=updated_at_str,
-                photo_count=photo_count,
-                photo_url=photo_url,
-                mate_id=parrot.mate_id,
-                paired_at=parrot.paired_at.isoformat() if parrot.paired_at else None,
-            )
-        )
+        if include_mate and parrot.mate_id:
+            # 获取配偶详细信息
+            mate = db.query(Parrot).filter(Parrot.id == parrot.mate_id).first()
+            mate_info = {
+                "id": mate.id,
+                "breed": mate.breed,
+                "gender": mate.gender,
+                "ring_number": mate.ring_number,
+                "birth_date": mate.birth_date.isoformat() if mate.birth_date else None,
+            } if mate else None
+        else:
+            mate_info = None
 
-    return ParrotList(total=total, items=items, page=page, size=size)
+        item_data = {
+            "id": parrot.id,
+            "breed": parrot.breed,
+            "price": float(parrot.price) if parrot.price else None,
+            "gender": parrot.gender,
+            "birth_date": parrot.birth_date,
+            "ring_number": parrot.ring_number,
+            "status": parrot.status,
+            "health_notes": parrot.health_notes,
+            "created_at": created_at_str,
+            "updated_at": updated_at_str,
+            "photo_count": photo_count,
+            "photo_url": photo_url,
+            "mate_id": parrot.mate_id,
+            "paired_at": paired_at_str,
+        }
+
+        if include_mate:
+            item_data["mate"] = mate_info
+
+        items.append(item_data)
+
+    return {"total": total, "items": items, "page": page, "size": size}
 
 
 @router.get("/{parrot_id}", response_model=ParrotResponse, summary="获取鹦鹉详情")

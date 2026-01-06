@@ -23,6 +23,7 @@ def get_statistics_overview(db: Session = Depends(get_db)):
         - available_parrots: 未售数量
         - sold_parrots: 已售数量
         - returned_parrots: 退货数量
+        - paired_parrots: 已配对数量
         - breed_counts: 品种统计
         - total_revenue: 总收入
     """
@@ -31,6 +32,7 @@ def get_statistics_overview(db: Session = Depends(get_db)):
     available_parrots = db.query(Parrot).filter(Parrot.status == "available").count()
     sold_parrots = db.query(Parrot).filter(Parrot.status == "sold").count()
     returned_parrots = db.query(Parrot).filter(Parrot.status == "returned").count()
+    paired_parrots = db.query(Parrot).filter(Parrot.status == "paired").count()
 
     # 品种统计
     breed_stats = (
@@ -53,6 +55,7 @@ def get_statistics_overview(db: Session = Depends(get_db)):
         available_parrots=available_parrots,
         sold_parrots=sold_parrots,
         returned_parrots=returned_parrots,
+        paired_parrots=paired_parrots,
         breed_counts=breed_counts,
         total_revenue=total_revenue,
     )

@@ -8,6 +8,7 @@ class StatisticsOverview(BaseModel):
     available_parrots: int
     sold_parrots: int
     returned_parrots: int
+    paired_parrots: int
     breed_counts: Dict[str, int]
     total_revenue: float
 
