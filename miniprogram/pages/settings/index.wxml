@@ -1,0 +1,60 @@
+<view class="settings-page">
+  <view class="section">
+    <view class="section-title">当前环境</view>
+    <view class="current-env">
+      <view class="env-name">{{currentEnv}}</view>
+      <view class="env-url">{{currentBaseUrl}}</view>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">快速切换</view>
+    <view class="env-list">
+      <view 
+        class="env-item {{currentBaseUrl === item.value ? 'active' : ''}}"
+        wx:for="{{envList}}"
+        wx:key="value"
+        data-url="{{item.value}}"
+        data-name="{{item.name}}"
+        bindtap="onEnvTap"
+      >
+        <view class="env-item-name">{{item.name}}</view>
+        <view class="env-item-url">{{item.value}}</view>
+        <view class="env-item-icon" wx:if="{{currentBaseUrl === item.value}}">✓</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">自定义地址</view>
+    <view class="custom-url">
+      <input 
+        class="custom-input"
+        type="text"
+        placeholder="输入自定义API地址"
+        value="{{customBaseUrl}}"
+        bindinput="onInputChange"
+      />
+      <button class="btn-apply" bindtap="onApplyCustomUrl">应用</button>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="action-buttons">
+      <button class="btn-action" bindtap="onTestConnection">测试连接</button>
+      <button class="btn-action" bindtap="onCopyUrl">复制地址</button>
+      <button class="btn-action btn-reset" bindtap="onResetToDefault">恢复默认</button>
+    </view>
+  </view>
+
+  <view class="section tips">
+    <view class="tips-title">💡 使用说明</view>
+    <view class="tips-content">
+      <text>1. 开发环境：用于本地开发调试\n</text>
+      <text>2. 测试环境：用于测试服务器\n</text>
+      <text>3. 生产环境：正式上线环境（需HTTPS）\n</text>
+      <text>4. 自定义地址：临时测试其他地址\n</text>
+      <text>5. 切换环境后需要重新加载数据</text>
+    </view>
+  </view>
+</view>
