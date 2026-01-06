@@ -2,6 +2,7 @@
   background: #fff;
   border-radius: 16rpx;
   padding: 24rpx;
+  margin-top: 12px;
   box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
 }
 
@@ -22,14 +23,14 @@
   display: flex;
   background: #f1f5f9;
   border-radius: 8rpx;
-  padding: 4rpx;
+  padding: 8rpx;
 }
 
 .tab {
   padding: 12rpx 24rpx;
   font-size: 24rpx;
   color: #64748b;
-  border-radius: 6rpx;
+  border-radius: 8rpx;
 }
 
 .tab.active {

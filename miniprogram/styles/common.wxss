@@ -97,7 +97,7 @@
 
 .status-tag {
   display: inline-block;
-  padding: 6rpx 16rpx;
+  padding: 8rpx 16rpx;
   border-radius: 9999rpx;
   font-size: 22rpx;
   color: #ffffff;
