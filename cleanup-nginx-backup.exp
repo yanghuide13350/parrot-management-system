@@ -1,0 +1,45 @@
+#!/usr/bin/expect -f
+
+set timeout 30
+set server "103.110.81.83"
+set password "rQ24T4MkMViB"
+
+spawn ssh root@$server
+
+expect {
+    "password:" {
+        send "$password\r"
+    }
+    "yes/no" {
+        send "yes\r"
+        exp_continue
+    }
+}
+
+expect "root@"
+
+# 删除损坏的备份文件
+send "rm -f /etc/nginx/sites-enabled/parrot-system.backup-*\r"
+expect "root@"
+
+# 测试Nginx配置
+send "nginx -t\r"
+expect "root@"
+
+# 重启Nginx
+send "systemctl restart nginx\r"
+expect "root@"
+
+# 检查Nginx状态
+send "systemctl status nginx | head -10\r"
+expect "root@"
+
+# 再次测试图片访问
+send "echo '=== 测试图片URL ==='\r"
+expect "root@"
+
+send "curl -I http://103.110.81.83/uploads/parrots/\$(ls /var/www/parrot-system/uploads/parrots | head -1)\r"
+expect "root@"
+
+send "exit\r"
+expect eof

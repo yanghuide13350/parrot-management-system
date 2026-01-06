@@ -1,0 +1,88 @@
+#!/usr/bin/expect -f
+
+set timeout 30
+set server "103.110.81.83"
+set password "rQ24T4MkMViB"
+
+spawn ssh root@$server
+
+expect {
+    "password:" {
+        send "$password\r"
+    }
+    "yes/no" {
+        send "yes\r"
+        exp_continue
+    }
+}
+
+expect "root@"
+
+# 备份当前配置
+send "cp /etc/nginx/sites-enabled/parrot-system /etc/nginx/sites-enabled/parrot-system.backup-\$(date +%Y%m%d-%H%M%S)\r"
+expect "root@"
+
+# 创建新的Nginx配置 - 使用单引号避免变量替换
+send {cat > /etc/nginx/sites-enabled/parrot-system << 'NGINX_EOF'
+server {
+    listen 80;
+    server_name 103.110.81.83;
+    client_max_body_size 100M;
+
+    # 前端静态文件
+    root /var/www/parrot-system/parrot-management-system/dist;
+    index index.html;
+
+    # 直接提供uploads目录的静态文件
+    location /uploads/ {
+        alias /var/www/parrot-system/uploads/;
+        add_header Access-Control-Allow-Origin *;
+        add_header Cache-Control "public, max-age=31536000";
+        expires 1y;
+    }
+
+    # API 请求代理到后端
+    location /api/ {
+        proxy_pass http://127.0.0.1:8000/api/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # SPA 路由 - 所有其他请求返回 index.html
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
+NGINX_EOF
+}
+send "\r"
+
+expect "root@"
+
+# 测试Nginx配置
+send "nginx -t\r"
+expect "root@"
+
+# 重新加载Nginx
+send "systemctl reload nginx\r"
+expect "root@"
+
+# 验证配置
+send "echo '=== 新的Nginx配置 ==='\r"
+expect "root@"
+
+send "cat /etc/nginx/sites-enabled/parrot-system\r"
+expect "root@"
+
+# 测试图片访问
+send "echo '=== 测试图片访问 ==='\r"
+expect "root@"
+
+send "curl -I http://103.110.81.83/uploads/parrots/\$(ls /var/www/parrot-system/uploads/parrots | head -1)\r"
+expect "root@"
+
+send "exit\r"
+expect eof

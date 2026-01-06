@@ -1,0 +1,64 @@
+#!/usr/bin/expect -f
+
+set timeout 30
+set server "103.110.81.83"
+set password "rQ24T4MkMViB"
+
+spawn ssh root@$server
+
+expect {
+    "password:" {
+        send "$password\r"
+    }
+    "yes/no" {
+        send "yes\r"
+        exp_continue
+    }
+}
+
+expect "root@"
+
+# 检查Nginx配置
+send "echo '=== 检查Nginx配置 ==='\r"
+expect "root@"
+
+send "cat /etc/nginx/sites-enabled/parrot-system | grep -A 20 'location /uploads'\r"
+expect "root@"
+
+# 检查uploads目录权限
+send "echo '=== 检查uploads目录 ==='\r"
+expect "root@"
+
+send "ls -la /var/www/parrot-system/uploads/ | head -20\r"
+expect "root@"
+
+# 检查是否有图片文件
+send "echo '=== 检查图片文件数量 ==='\r"
+expect "root@"
+
+send "find /var/www/parrot-system/uploads/parrots -type f | wc -l\r"
+expect "root@"
+
+# 测试图片URL是否可访问
+send "echo '=== 测试图片URL访问 ==='\r"
+expect "root@"
+
+send "curl -I http://103.110.81.83/uploads/parrots/\$(ls /var/www/parrot-system/uploads/parrots | head -1) 2>&1 | head -10\r"
+expect "root@"
+
+# 检查是否配置了HTTPS
+send "echo '=== 检查HTTPS配置 ==='\r"
+expect "root@"
+
+send "cat /etc/nginx/sites-enabled/parrot-system | grep -E 'listen.*443|ssl_certificate'\r"
+expect "root@"
+
+# 检查防火墙
+send "echo '=== 检查防火墙规则 ==='\r"
+expect "root@"
+
+send "ufw status | grep -E '80|443'\r"
+expect "root@"
+
+send "exit\r"
+expect eof
