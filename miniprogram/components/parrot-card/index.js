@@ -34,8 +34,15 @@ Component({
       if (p.price) return `¥${p.price}`
       if (p.min_price && p.max_price) return `¥${p.min_price}-${p.max_price}`
       if (p.min_price) return `¥${p.min_price}起`
-      if (p.max_price) return `≤¥${p.max_price}`
+      if (p.max_price) return `≤${p.max_price}`
       return ''
+    },
+    onImageError(e) {
+      console.error('图片加载失败:', this.data.parrot.photo_url, e.detail)
+      // 可以在这里设置一个标志来显示占位图
+    },
+    onImageLoad(e) {
+      console.log('图片加载成功:', this.data.parrot.photo_url)
     },
     onTap() {
       this.triggerEvent('tap', { parrot: this.data.parrot })

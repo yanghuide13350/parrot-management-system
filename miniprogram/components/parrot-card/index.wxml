@@ -1,13 +1,13 @@
 <view class="parrot-card glass-card" bindtap="onTap">
-  <view class="card-image">
-    <image wx:if="{{parrot.photo_url}}" src="{{parrot.photo_url}}" mode="aspectFill" />
-    <view wx:else class="no-image">
-      <view class="camera-icon">
-        <view class="camera-body"></view>
-        <view class="camera-lens"></view>
-      </view>
-    </view>
+  <view class="card-image {{parrot.has_video ? 'has-video' : ''}} {{!parrot.photo_url ? 'no-image' : ''}}">
+    <image wx:if="{{parrot.photo_url && !parrot.has_video}}" src="{{parrot.photo_url}}" mode="aspectFill" binderror="onImageError" bindload="onImageLoad" />
+    <image wx:elif="{{parrot.has_video}}" class="placeholder-icon" src="/images/placeholder/video.png" mode="aspectFit" />
+    <image wx:else class="placeholder-icon" src="/images/placeholder/parrot.png" mode="aspectFit" />
     <view class="status-tag status-{{parrot.status}}">{{statusText}}</view>
+    <view wx:if="{{parrot.has_video}}" class="video-badge">
+      <text class="video-icon">▶</text>
+      <text>视频</text>
+    </view>
   </view>
   <view class="card-info">
     <view class="card-title">{{parrot.breed}}</view>

@@ -17,19 +17,20 @@ Page({
     showFilterDrawer: false
   },
   onLoad(options) {
-    if (this) {
-      if (options.status) this.setData({ filters: { status: options.status } })
-      if (options.breed) this.setData({ filters: { breed: options.breed } })
-      this.updateFilterCount()
-      this.loadBreeds()
-      this.loadData()
+    if (!this) return
+    this.setData({ list: [], leftList: [], rightList: [], filters: {} })
+    if (options.status) {
+      this.setData({ filters: { status: options.status } })
     }
+    if (options.breed) {
+      this.setData({ filters: { breed: options.breed } })
+    }
+    this.updateFilterCount()
+    this.loadBreeds()
+    this.loadData()
   },
   onShow() {
-    // 刷新数据
-    if (this && this.data && this.data.list && this.data.list.length > 0) {
-      this.loadData()
-    }
+    this.loadData()
   },
   onPullDownRefresh() {
     this.onRefresh()
@@ -58,10 +59,18 @@ Page({
       const res = await api.getParrots(params)
       const items = res.items || res || []
       // 构建完整的图片URL
-      const listWithPhotos = items.map(item => ({
-        ...item,
-        photo_url: item.photo_url ? `http://127.0.0.1:8000${item.photo_url}` : null
-      }))
+      const app = getApp()
+      const baseUrl = app.globalData.baseUrl.replace('/api', '')
+      console.log('Base URL:', baseUrl)
+      const listWithPhotos = items.map(item => {
+        const fullPhotoUrl = item.photo_url ? `${baseUrl}${item.photo_url}` : null
+        console.log('Photo URL:', item.photo_url, '-> Full URL:', fullPhotoUrl)
+        return {
+          ...item,
+          photo_url: fullPhotoUrl,
+          has_video: item.photo_count > 0 && item.photo_url && /\.(mp4|mov|avi|mkv|webm)$/i.test(item.photo_url)
+        }
+      })
       const list = append ? [...this.data.list, ...listWithPhotos] : listWithPhotos
       this.setData({
         list,
@@ -81,16 +90,16 @@ Page({
     this.setData({ leftList: left, rightList: right })
   },
   onRefresh() {
-    this.setData({ page: 1, refreshing: true })
+    this.setData({ page: 1, refreshing: true, loading: true })
     this.loadData()
   },
   loadMore() {
     if (!this.data.hasMore || this.data.loading) return
-    this.setData({ page: this.data.page + 1 })
+    this.setData({ page: this.data.page + 1, loading: true })
     this.loadData(true)
   },
   onSearch(e) {
-    this.setData({ keyword: e.detail.value, page: 1 })
+    this.setData({ keyword: e.detail.value, page: 1, loading: true })
     clearTimeout(this.searchTimer)
     this.searchTimer = setTimeout(() => this.loadData(), 300)
   },
@@ -104,7 +113,8 @@ Page({
     this.setData({
       filters: e.detail.filters,
       showFilterDrawer: false,
-      page: 1
+      page: 1,
+      loading: true
     })
     this.updateFilterCount()
     this.loadData()
