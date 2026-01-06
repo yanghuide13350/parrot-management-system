@@ -7,6 +7,7 @@ Page({
       available_parrots: 0,
       sold_parrots: 0,
       returned_parrots: 0,
+      paired_parrots: 0,
       total_revenue: 0
     },
     breedCounts: [],
@@ -87,8 +88,10 @@ Page({
         console.log('孵化统计加载失败:', e)
       }
 
+      const stats = statsRes || this.data.stats
+
       this.setData({
-        stats: statsRes || this.data.stats,
+        stats,
         breedCounts,
         monthlySales,
         incubationStats,
@@ -100,15 +103,16 @@ Page({
     }
   },
 
-  goToList() {
-    wx.switchTab({ url: '/pages/parrot/list/index' })
+  goToList(e) {
+    const status = e.currentTarget.dataset.status
+    if (status) {
+      wx.reLaunch({ url: `/pages/parrot/list/index?status=${status}` })
+    } else {
+      wx.reLaunch({ url: '/pages/parrot/list/index?reset=true' })
+    }
   },
 
-  goToBreed() {
-    wx.navigateTo({ url: '/pages/breeding/list/index' })
-  },
-
-  goToIncubation() {
-    wx.navigateTo({ url: '/pages/incubation/list/index' })
+  goToSales() {
+    wx.navigateTo({ url: '/pages/sales/list/index' })
   }
 })

@@ -20,37 +20,46 @@
 
 .no-photo {
   width: 100%;
-  height: 400rpx;
+  height: 500rpx;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.camera-icon {
   position: relative;
-  width: 100rpx;
-  height: 80rpx;
+  overflow: hidden;
 }
 
-.camera-body {
-  width: 100rpx;
-  height: 70rpx;
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 12rpx;
+.no-photo::before {
+  content: '';
   position: absolute;
-  bottom: 0;
-}
-
-.camera-lens {
-  width: 40rpx;
-  height: 40rpx;
-  background: rgba(255, 255, 255, 0.5);
+  width: 300rpx;
+  height: 300rpx;
+  border: 2rpx solid rgba(255, 255, 255, 0.1);
   border-radius: 50%;
-  position: absolute;
-  bottom: 15rpx;
+  top: 50%;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);
+}
+
+.no-photo-bg {
+  width: 200rpx;
+  height: 200rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.no-photo-bg image {
+  width: 180rpx;
+  height: 180rpx;
+}
+
+.no-photo-text {
+  margin-top: 20rpx;
+  font-size: 28rpx;
+  color: rgba(255, 255, 255, 0.85);
+  letter-spacing: 4rpx;
 }
 
 .info-card {
@@ -80,7 +89,7 @@
 }
 
 .status-tag {
-  padding: 6rpx 16rpx;
+  padding: 8rpx 16rpx;
   border-radius: 20rpx;
   font-size: 22rpx;
   color: #fff;
@@ -107,7 +116,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14rpx 0;
+  padding: 16rpx 0;
 }
 
 .info-row .label {

@@ -46,7 +46,8 @@ Page({
     }
   },
   onShow() {
-    if (this) {
+    // 只在有数据时刷新，避免重复加载
+    if (this && this.data.list && this.data.list.length > 0) {
       this.loadData()
     }
   },
@@ -67,9 +68,9 @@ Page({
       let res = []
       if (filters.pairingStatus === 'all') {
         const [breeding, paired, incubating] = await Promise.all([
-          api.getParrots({ ...params, status: 'breeding' }),
-          api.getParrots({ ...params, status: 'paired' }),
-          api.getParrots({ ...params, status: 'incubating' })
+          api.getParrots({ ...params, status: 'breeding', include_mate: true }),
+          api.getParrots({ ...params, status: 'paired', include_mate: true }),
+          api.getParrots({ ...params, status: 'incubating', include_mate: true })
         ])
         res = [
           ...(Array.isArray(breeding) ? breeding : breeding.items || []),
@@ -77,7 +78,7 @@ Page({
           ...(Array.isArray(incubating) ? incubating : incubating.items || [])
         ]
       } else {
-        const data = await api.getParrots({ ...params, status: filters.pairingStatus })
+        const data = await api.getParrots({ ...params, status: filters.pairingStatus, include_mate: true })
         res = Array.isArray(data) ? data : (data.items || [])
       }
 
@@ -86,11 +87,15 @@ Page({
 
       const listWithMate = []
       for (const p of res) {
-        let mateInfo = { has_mate: false, mate: null, paired_at: null }
-        try {
-          mateInfo = await api.getMate(p.id)
-        } catch (e) {
-          console.log(`获取配偶信息失败 for parrot ${p.id}:`, e)
+        let mateInfo = null
+        if (p.mate) {
+          mateInfo = {
+            has_mate: true,
+            mate: p.mate,
+            paired_at: p.paired_at
+          }
+        } else {
+          mateInfo = { has_mate: false, mate: null, paired_at: null }
         }
 
         let pairingDuration = ''
@@ -274,5 +279,23 @@ Page({
     } catch (err) {
       wx.showToast({ title: '创建失败', icon: 'none' })
     }
+  },
+  async removeFromBreeding(e) {
+    const { id } = e.currentTarget.dataset
+    wx.showModal({
+      title: '确认移除',
+      content: '确定要将此鸟从种鸟中移除吗？移除后状态将变为待售',
+      success: async (res) => {
+        if (res.confirm) {
+          try {
+            await api.updateParrotStatus(id, { status: 'available' })
+            wx.showToast({ title: '已移除', icon: 'success' })
+            this.loadData()
+          } catch (err) {
+            wx.showToast({ title: '操作失败', icon: 'none' })
+          }
+        }
+      }
+    })
   }
 })

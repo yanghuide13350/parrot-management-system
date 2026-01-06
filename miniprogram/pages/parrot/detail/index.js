@@ -47,8 +47,10 @@ Page({
       ])
       const photos = Array.isArray(photosRes) ? photosRes : (photosRes?.items || [])
       // 构建完整的图片URL并判断文件类型
+      const app = getApp()
+      const baseUrl = app.globalData.baseUrl.replace('/api', '')
       const photosWithUrl = photos.map(p => {
-        const url = `http://127.0.0.1:8000/uploads/${p.file_path}`
+        const url = `${baseUrl}/uploads/${p.file_path}`
         const isVideo = p.file_name && (p.file_name.endsWith('.mov') || p.file_name.endsWith('.mp4') || p.file_name.endsWith('.avi'))
         return {
           ...p,

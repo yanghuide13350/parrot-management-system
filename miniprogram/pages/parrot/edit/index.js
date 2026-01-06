@@ -77,6 +77,8 @@ Page({
         api.getPhotos(this.data.id).catch(() => [])
       ])
       const genderIndex = this.data.genders.indexOf(parrot.gender)
+      const app = getApp()
+      const baseUrl = app.globalData.baseUrl.replace('/api', '')
       this.setData({
         form: {
           breed: parrot.breed,
@@ -93,7 +95,7 @@ Page({
           return {
             ...p,
             uploaded: true,
-            url: `http://127.0.0.1:8000/uploads/${p.file_path}`,
+            url: `${baseUrl}/uploads/${p.file_path}`,
             isVideo: isVideo
           }
         })

@@ -11,7 +11,7 @@
     "pages/incubation/list/index",
     "pages/incubation/add/index",
     "pages/share/index",
-    "pages/profile/index"
+    "pages/settings/index"
   ],
   "window": {
     "backgroundTextStyle": "light",
@@ -38,16 +38,16 @@
         "selectedIconPath": "images/tabbar/parrot-active.png"
       },
       {
-        "pagePath": "pages/sales/list/index",
-        "text": "销售",
-        "iconPath": "images/tabbar/sales.png",
-        "selectedIconPath": "images/tabbar/sales-active.png"
+        "pagePath": "pages/breeding/list/index",
+        "text": "育种",
+        "iconPath": "images/tabbar/breeding.png",
+        "selectedIconPath": "images/tabbar/breeding-active.png"
       },
       {
-        "pagePath": "pages/profile/index",
-        "text": "我的",
-        "iconPath": "images/tabbar/profile.png",
-        "selectedIconPath": "images/tabbar/profile-active.png"
+        "pagePath": "pages/incubation/list/index",
+        "text": "孵化",
+        "iconPath": "images/tabbar/incubation.png",
+        "selectedIconPath": "images/tabbar/incubation-active.png"
       }
     ]
   },

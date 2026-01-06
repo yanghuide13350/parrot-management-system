@@ -226,7 +226,7 @@
 .action-btn {
   padding: 12rpx 24rpx;
   font-size: 24rpx;
-  border-radius: 10rpx;
+  border-radius: 12rpx;
   border: 2rpx solid #e5e7eb;
   color: #4b5563;
   width: 150rpx;
@@ -246,6 +246,11 @@
 .action-btn.pair {
   border-color: #667eea;
   color: #667eea;
+}
+
+.action-btn.remove {
+  border-color: #94a3b8;
+  color: #94a3b8;
 }
 
 .action-btn.unpair {

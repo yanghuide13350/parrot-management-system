@@ -41,10 +41,7 @@
       <view class="sale-photo">
         <image wx:if="{{item.photo_url}}" src="{{item.photo_url}}" mode="aspectFill" />
         <view wx:else class="no-photo">
-          <view class="camera-icon">
-            <view class="camera-body"></view>
-            <view class="camera-lens"></view>
-          </view>
+          <image src="/images/placeholder/parrot.png" mode="aspectFit" />
         </view>
       </view>
       <view class="sale-info">

@@ -2,7 +2,7 @@
   <swiper class="photo-swiper" indicator-dots circular wx:if="{{photos.length}}">
     <swiper-item wx:for="{{photos}}" wx:key="id">
       <block wx:if="{{item.isVideo}}">
-        <video src="{{item.url}}" controls />
+        <video src="{{item.url}}" controls object-fit="cover" show-center-play-btn />
       </block>
       <block wx:else>
         <image src="{{item.url}}" mode="aspectFill" data-url="{{item.url}}" bindtap="previewImage" />
@@ -10,10 +10,10 @@
     </swiper-item>
   </swiper>
   <view class="no-photo" wx:else>
-    <view class="camera-icon">
-      <view class="camera-body"></view>
-      <view class="camera-lens"></view>
+    <view class="no-photo-bg">
+      <image src="/images/placeholder/parrot.png" mode="aspectFit" />
     </view>
+    <text class="no-photo-text">暂无照片</text>
   </view>
   
   <view class="info-card glass-card">

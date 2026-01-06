@@ -80,6 +80,12 @@
             data-id="{{item.id}}"
           >配对</button>
           <button
+            wx:if="{{!item.isPaired && item.status === 'breeding'}}"
+            class="action-btn remove"
+            catchtap="removeFromBreeding"
+            data-id="{{item.id}}"
+          >移除</button>
+          <button
             wx:if="{{item.isPaired && item.status !== 'incubating'}}"
             class="action-btn unpair"
             catchtap="unpairParrot"

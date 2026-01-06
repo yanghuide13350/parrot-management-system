@@ -5,8 +5,8 @@
         <view class="search-circle"></view>
         <view class="search-handle"></view>
       </view>
-      <input 
-        placeholder="搜索品种或圈号" 
+      <input
+        placeholder="搜索品种或圈号"
         value="{{keyword}}"
         bindinput="onSearch"
         confirm-type="search"
@@ -17,8 +17,8 @@
       <text wx:if="{{filterCount}}" class="filter-badge">{{filterCount}}</text>
     </view>
   </view>
-  
-  <scroll-view 
+
+  <scroll-view
     class="list-container"
     scroll-y
     enhanced
@@ -29,33 +29,42 @@
   >
     <view class="waterfall" wx:if="{{list.length}}">
       <view class="waterfall-col">
-        <parrot-card 
-          wx:for="{{leftList}}" 
-          wx:key="id" 
+        <parrot-card
+          wx:for="{{leftList}}"
+          wx:key="id"
           parrot="{{item}}"
           data-parrot="{{item}}"
           bindtap="goDetail"
         />
       </view>
       <view class="waterfall-col">
-        <parrot-card 
-          wx:for="{{rightList}}" 
-          wx:key="id" 
+        <parrot-card
+          wx:for="{{rightList}}"
+          wx:key="id"
           parrot="{{item}}"
           data-parrot="{{item}}"
           bindtap="goDetail"
         />
       </view>
     </view>
+
+    <view class="skeleton" wx:elif="{{loading}}">
+      <view class="skeleton-item" wx:for="{{[1,2,3,4,5,6]}}" wx:key="index">
+        <view class="skeleton-img"></view>
+        <view class="skeleton-line short"></view>
+        <view class="skeleton-line long"></view>
+      </view>
+    </view>
+
     <empty-state wx:elif="{{!loading}}" text="暂无鹦鹉" />
     <view class="load-more" wx:if="{{hasMore && list.length}}">加载中...</view>
   </scroll-view>
-  
+
   <view class="fab" bindtap="goAdd">
     <text>+</text>
   </view>
-  
-  <filter-drawer 
+
+  <filter-drawer
     visible="{{showFilterDrawer}}"
     breeds="{{breeds}}"
     filters="{{filters}}"

@@ -27,9 +27,11 @@ Page({
         return
       }
       // 构建完整的图片URL
+      const app = getApp()
+      const baseUrl = app.globalData.baseUrl.replace('/api', '')
       const photosWithUrl = (data.photos || []).map(p => ({
         ...p,
-        url: `http://127.0.0.1:8000/uploads/${p.file_path}`
+        url: `${baseUrl}/uploads/${p.file_path}`
       }))
       this.setData({
         parrot: {

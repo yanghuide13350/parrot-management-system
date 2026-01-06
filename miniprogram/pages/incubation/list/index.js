@@ -34,9 +34,7 @@ Page({
     }
   },
   onShow() {
-    if (this) {
-      this.loadData()
-    }
+    this.loadData()
   },
   onPullDownRefresh() {
     this.loadData().then(() => wx.stopPullDownRefresh())

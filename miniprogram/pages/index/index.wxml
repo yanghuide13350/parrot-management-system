@@ -21,21 +21,22 @@
       <view class="stat-value amber">{{stats.returned_parrots}}</view>
       <view class="stat-label">退货</view>
     </view>
+    <view class="stat-item" bindtap="goToBreed" data-status="paired">
+      <view class="stat-value purple">{{stats.paired_parrots || 0}}</view>
+      <view class="stat-label">已配对</view>
+    </view>
+    <view class="stat-item" bindtap="goToIncubation" data-status="incubating">
+      <view class="stat-value blue">{{incubationStats.incubating_count}}</view>
+      <view class="stat-label">孵化中</view>
+    </view>
   </view>
 
   <view class="quick-actions">
-    <view class="action-card breeding" bindtap="goToBreed">
-      <view class="action-icon">🕊️</view>
+    <view class="action-card sales full-width" bindtap="goToSales">
+      <view class="action-icon">💰</view>
       <view class="action-content">
-        <view class="action-title">育种管理</view>
-        <view class="action-desc">配对、种鸟管理</view>
-      </view>
-    </view>
-    <view class="action-card incubation" bindtap="goToIncubation">
-      <view class="action-icon">🥚</view>
-      <view class="action-content">
-        <view class="action-title">孵化记录</view>
-        <view class="action-desc">孵化跟踪、统计</view>
+        <view class="action-title">销售记录</view>
+        <view class="action-desc">销售统计、回访</view>
       </view>
     </view>
   </view>
@@ -62,7 +63,7 @@
     </view>
   </view>
 
-  <line-chart title="月度销售趋势" data="{{monthlySales}}" wx:if="{{monthlySales.length}}"></line-chart>
+  <line-chart class="chart-spacing" title="月度销售趋势" data="{{monthlySales}}" wx:if="{{monthlySales.length}}"></line-chart>
 
   <view class="section-card">
     <view class="section-title">品种分布</view>

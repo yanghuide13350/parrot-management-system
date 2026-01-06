@@ -55,12 +55,14 @@ Page({
       }
       const res = await api.getSalesRecords(params)
       // Flatten the structure: backend returns nested parrot object
+      const app = getApp()
+      const baseUrl = app.globalData.baseUrl.replace('/api', '')
       const list = (res.items || []).map(item => ({
         ...item,
         breed: item.parrot ? item.parrot.breed : '',
         gender: item.parrot ? item.parrot.gender : '',
         ring_number: item.parrot ? item.parrot.ring_number : '',
-        photo_url: item.photo_url ? `http://127.0.0.1:8000${item.photo_url}` : '',
+        photo_url: item.photo_url ? `${baseUrl}${item.photo_url}` : '',
         followUpText: FOLLOW_UP_STATUS[item.follow_up_status] || '待回访',
         soldDate: formatDate(item.sale_date, 'MM-DD')
       }))
